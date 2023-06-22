@@ -1,0 +1,108 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Agilent 33120A＞任意波形ダウンロード事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  Agilent 33120A(ファンクションジェネレータ)を制御します。
+'  Agilent 33120Aの「6章 HP-IBを介して任意波形をダウンロードする方法」の事例を再現します。
+'    ・HP-IBインタフェースを介して波形ポイントのセットを定義し、揮発性メモリに
+'      ポイントをダウンロードする方法。ダウンロードした波形は、計算した立ち上がり
+'      時間および立ち下がり時間の方形波パルス(4,000ポイント)です。
+'    ・ダウンロードした波形を不揮発性メモリにコピーする方法。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 10; -1 ]			' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+CALL SEND_DATA("*RST;*CLS;*OPC?")					' 本器をリセット、エラー待ち行列クリア
+
+S$ = RECV_DATA$()
+PRINT "OPC?="; S$
+
+' 任意波形データの作成
+DIM WAVEFORM(4000)
+FOR I=1 TO 5
+	WAVEFORM(I) = (I-1)/5
+NEXT I
+FOR I=6 TO 205
+	WAVEFORM(I) = 1
+NEXT I
+FOR I=206 TO 210
+	WAVEFORM(I) = (210-I)/5
+NEXT I
+FOR I=211 TO 4000
+	WAVEFORM(I) = 0
+NEXT I
+
+S$ = ARRAY2BINBLK$(WAVEFORM, [ "float"; "comma" ])	' 任意波形データを、カンマ区切りのデータに構築
+CALL SEND_DATA("DATA VOLATILE," + S$)				' データ・ポイントを配列から揮発性メモリにダウンロード
+
+CALL SEND_DATA("SYST:ERR?")							' エラーが発生してないかチェック
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+CALL SEND_DATA("DATA:COPY PULSE, VOLATILE")			' 任意波形を不揮発性メモリにコピー
+
+CALL SEND_DATA("SYST:ERR?")							' エラーが発生してないかチェック
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+CALL SEND_DATA("FUNC:USER PULSE")					' 有効な任意波形を選択
+CALL SEND_DATA("FUNC:SHAP USER")					' 選択した任意波形を出力
+
+CALL SEND_DATA("OUTP:LOAD 50")						' 出力抵抗は 50Ω
+CALL SEND_DATA("FREQ 5000; VOLT 5")					' 出力周波数は 5kHz(5 Vpp)
+
+CALL SEND_DATA("SYST:ERR?")							' エラーが発生してないかチェック
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for Agilent 33120A
+	PRINT "Agilent 33120A : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー"
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from Agilent 33120A
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "Agilent 33120A : Receive Data = "; recvbuf$
+	PRINT "                 Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

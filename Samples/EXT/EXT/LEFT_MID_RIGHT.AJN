@@ -1,0 +1,58 @@
+' ================================================================================
+' LEFT$ / MID$ / RIGHT$ / LEFTB$ / MIDB$ / RIGHTB$ サンプルプログラム
+'  文字列に対して、左(LEFT$関数)から抜き出し、右(RIGHT$関数)から抜き出し、
+'  中(MID$関数)から抜き出します。
+'  また、バイト単位で、左(LEFTB$関数)から抜き出し、右(RIGHTB$関数)から抜き出し、
+'  中(MIDB$関数)から抜き出す事例も紹介します。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+S$ = "123456789"
+
+PRINT "元の文字列:"; S$
+PRINT "左(LEFT$)から3文字抜き出す:"; LEFT$(S$, 3)
+PRINT "右(RIGHT$)から3文字抜き出す:"; RIGHT$(S$, 3)
+PRINT "中(MID$)から3文字抜き出す:"; MID$(S$, 3, 3)
+PRINT "左(LEFTB$)から3バイト抜き出す:"; LEFTB$(S$, 3)
+PRINT "右(RIGHTB$)から3バイト抜き出す:"; RIGHTB$(S$, 3)
+PRINT "中(MIDB$)から3バイト抜き出す:"; MIDB$(S$, 3, 3)
+
+PRINT "---"
+PRINT "LEFT$ / MID$ / RIGHT$ と LEFTB$ / MIDB$ / RIGHTB$ の違い"
+
+S$ = "あいうえお1"
+PRINT "元の文字列:"; S$
+PRINT "内部ダンプ:"; MOJI_DUMP$(S$)
+PRINT "文字長:"; LEN(S$)
+PRINT "バイト長:"; LENB(S$)
+PRINT ""
+PRINT "注意!: 日本語は1文字が複数バイトで構成されるので、区切り位置で抜き出さないと文字化けします"
+PRINT "　　   そのため、以降は 操作後のバイト長、内部ダンプで示します"
+
+PRINT "左(LEFT$)から2文字抜き出す:"; LENB(LEFT$(S$, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(LEFT$(S$, 2))
+PRINT "左(LEFTB$)から2バイト抜き出す:"; LENB(LEFTB$(S$, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(LEFTB$(S$, 2))
+
+PRINT "右(RIGHT$)から2文字抜き出す:"; LENB(RIGHT$(S$, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(RIGHT$(S$, 2))
+PRINT "右(RIGHTB$)から2バイト抜き出す:"; LENB(RIGHTB$(S$, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(RIGHTB$(S$, 2))
+
+PRINT "中(MID$)から2文字抜き出す:"; LENB(MID$(S$, 3, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(MID$(S$, 3, 2))
+PRINT "中(MIDB$)から2バイト抜き出す:"; LENB(MIDB$(S$, 3, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(MIDB$(S$, 3, 2))
+
+' 文字列の内部ダンプを得ます
+FUNCTION MOJI_DUMP$(S$)
+	R$ = ""
+	FOR I=1 TO LENB(S$)
+		R$ = R$ + " " + HEX$(ASCB(MIDB$(S$,I,1)))
+	NEXT I
+	MOJI_DUMP$ = R$
+END FUNCTION
+
+END

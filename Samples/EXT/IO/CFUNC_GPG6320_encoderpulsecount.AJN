@@ -1,0 +1,56 @@
+' ================================================================================
+' C言語連携＞ユニバーサルカウンタ制御テスト＞encoderpulsecount サンプルプログラム 
+'  C言語連携機能を使って、GPG-6320のユニバーサルカウンタライブラリを呼び出すサンプルプログラムです。
+'  GPG-6320付属のencoderpulsecount.c サンプルの移植例です。
+'  エンコーダ出力の位相差パルスをカウントして連続表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-6320のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/ifucnt.h")	' GPG-6320をインストール必須です
+CDECLARE "libgpg6320u.so", s$
+
+nDevice = 1
+
+' Open a device.
+errno = CFUNCALL(ret%, "UcntOpen", nDevice)
+PRINT "open=", HEX$(ret%), errno
+ASSERT ret% = 0, "fail open"
+
+' Configure the pulse counter mode.
+' When the phase-shifted pulse count mode and phase Z are enabled, the counter clear and no counter latch.
+nChannel    = 1
+dwCountMode = &HA/* IFUCNT_COUNT_PHASE_4 */ or 0/* IFUCNT_DIR_NORMAL */
+dwLoadMode  = &H10
+dwLatchMode = &H00
+
+errno = CFUNCALL(ret%, "UcntSetPulseCountMode", nDevice, nChannel, dwCountMode, dwLoadMode, dwLatchMode)
+PRINT "setPulseCountMode=", HEX$(ret%), errno
+
+' Configure the counter value to the load counter.
+dwLoadData  = 0
+errno = CFUNCALL(ret%, "UcntSetLoadData", nDevice, nChannel, dwLoadData)
+PRINT "setLoadData=", HEX$(ret%), errno
+
+' Start the count.
+dwChSel = &H01 << (nChannel - 1)
+errno = CFUNCALL(ret%, "UcntStartCount", nDevice, dwChSel, 1/* IFUCNT_CMD_START */)
+PRINT "startCount=", HEX$(ret%), errno
+
+' Display the retrieved count value.
+DIM dwCounter&(3)
+FOR I = 0 TO 1000 - 1
+	errno = CFUNCALL(ret%, "UcntReadCounter", nDevice, dwChSel, dwCounter&)
+	PRINT "readCounter=", HEX$(ret%), errno
+
+	PRINT I; " data="; HEX$(dwCounter&(nChannel - 1), 8)
+
+	SLEEP 0.001
+NEXT I
+
+' Close the device.
+errno = CFUNCALL(ret, "UcntClose", nDevice)
+PRINT "close=", ret, errno
+
+? "bye.bye"
+end

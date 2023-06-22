@@ -1,0 +1,132 @@
+' ================================================================================
+' PYOBJ CREATE CODE / PYOBJ CALL FUNCTION / PYOBJ CLOSE サンプルプログラム
+'  Python連携機能を使って Pythonのmatplotlibライブラリを
+'  呼び出して、散布図をGUIに描画します。
+'  この散布図描画処理は、スケールを変更することで、描画する点数を変更できます。
+'              Copyright 2019 Interface Corporation
+' ================================================================================
+OPTION GUI
+
+? "注意：実行前に、python3-numpy と python3-matplotlib のパッケージを入れてください"
+
+' ↓Pythonコード部
+S$='''import sys
+import io
+import numpy
+import matplotlib
+matplotlib.use('svg')		# 非インタラクティブ
+#matplotlib.use('GTK3Agg')	# Tkinterだと起動できない
+import matplotlib.pyplot as plt
+
+def plot_show(a, b):
+	# 折れ線グラフ
+	plt.plot(a, b)
+	#plt.savefig('hoge.png')
+	#plt.show()
+
+def plot_show2(a, b):
+	# 折れ線グラフ
+	plt.cla()
+	plt.plot(a, b)
+
+def scatter_show(a, b):
+	# 散布図
+	plt.cla()
+	plt.scatter(a, b)
+
+def pie_show(a, lbl):
+	# 円グラフ
+	a2 = numpy.array(a)
+	plt.pie(a2, labels=lbl)
+
+def bar_show(a, lbl):
+	# 棒グラフ
+	plt.bar(numpy.arange(len(a)), a, tick_label=lbl)
+
+def show_wait(sec):
+	# 指定秒数待って閉じる(showだと同期なので対策)
+	plt.draw()
+	plt.pause(sec)
+	plt.close()
+
+def draw_wait(sec):
+	# 単にdrawを呼び出す
+	plt.draw()
+	plt.pause(sec)
+
+def get_draw():
+	# draw結果を得る - 内部バッファを取り出しつつ
+	f = io.BytesIO()
+	plt.savefig(f, format='svg')
+	s = f.getvalue()
+	f.close()
+	return s
+'''
+
+PRINT "Pythonコード["; S$; "]"
+' Pythonコードを取り込む
+ID = PYOBJ CREATE CODE(S$)
+
+' ウィンドウを生成
+GUCREATE WINDOW 1
+GUCREATE IMAGE 1, 10, "/usr/share/icons/hicolor/64x64/apps/interface-logo.png"
+GUCREATE LABEL 1, 19, "Pythoのmatplotlibを読んで"+chr$(10)+"GUIに取り込んでいる","32,0,0,12,1,8",,"600, 50",
+GUCREATE LABEL 1, 20, "IDX=0","32,0,0,24,2,8",,"600, 100",
+GUCREATE SCALE 1, 30, "100,10,1000,10","32,0,0,24,1,8","200,30","600, 150",
+GUSHOW 1
+ON GUEVT WINDOW 1 CALL CB_WIN		' ウィンドウを閉じるイベントを登録
+GUEVT WINDOW 1 ON
+ON GUEVT SCALE 30 CALL CB_SCALE		' スケールを移動させた際のイベントを登録
+GUEVT SCALE 30 ON
+
+PRINT "*散布図"
+CALL MAKE_SCATTER(100)
+DO WHILE IS_EXIT = FALSE
+	CALL DRAW_WAIT(0.1)
+LOOP
+
+' Pythonの使用をクローズする
+PYOBJ CLOSE ID
+
+END
+
+' CNT数分の散布図を生成して描画
+SUB MAKE_SCATTER(CNT)
+	LOCAL	A(0), B(0)
+	' 乱数を使って散布図用のデータをCNT数分作ります
+	FOR I=0 TO CNT
+		ONEDIM INSERT A, -1, RND()
+		ONEDIM INSERT B, -1, RND()
+	NEXT I
+	' Pythonに依頼して、散布図の描画を行う
+	V$ = PYOBJ CALL FUNCTION(ID, "scatter_show", A, B)
+	' Pythonに依頼して、描画した画像内容をバイナリ文字列形式で貰う
+	V$ = PYOBJ CALL FUNCTION(ID, "get_draw")
+	' バイナリ文字列を、/tmp/PYOBJ_SCATTER_GUI.SVG というファイル名で保存
+	STR_FWRITEALL "/tmp/PYOBJ_SCATTER_GUI.SVG", V$
+	' 上で保存したファイルを、画像データとして描画更新する
+	GUUPD IMAGE 10, "/tmp/PYOBJ_SCATTER_GUI.SVG"
+	CALL DRAW_WAIT(0.1)
+end sub
+
+' 描画待ち。sec秒待つ
+SUB DRAW_WAIT(SEC)
+	ST = CLOCK
+	DO WHILE (CLOCK - ST) < SEC
+		F = GUMAIN ONELOOP(0)
+		RET$ = PYOBJ CALL FUNCTION(ID, "draw_wait", 0.001)
+	LOOP
+END SUB
+
+' ウィンドウを閉じた際のイベント
+SUB CB_WIN(NUM, NM$, EVT)
+	IS_EXIT = TRUE
+END SUB
+
+' スケールウィジットをぐりぐりした際のイベント - 散布図の描画個数に反映する
+SUB CB_SCALE(NUM, NM$, EVT)
+	CNT = VAL(GUGET$ SCALE(NUM))
+	PRINT "散布図個数="; CNT
+	GUUPD LABEL 20, "IDX=" +  STR$(CNT)
+	CALL MAKE_SCATTER(CNT)
+END SUB

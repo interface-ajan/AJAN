@@ -1,0 +1,94 @@
+' ================================================================================
+' C言語連携＞AD制御テスト＞AdInputAD サンプルプログラム 
+'  C言語連携機能を使って、GPG-3100のADライブラリを呼び出すサンプルプログラムです。
+'  GPG-3100付属のAdInputAD.c サンプルの移植例です。
+'  「AdInputAD」 関数を用いて、1件のアナログ入力を実施した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-3100のお助けルーチンが入っている
+include "GPG3100_EX.AJN"
+
+' GPG-3100のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbiad.h")	' GPG-3100をインストール必須です
+CDECLARE "libgpg3100.so", s$
+
+OBJECT	boardSpec@ AS MEMORY			' ADBOARDSPEC構造体に相当する情報をメモリに入れる用
+boardSpec@ = CSTRUCT@("ADBOARDSPEC")
+OBJECT adSmplConfig@ AS MEMORY			' ADSMPLREQ構造体に相当する情報をメモリに入れる用
+adSmplConfig@ = CSTRUCT@("ADSMPLREQ")
+OBJECT adSmplChReq@ AS MEMORY			' ADSMPLCHREQ構造体に相当する情報をメモリに入れる用
+adSmplChReq@ = CSTRUCT@("ADSMPLCHREQ", 2)
+OBJECT data@ AS MEMORY					' AdInputAD.c で、bData, wData, dwData で格納するメモリに相当する
+data@ = CALLOC@(32)
+DIM dt%(1)
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret, "AdOpen", dnum)
+PRINT "open=", ret, errno
+
+errno = CFUNCALL(ret, "AdGetDeviceInfo", dnum, boardSpec@)
+PRINT "getDeiveInfo=", ret, errno
+'PRINT STR_DUMP$(boardSpec@.PEEKSTR$(0, boardSpec@.SIZEOF()))
+PRINT boardSpec@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+' Retrieve the sampling conditions.
+errno = CFUNCALL(ret, "AdGetSamplingConfig", dnum, adSmplConfig@)
+PRINT "getSmplConfig=", ret, errno
+'PRINT STR_DUMP$(adSmplConfig@.PEEKSTR$(0, adSmplConfig@.SIZEOF()))
+PRINT adSmplConfig@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+adSmplConfig@.SETMEMVAL("ulChCount", 2)
+adSmplConfig@.SETMEMVAL("SmplChReq[0].ulChNo", 1)
+adSmplConfig@.SETMEMVAL("SmplChReq[1].ulChNo", 2)
+errno = CFUNCALL(ret, "AdSetSamplingConfig", dnum, adSmplConfig@)
+PRINT "setSmplConfig=", ret, errno
+
+adSmplChReq@.SETMEMVAL(0, "ulChNo", 1)
+adSmplChReq@.SETMEMVAL(0, "ulRange", adSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange"))
+adSmplChReq@.SETMEMVAL(1, "ulChNo", 2)
+adSmplChReq@.SETMEMVAL(1, "ulRange", adSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange"))
+
+rng = adSmplChReq@.GETMEMVAL(0, "ulRange")
+res = boardSpec@.GETMEMVAL("ulResolution")
+diff = adSmplConfig@.GETMEMVAL("ulSingleDiff")
+PRINT "分解能="; res
+PRINT "入力仕様="; diff
+PRINT "レンジ(hex)=&H"; HEX$(rng, 8)
+STRUCT RANGE_INFO	info
+info = GET_RANGE_INFO(rng)		' レンジ値の説明、上限値、下限値を取得する
+PRINT "レンジ情報="; info
+
+' Retrieve the current input value to data@ from CH1 and CH2.
+errno = CFUNCALL(ret, "AdInputAD", dnum, 2, diff, adSmplChReq@, data@)
+PRINT "inputAD=", ret, errno
+
+' Display the retrieved result.
+IF res <= 8 THEN
+	dt%(0) = data@.PEEKBYTE(0)
+	dt%(1) = data@.PEEKBYTE(1)
+ELSEIF (res > 8) and (res <= 16) THEN
+	dt%(0) = data@.PEEKHALF(0)
+	dt%(1) = data@.PEEKHALF(2)
+ELSE
+	dt%(0) = data@.PEEKINT(0)
+	dt%(1) = data@.PEEKINT(4)
+END IF
+PRINT "CH1="; dt%(0); " CH2="; dt%(1)
+PRINT "デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+
+' Close the device.
+errno = CFUNCALL(ret, "AdClose", dnum)
+PRINT "close=", ret, errno
+
+' 後片付け
+OBJDELETE boardSpec@
+OBJDELETE adSmplConfig@
+OBJDELETE adSmplChReq@
+OBJDELETE data@
+
+? "bye.bye"
+end

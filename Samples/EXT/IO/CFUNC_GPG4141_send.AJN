@@ -1,0 +1,66 @@
+' ================================================================================
+' C言語連携＞UART通信テスト＞send サンプルプログラム 
+'  C言語連携機能を使って、GPG-4141のシリアル通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4141付属の send.c サンプルの移植例です。
+'  メッセージを送信します。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+include "GPG4141_EX.AJN"
+
+' GPG-4141の呼び出しで必要なプロトタイプ宣言
+CDECLARE "libc.so.6", GPG4141_PROTOTYPE$
+
+' 通信ボーレートの指定
+BAUDRATE = B38400
+
+CLS
+PRINT "***************** Send data Program *********************** "
+PRINT ""
+
+INPUT "Input the  One  Port Device Name : "; DeviceName$
+
+INPUT "Input the Test Characters Which You want  : "; Send_Buf$
+if LENB(Send_Buf$) > 0 then
+	' C言語版は fgets で改行コードが含まれるので同じように改行文字を含める
+	Send_Buf$ = Send_Buf$ + CHR$(10)
+end if
+
+PRINT ""
+
+' Open Port
+errno = CFUNCALL(Handle%, "open", DeviceName$, O_RDWR or O_NOCTTY )				' Open device
+if Handle% < 0 then
+	PRINT "Open fd Error ! Exit ! ", errno, Handle%
+	end
+end if
+
+' Set attribute
+OBJECT Newtio@ as MEMORY
+Newtio@ = CSTRUCT@("termios")
+v& = BAUDRATE or CRTSCTS& or CS8 or CLOCAL or CREAD
+Newtio@.SETMEMVAL("c_cflag", v&)												' Assign  new attribute
+Newtio@.SETMEMVAL("c_iflag", IGNPAR or ICRNL)
+Newtio@.SETMEMVAL("c_oflag", 0)
+Newtio@.SETMEMVAL("c_lflag", ICANON)
+? Newtio@.tojson$()
+errno = CFUNCALL(Ret%, "tcflush", Handle%, TCIOFLUSH )							' Flush data
+errno = CFUNCALL(Ret%, "tcsetattr", Handle%, TCSANOW , Newtio@ )				' Set new attribute
+
+' Write Data
+Length% = LENB( Send_Buf$ )
+errno = CFUNCALL(Ret%, "write", Handle%, Send_Buf$, Length% )
+if Ret% = -1 then		' Write data
+	PRINT " Write Return Error ", errno, Ret%
+	end
+end if
+
+SLEEP 3
+
+PRINT "Transmission was completed."
+
+' Close Port
+errno = CFUNCALL(Ret%, "close", Handle% )										' Close device
+
+? "bye.bye"
+end

@@ -1,0 +1,104 @@
+' ================================================================================
+' C言語連携＞CAN通信テスト＞receive サンプルプログラム 
+'  C言語連携機能を使って、GPG-4851のCAN通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4851付属のreceive.c サンプルを CAN FD対応に移植したものです。
+'  メッセージの受信を行います。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+' GPG-4851のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/ifcan.h")	' GPG-4851をインストール必須です
+CDECLARE "libifcan.so", s$
+
+' Open a device (ifcan1).
+errno = CFUNCALL(portHandle%, "CanOpenPort", "ifcan1")
+PRINT "CanOpenPort=", errno, portHandle%
+IF portHandle% < 0 THEN
+	PRINT "Failed to open the port.", errno
+	END
+END IF
+
+' Connect to the CAN bus.
+errno = CFUNCALL(ret%, "CanActivate", portHandle%)
+PRINT "CanActivate=", errno, hex$(ret%)
+IF ret% THEN
+	PRINT "CanActivate error(ret:"; HEX$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+OBJECT	portStatus@ AS MEMORY
+portStatus@ = CSTRUCT@("CAN_PORT_STATUS_FD")
+
+' Wait for the data receiving.
+DO WHILE TRUE
+	errno = CFUNCALL(ret%, "CanGetStatusFD", portHandle%, portStatus@)
+	PRINT "CanGetStatusFD=", errno, hex$(ret%)
+	IF ret% THEN
+		PRINT "CanGetStatusFD error(ret:"; HEX$(ret%); ")"
+		errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+		END
+	END IF
+	IF portStatus@.GETMEMVAL("ulRXBCountFD") >= 1 THEN
+		EXIT DO
+	END IF
+	SLEEP 0.5
+LOOP
+
+OBJECT	receiveMessage@ AS MEMORY
+receiveMessage@ = CSTRUCT@("CAN_MESSAGE_FD", 64)
+
+' Retrieve the CAN message.
+msgCount& = portStatus@.GETMEMVAL("ulRXBCountFD")
+errno = CFUNCALL(ret%, "CanReceiveMessageFD", portHandle%, receiveMessage@, msgCount&)
+PRINT "CanReceiveMessageFD=", errno, hex$(ret%), msgCount&
+IF ret% THEN
+	PRINT "CanReceiveMessageFD error(ret:"; HEX$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+? "msgc="; msgCount&
+' Display the receiving data.
+FOR I = 0 TO msgCount& - 1
+	id& = receiveMessage@.GETMEMVAL(i, "ulID")
+	PRINT "[ID:"; HEX$(id&); "] ";
+	length& = receiveMessage@.GETMEMVAL(i, "ulLength")
+	select case length&
+	case 9		' CAN_MSG_LEN_12
+		length& = 12
+	case 10		' CAN_MSG_LEN_16
+		length& = 16
+	case 11		' CAN_MSG_LEN_20
+		length& = 20
+	case 12		' CAN_MSG_LEN_24
+		length& = 24
+	case 13		' CAN_MSG_LEN_32
+		length& = 32
+	case 14		' CAN_MSG_LEN_48
+		length& = 48
+	case 15		' CAN_MSG_LEN_64
+		length& = 64
+	end select
+	FOR j = 0 TO length& - 1
+		pos$ = "bData[" + STR$(j) + "]"
+		PRINT receiveMessage@.GETMEMVAL(i, pos$); " ";
+	NEXT J
+	PRINT ""
+NEXT I
+
+' Disconnect from the CAN bus.
+errno = CFUNCALL(ret%, "CanDeactivate", portHandle%)
+PRINT "CanDeactivate=", errno, hex$(ret%)
+IF ret% THEN
+	PRINT "CanDeactivate error(ret:"; HEX$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+' Close the device.
+errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+PRINT "CanClosePort=", errno, hex$(ret%)
+
+? "bye.bye"
+end

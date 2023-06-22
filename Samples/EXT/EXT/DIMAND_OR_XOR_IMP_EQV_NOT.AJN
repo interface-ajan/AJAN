@@ -1,0 +1,87 @@
+' ================================================================================
+' DIMAND / DIMOR / DIMXOR / DIMIMP / DIMEQV / DIMNOT サンプルプログラム
+'  配列の論理演算(DIMAND / DIMOR / DIMXOR / DIMIMP / DIMEQV / DIMNOT関数) を行います。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+BOOL A(3), B(3), C(3)
+A = [ TRUE; TRUE; FALSE; FALSE ]
+B = [ TRUE; FALSE; TRUE; FALSE ]
+
+' AND演算(2引数版)
+C = DIMAND(A, B)
+CALL PRT("DIMAND(2引数版)")
+
+' OR演算(2引数版)
+C = DIMOR(A, B)
+CALL PRT("DIMOR(2引数版)")
+
+' XOR演算(2引数版)
+C = DIMXOR(A, B)
+CALL PRT("DIMXOR(2引数版)")
+
+' IMP演算(2引数版)
+C = DIMIMP(A, B)
+CALL PRT("DIMIMP(2引数版)")
+
+' EQV演算(2引数版)
+C = DIMEQV(A, B)
+CALL PRT("DIMEQV(2引数版)")
+
+' NOT演算
+C = DIMNOT(A)
+CALL PRT1("DIMNOT")
+
+DIM D%(2)
+
+' AND演算
+D% = [ 7; 3; 2 ]
+CALL PRTB("DIMAND", DIMAND(D%))
+
+' OR演算
+D% = [ 7; 3; 2 ]
+CALL PRTB("DIMOR", DIMOR(D%))
+
+' XOR演算
+D% = [ 7; 3; 2 ]
+CALL PRTB("DIMXOR", DIMXOR(D%))
+
+' IMP演算
+D% = [ 7; 3; 2 ]
+CALL PRTB("DIMIMP", DIMIMP(D%))
+
+' EQV演算
+D% = [ 7; 3; 2 ]
+CALL PRTB("DIMEQV", DIMEQV(D%))
+
+END
+
+SUB PRT(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+	PRINT "引数A", "引数B", "結果C"
+	FOR I=0 TO LDIM(A)-1
+		PRINT A(I), B(I), C(I)
+	NEXT I
+	PRINT ""
+END SUB
+
+SUB PRT1(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+	PRINT "引数A", "結果C"
+	FOR I=0 TO LDIM(A)-1
+		PRINT A(I), C(I)
+	NEXT I
+	PRINT ""
+END SUB
+
+SUB PRTB(TITLE$, E%)
+	PRINT TITLE$; "の実行結果:"
+
+	FOR I=0 TO LDIM(D%)-1
+		PRINT "引数D%(";I;")", "&B"+RIGHT$("0000" + BIN$(D%(I)), 4), D%(I)
+	NEXT I
+	PRINT "結果E%   ", "&B"+RIGHT$("0000" + BIN$(E%), 4), E%
+	PRINT ""
+END SUB

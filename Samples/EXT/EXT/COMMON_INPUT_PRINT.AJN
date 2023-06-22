@@ -1,0 +1,172 @@
+' ================================================================================
+' COMMON INPUT / PRINT サンプルプログラム
+'  グローバル共有機能を用いて、プロセス間で、値のやり取りと、
+'  メッセージの通知と受信を行うサンプルプログラムです。
+'  COMMON OPEN 命令でオープンし、COMMON CLOSE 命令でクローズします。
+'  COMMON INPUTR 関数で読み取り、COMMON PRINT 命令で書き込み、
+'  COMMON LOCK / UNLOCK 関数でロック処理、
+'  COMMON NOTIFY 関数でメッセージ通知と、ON COMMON CALL 命令でメッセージ受信です。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+PRINT "1.単純な読み書き事例"
+PRINT "2.連想配列の読み書き事例"
+PRINT "3.配列の読み書き事例"
+PRINT "4.メッセージの通知事例"
+PRINT "5.メッセージの受信事例"
+INPUT "番号入力ください"; NO
+
+SELECT CASE NO
+CASE 1
+	CALL SUB1()
+CASE 2
+	CALL SUB2()
+CASE 3
+	CALL SUB3()
+CASE 4
+	CALL SUB4()
+CASE 5
+	CALL SUB5()
+END SELECT
+
+END
+
+' 単純な読み書き事例
+SUB SUB1()
+
+	PRINT "グローバル共有をオープン"
+	COMMON OPEN "127.0.0.1" AS #1
+
+	IF COMMON LOCK(1, "TEST", 5) > 0 THEN
+		PRINT "ロックを取得した"
+
+		IF COMMON INPUTR(1, CNT) = 0 THEN
+			PRINT "CNT値を読み取った="; CNT
+			CNT = CNT + 1
+		ELSE
+			PRINT "CNT値が無かったので0初期化"
+			CNT = 0
+		END IF
+		PRINT "CNT値を書き込む="; CNT
+		COMMON PRINT #1, CNT
+
+		F = COMMON UNLOCK(1, "TEST")
+	ELSE
+		PRINT "ロックを取得できなかった -> 読み書きしません。再度実行してください"
+	END IF
+
+	PRINT "グローバル共有をクローズ"
+	COMMON CLOSE #1
+
+END SUB
+
+' 連想配列の読み書き事例
+SUB SUB2()
+	LOCAL DICT ARY
+
+	PRINT "グローバル共有をオープン"
+	COMMON OPEN "127.0.0.1" AS #1
+
+	IF COMMON LOCK(1, "TEST", 5) > 0 THEN
+		PRINT "ロックを取得した"
+
+		PRINT "グローバル共有の、ARY変数を削除"
+		COMMON ERASE #1, ARY
+		
+		ARY("hoge") = 123
+		ARY("fuga") = 456
+		PRINT "書き込む前="; ARY
+		PRINT "グローバル共有に、ARY連想配列を書き込む"
+		COMMON PRINT #1, ARY
+
+		CLEAR_DICT ARY
+		PRINT "クリア後="; ARY
+
+		PRINT "グローバル共有から、ARY連想配列を読み取る"
+		COMMON INPUT #1, ARY
+		PRINT "読み込み後="; ARY
+
+		F = COMMON UNLOCK(1, "TEST")
+	ELSE
+		PRINT "ロックを取得できなかった -> 読み書きしません。再度実行してください"
+	END IF
+
+	PRINT "グローバル共有をクローズ"
+	COMMON CLOSE #1
+
+END SUB
+
+' 配列の読み書き事例
+SUB SUB3()
+	LOCAL ARY(9)
+
+	PRINT "グローバル共有をオープン"
+	COMMON OPEN "127.0.0.1" AS #1
+
+	IF COMMON LOCK(1, "TEST", 5) > 0 THEN
+		PRINT "ロックを取得した"
+
+		PRINT "グローバル共有の、ARY変数を削除"
+		COMMON ERASE #1, ARY
+		
+		ARY = [ 1; 2; 3; 4; 5; 6; 7; 8; 9; 10 ] ' 書き込む値の初期化
+		PRINT "書き込む前="; ARY
+		PRINT "グローバル共有に、ARY配列を書き込む"
+		COMMON PRINT #1, ARY
+
+		ARY = [ 0; 0; 0; 0; 0; 0; 0; 0; 0; 0 ]  ' ARY変数をクリア
+		PRINT "クリア後="; ARY
+
+		PRINT "グローバル共有から、ARY配列を読み取る"
+		COMMON INPUT #1, ARY
+		PRINT "読み込み後="; ARY
+
+		F = COMMON UNLOCK(1, "TEST")
+	ELSE
+		PRINT "ロックを取得できなかった -> 読み書きしません。再度実行してください"
+	END IF
+
+	PRINT "グローバル共有をクローズ"
+	COMMON CLOSE #1
+
+END SUB
+
+' メッセージの通知事例
+SUB SUB4()
+
+	PRINT "グローバル共有をオープン"
+	COMMON OPEN "127.0.0.1" AS #1
+
+	INPUT "送信するメッセージを入力してください>"; MSG$
+	CNT = COMMON NOTIFY(1, "TEST", MSG$)
+	PRINT "受信者接続数="; CNT
+
+	PRINT "グローバル共有をクローズ"
+	COMMON CLOSE #1
+
+END SUB
+
+' メッセージの受信事例
+SUB SUB5()
+
+	PRINT "グローバル共有をオープン"
+	COMMON OPEN "127.0.0.1" AS #1
+
+	' メッセージ受信時の呼び出しサブルーチンを登録
+	ON COMMON(1, "TEST") CALL CB_TEST
+	' メッセージ受信割り込み機能を有効にする
+	COMMON ON #1
+
+	PRINT "10秒程度受信を待ち続けます"
+	SLEEP 10.0
+	PRINT "10秒待機が終わりました"
+
+	PRINT "グローバル共有をクローズ"
+	COMMON CLOSE #1
+
+END SUB
+
+' メッセージを受信した際に呼ばれるサブルーチン
+SUB CB_TEST(NUM%, TOPIC$, MSG$)
+	PRINT "メッセージを受信しました!!", NUM%, TOPIC$, MSG$
+END SUB

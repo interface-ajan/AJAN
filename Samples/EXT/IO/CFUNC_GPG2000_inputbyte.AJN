@@ -1,0 +1,32 @@
+' ================================================================================
+' C言語連携＞DIO制御テスト＞inputbyte サンプルプログラム 
+'  C言語連携機能を使って、GPG-2000のDIOライブラリを呼び出すサンプルプログラムです。
+'  GPG-2000付属のinputbyte.c サンプルの移植例です。
+'  「DioInputByte」 関数を用いて、1件のデジタル入力を実施した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-2000のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbidio.h")	' GPG-2000をインストール必須です
+CDECLARE "libgpg2000.so", s$
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret%, "DioOpen", dnum, 1/* FBIDIO_FLAG_SHARE */)
+PRINT "open=", HEX$(ret%), errno
+
+' Read IN1 through IN8 on the board specified by dnum.
+errno = CFUNCALL(ret%, "DioInputByte", dnum, 1/* FBIDIO_IN1_8 */, bValue%)
+PRINT "inputByte=", HEX$(ret%), errno
+
+' Display of get value(IN1 through IN8)
+PRINT "InputData: "; HEX$(bValue%)
+
+' Close the device.
+errno = CFUNCALL(ret%, "DioClose", dnum)
+PRINT "close=", HEX$(ret%), errno
+
+? "bye.bye"
+end

@@ -1,0 +1,62 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞YOKOGAWA 7561＞yk7561.c移植事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  GPG-4301付属のyk7561.c サンプルの移植例です。
+'  YOKOGAWA 7561(マルチメータ)を制御して、電圧値を読み取ります。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 2; -1 ]			' Address Table for Machines
+sdata$ = "F1R0SI100IT1"		' Send Data for YOKOGAWA 7561
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+' Set for Multimeter of YOKOGAWA 7561
+' * DCV / AUTO RANGE / Interval 100ms / Integral time 2.5ms
+PRINT "YOKOGAWA 7561 : Send Data="; sdata$
+errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+PRINT "send data=", ret, errno
+ASSERT ret = 0, "SENDエラー"
+
+SLEEP 1
+
+' Received from YOKOGAWA 7561
+FOR I=0 TO 10-1
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT I; ":Receive Data = "; recvbuf$
+	PRINT I; ":Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	V = BINBLK2ARRAY(recvbuf$, "double")		' 数値を取り出す
+	PRINT I; ":Voltage = "; V
+NEXT I
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end

@@ -1,0 +1,123 @@
+' ================================================================================
+' C言語連携＞DA制御テスト＞DaWaitEvent サンプルプログラム 
+'  C言語連携機能を使って、GPG-3300のDAライブラリを呼び出すサンプルプログラムです。
+'  GPG-3300付属のDaWaitEvent.c サンプルの移植例です。
+'  コールバックを使った連続出力を行います。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-3300のお助けルーチンが入っている
+include "GPG3300_EX.AJN"
+
+' GPG-3300のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbida.h")	' GPG-3300をインストール必須です
+s$ = ICONV$(s$, "UTF-8", "EUCJP")		' 2021/1/14時点で、fbida.h は EUC形式文字列なので UTF-8文字列に変更します
+s$ = REPLACE$(s$, "int DaOpenEx", "//int DaOpenEX")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+CDECLARE "libgpg3300.so", s$
+
+' C言語で書いたサブルーチン部 を組み込みます
+CIMPORT "CFUNC_GPG3300_DaWaitEvent_sub.c"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+void c_event_proc(int dummy);
+void c_set_flag(int v);
+int c_get_flag(void);
+'''
+CDECLARE "", s$
+
+OBJECT	boardSpec@ AS MEMORY			' DABOARDSPEC構造体に相当する情報をメモリに入れる用
+boardSpec@ = CSTRUCT@("DABOARDSPEC")
+OBJECT daSmplConfig@ AS MEMORY			' DASMPLREQ構造体に相当する情報をメモリに入れる用
+daSmplConfig@ = CSTRUCT@("DASMPLREQ")
+OBJECT data@ AS MEMORY				' DaWaitEvent.c で、wSmplData で格納するメモリに相当する
+data@ = CALLOC@(1024 * 2 * 2)
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret, "DaOpen", dnum)
+PRINT "open=", ret, errno
+
+errno = CFUNCALL(ret, "DaGetDeviceInfo", dnum, boardSpec@)
+PRINT "getDeiveInfo=", ret, errno
+'PRINT STR_DUMP$(boardSpec@.PEEKSTR$(0, boardSpec@.SIZEOF()))
+PRINT boardSpec@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+' Configure callback function.
+OBJECT	event_proc@ AS POINTER
+event_proc@ = CGETADRS@("c_event_proc")		' 割り込み発生時に、C言語の関数をコールバックするようにアドレスを得る
+PRINT "event_proc address="; HEX$(event_proc@.TOLNG())
+ulSmplBufferSize = 1024
+' 割り込み発生時に、C言語の関数(c_event_proc)をコールバックするように設定する
+errno = CFUNCALL(ret, "DaSetBoardConfig", dnum, ulSmplBufferSize, 0, event_proc@, 0)
+PRINT "setBoardConfig=", ret, errno
+
+' Retrieve the sampling conditions.
+errno = CFUNCALL(ret, "DaGetSamplingConfig", dnum, daSmplConfig@)
+PRINT "getSmplConfig=", ret, errno
+'PRINT STR_DUMP$(daSmplConfig@.PEEKSTR$(0, daSmplConfig@.SIZEOF()))
+PRINT daSmplConfig@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+rng = daSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange")
+res = boardSpec@.GETMEMVAL("ulResolution")
+PRINT "分解能="; res
+PRINT "レンジ(hex)=&H"; HEX$(rng, 8)
+STRUCT RANGE_INFO	info
+info = GET_RANGE_INFO(rng)		' レンジ値の説明、上限値、下限値を取得する
+PRINT "レンジ情報="; info
+
+' Configure the output conditions.
+daSmplConfig@.SETMEMVAL("ulChCount", 1)
+daSmplConfig@.SETMEMVAL("SmplChReq[0].ulChNo", 1)
+daSmplConfig@.SETMEMVAL("fSmplFreq", 1000.0)
+errno = CFUNCALL(ret, "DaSetSamplingConfig", dnum, daSmplConfig@)
+PRINT "setSmplConfig=", ret, errno
+
+' Create the output data
+IDX = 0
+FOR I=0 TO ulSmplBufferSize - 1
+	IF res = 12 THEN
+		data@.POKEHALF(IDX, I)
+		IDX = IDX + 2
+	ELSEIF res = 16 THEN
+		data@.POKEHALF(IDX, &H40 * I)
+		IDX = IDX + 2
+	ELSE
+		ASSERT FALSE, "no support resolution"
+	END IF
+NEXT I
+
+' Configure the output data
+errno = CFUNCALL(ret, "DaSetSamplingData", dnum, data@, ulSmplBufferSize)
+PRINT "setSamplingData=", ret, errno
+
+' C言語ルーチン内のflag値を 1にセットします
+errno = CSUBCALL("c_set_flag", 1)
+st_tm = CLOCK
+
+' Start the analog output with asynchronous mode.
+errno = CFUNCALL(ret, "DaStartSampling", dnum, 2/* FLAG_ASYNC */)
+PRINT "startSampling=", ret, errno
+
+' Wait for the end of sampling.
+DO WHILE TRUE
+	' C言語ルーチン内のflag値を読み取ります。割り込みが発生したら、得られる値が 0 になります
+	errno = CFUNCALL(ret, "c_get_flag")
+	PRINT "c_get_flag=", ret
+	IF ret = 0 THEN EXIT DO
+	SLEEP 0.1
+LOOP
+PRINT "連続出力に掛かった時間="; CLOCK - st_tm
+
+' Close the device.
+errno = CFUNCALL(ret, "DaClose", dnum)
+PRINT "close=", ret, errno
+
+' 後片付け
+OBJDELETE boardSpec@
+OBJDELETE daSmplConfig@
+OBJDELETE data@
+
+? "bye.bye"
+end

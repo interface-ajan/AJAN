@@ -1,0 +1,104 @@
+' ================================================================================
+' C言語連携＞HDLC通信テスト＞FrameSendRecv サンプルプログラム 
+'  C言語連携機能を使って、GPG-4116のHDLCライブラリを呼び出すサンプルプログラムです。
+'  GPG-4116付属のFrameSendRecv/sample.c サンプルの移植例です。
+'  (元のサンプルに対して、送信ポートと受信ポートを使い分けるように修正しています)
+'  送信用のポートからデータを送信し、受信用のポートで受信した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-4116のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcihdlc.h")	' GPG-4116をインストール必須です
+s$ = REPLACE$(s$, "long HdlcSetPriority", "//long HdlcSetPriority")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+s$ = REPLACE$(s$, "long HdlcGetPriority", "//long HdlcGetPriority")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+CDECLARE "libgpg4116.so", s$
+
+OBJECT	SendPortData@ AS MEMORY			' HDLCPORTINITDATA構造体に相当する情報をメモリに入れる用(送信用)
+SendPortData@ = CSTRUCT@("HDLCPORTINITDATA")
+OBJECT	RecvPortData@ AS MEMORY			' HDLCPORTINITDATA構造体に相当する情報をメモリに入れる用(受信用)
+RecvPortData@ = CSTRUCT@("HDLCPORTINITDATA")
+
+' C言語で書いたサブルーチン部 を組み込みます
+CIMPORT "CFUNC_GPG4116_FrameSendRecv.c", "-lgpg4116"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+void c_ReceiveHandler(unsigned long EventMask, unsigned long UserData);
+void c_set_cnt(int v);
+int c_get_cnt(void);
+'''
+CDECLARE "", s$
+
+OBJECT	ReceiveHandler@ AS POINTER
+ReceiveHandler@ = CGETADRS@("c_ReceiveHandler")		' 割り込み発生時に、C言語の関数をコールバックするようにアドレスを得る
+PRINT "ReceiveHandler address="; HEX$(ReceiveHandler@.TOLNG())
+
+nSendPort = 1/* HDLC_PORTNO_4116_0 */
+INPUT "送信ポート番号を入力してください:"; nSendPort
+nRecvPort = 2/* HDLC_PORTNO_4116_1 */
+INPUT "受信ポート番号を入力してください:"; nRecvPort
+
+SendPortData@.SETMEMVAL("ulFormat", 0/* HDLC_FORMAT_NRZI */)
+SendPortData@.SETMEMVAL("ulFcs", 0/* HDLC_FCS_16 */)
+SendPortData@.SETMEMVAL("ulAddressMode", 0/* HDLC_ADDRESS_NONE */)
+SendPortData@.SETMEMVAL("ulLineMode", 0/* HDLC_LINE_FULL */)
+SendPortData@.SETMEMVAL("ulTxc", 1/* HDLC_SCLK_PTC */)
+SendPortData@.SETMEMVAL("ulRxc", 2/* HDLC_RCLK_DPLL */)
+SendPortData@.SETMEMVAL("ulSourceClock", 0/* HDLC_CLOCK_19660800 */)
+SendPortData@.SETMEMVAL("ulBaudRate", 9600)
+SendPortData@.SETMEMVAL("ulInterface", 1/* HDLC_INTERFACE_485 */)
+SendPortData@.SETMEMVAL("ulTxcMode", 1/* HDLC_STOUT_ALWAYS */)
+SendPortData@.SETMEMVAL("ulSendTiming", 100 or &H10000/* HDLC_TIME_MICRO_SEC */)
+SendPortData@.SETMEMVAL("ulCloseTiming", 100 or &H10000/* HDLC_TIME_MICRO_SEC */)
+SendPortData@.SETMEMVAL("lpCallbackProc", 0)
+SendPortData@.SETMEMVAL("ulUserData", 0)
+? "送信設定="; SendPortData@.TOJSON$()
+
+CMEMMOVE RecvPortData@, 0, SendPortData@, 0, SendPortData@.SIZEOF()
+RecvPortData@.SETMEMVAL("lpCallbackProc", ReceiveHandler@)
+RecvPortData@.SETMEMVAL("ulUserData", nRecvPort)
+? "受信設定="; RecvPortData@.TOJSON$()
+
+' Open a device.
+errno = CFUNCALL(ret, "HdlcOpen", nSendPort, SendPortData@)
+PRINT "送信open=", hex$(ret), errno
+ASSERT ret = 0, "fail open"
+
+errno = CFUNCALL(ret, "HdlcOpen", nRecvPort, RecvPortData@)
+PRINT "受信open=", hex$(ret), errno
+ASSERT ret = 0, "fail open"
+
+' Enable frame receive event
+errno = CFUNCALL(ret, "HdlcSetEventMask", nRecvPort, 1, 0)
+PRINT "setEventMask=", hex$(ret), errno
+
+errno = CSUBCALL("c_set_cnt", 0)
+
+FOR I=0 TO 9
+	SendBuffer$ = "GPG-4116 TEST! CNT="+STR$(I+1)
+	FrameLength% = LENB(SendBuffer$)
+	errno = CFUNCALL(ret, "HdlcSendFrame", nSendPort, SendBuffer$, FrameLength%)
+	PRINT "sendFrame=", hex$(ret), errno
+
+	SLEEP 0.01
+NEXT I
+
+DO WHILE TRUE
+	errno = CFUNCALL(ret, "c_get_cnt")
+	IF ret >= 10 THEN EXIT DO
+	SLEEP 0.01
+LOOP
+
+' Close the device.
+errno = CFUNCALL(ret, "HdlcClose", nSendPort)
+PRINT "送信close=", hex$(ret), errno
+
+errno = CFUNCALL(ret, "HdlcClose", nRecvPort)
+PRINT "受信close=", hex$(ret), errno
+
+' 後片付け
+OBJDELETE SendPortData@
+OBJDELETE RecvPortData@
+OBJDELETE ReceiveHandler@
+
+? "bye.bye"
+end

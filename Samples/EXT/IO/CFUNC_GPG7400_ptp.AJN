@@ -1,0 +1,81 @@
+' ================================================================================
+' C言語連携＞モーションテスト＞ptp サンプルプログラム 
+'  C言語連携機能を使って、GPG-7400のモーションライブラリを呼び出すサンプルプログラムです。
+'  GPG-7400付属のptp.c サンプルの移植例です。
+'  ・起動→停止までの基本的な処理をまとめたプログラムです。
+'
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' -----------------------------------------------------------------------------
+' メイン処理です
+
+' GPG-7400のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbimtn.h")	' GPG-7400をインストール必須です
+CDECLARE "libgpg7400.so", s$
+
+OBJECT	Motion@ AS MEMORY
+Motion@ = CSTRUCT@("MTNMOTION", 4)
+DIM		status&(3)
+
+nDevice% = 1
+' Open a device (Device Number = 1).
+errno = CFUNCALL(nRet%, "MtnOpen", nDevice%, 0/*MTR_FLAG_NORMAL*/)
+PRINT "MtnOpen=", HEX$(nRet%), errno
+IF nRet% <> 0 THEN END
+
+' Configure the pulse output mode (CW/CCW mode, active low).
+errno = CFUNCALL(nRet%, "MtnSetPulseOut", nDevice%, &H01, 0 /*MTR_METHOD*/, &H00)
+IF nRet% <> 0 THEN END
+
+' Configure the control signal logic (active low).
+errno = CFUNCALL(nRet%, "MtnSetLimitConfig", nDevice%, &H01, &H01 /*MTR_LOGIC*/, &H00)
+IF nRet% <> 0 THEN END
+
+' Configure the PTP motion.
+' Motion[4] = {axis X, axis Y, axis Z, axis U}
+Motion@.SETMEMVAL(0, "wClock", 299)
+Motion@.SETMEMVAL(0, "wAccMode", &H00 /*MTR_ACC_NORMAL*/)
+Motion@.SETMEMVAL(0, "fLowSpeed", 100)
+Motion@.SETMEMVAL(0, "fSpeed", 1000)
+Motion@.SETMEMVAL(0, "ulAcc", 100)
+Motion@.SETMEMVAL(0, "ulDec", 100)
+Motion@.SETMEMVAL(0, "fSAccSpeed", 0)
+Motion@.SETMEMVAL(0, "fSDecSpeed", 0)
+Motion@.SETMEMVAL(0, "lStep", 2000)
+errno = CFUNCALL(nRet%, "MtnSetMotion", nDevice%, &H01, &H02 /*MTR_PTP*/, Motion@)
+IF nRet% <> 0 THEN END
+	
+' Start the PTP motion.
+errno = CFUNCALL(nRet%, "MtnStartMotion", nDevice%, &H01, &H00 /*MTR_ACC*/, &H02 /*MTR_PTP*/)
+IF nRet% <> 0 THEN END
+
+' Wait until the motion starts.
+' status[4] = {axis X, axis Y, axis Z, axis U}
+DO WHILE TRUE
+	errno = CFUNCALL(nRet%, "MtnGetStatus", nDevice%, &H01, &H00 /*MTR_BUSY*/, Status&)
+	IF nRet% <> 0 THEN END
+	PRINT Status&
+	SLEEP 0.1
+	IF (Status&(0) and &H07) <> &H00 THEN EXIT DO
+LOOP
+	
+' Wait until the motion stops.
+' status[4] = {axis X, axis Y, axis Z, axis U}
+DO WHILE TRUE
+	errno = CFUNCALL(nRet%, "MtnGetStatus", nDevice%, &H01, &H00 /*MTR_BUSY*/, Status&)
+	IF nRet% <> 0 THEN END
+	PRINT Status&
+	SLEEP 0.1
+	IF (Status&(0) and &H07) = &H00 THEN EXIT DO
+LOOP
+	
+' Close the device.
+errno = CFUNCALL(nRet%, "MtnClose", nDevice%)
+IF nRet% <> 0 THEN END
+
+' 後片付け
+OBJDELETE Motion@
+
+? "bye.bye"
+end

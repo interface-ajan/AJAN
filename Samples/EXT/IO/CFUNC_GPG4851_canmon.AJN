@@ -1,0 +1,97 @@
+' ================================================================================
+' C言語連携＞CAN通信テスト＞canmon サンプルプログラム 
+'  C言語連携機能を使って、GPG-4851のCAN通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4851付属の canmon.c サンプルの移植例です。
+'  CANバス上を流れるメッセージを取り込み、画面に表示します。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+' GPG-4851のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/ifcan.h")	' GPG-4851をインストール必須です
+CDECLARE "libifcan.so", s$
+
+' C言語で書いたサブルーチンを組み込みます
+CIMPORT "CFUNC_GPG4851_canmon.c", "-lifcan"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+int c_get_exitflag();
+void c_sigaction_SIGQUIT();
+void c_set_hPort(int i_port);
+void c_EventCallback(unsigned long Event, unsigned long dummy);
+'''
+CDECLARE "", s$
+
+' Open a device (ifcan1).
+errno = CFUNCALL(hPort%, "CanOpenPort", "ifcan1")
+if hPort% < 0 then
+	PRINT "Failed to open the port.", errno
+	end
+end if
+
+errno = CSUBCALL("c_set_hPort", hPort%)
+
+' プロファイルの処理は、説明の簡略化の為に省いています
+
+OBJECT Config@ as MEMORY
+Config@ = CSTRUCT@("CAN_PORT_CONFIG")
+
+errno = CFUNCALL(ret%, "CanGetConfig", hPort%, Config@)
+Config@.SETMEMVAL("ulBaudRate",	&h0000053A/*CAN_BAUDRATE_125k*/)
+errno = CFUNCALL(ret%, "CanSetConfig", hPort%, Config@)
+if ret% then
+	PRINT "CanSetConfig error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", hPort%)
+	end
+end if
+
+OBJECT Event@ as MEMORY
+Event@ = CSTRUCT@("CAN_EVENT_REQ")
+OBJECT eventCallback@ as POINTER
+eventCallback@ = CGETADRS@("c_EventCallback")
+Event@.SETMEMVAL("lpCallBackProc",	eventCallback@)
+Event@.SETMEMVAL("dwUser",			0)
+errno = CFUNCALL(ret%, "CanSetEvent", hPort%, Event@)
+if ret% then
+	PRINT "CanSetEvent error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", hPort%)
+	end
+end if
+
+errno = CFUNCALL(ret%, "CanSetEventMask", hPort%, &h00000020/*CAN_EVENT_RECV*/)
+if ret% then
+	PRINT "CanSetEventMask error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", hPort%)
+	end
+end if
+
+errno = CFUNCALL(ret%, "CanActivate", hPort%)
+if ret% then
+	PRINT "CanActivate error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", hPort%)
+	end
+end if
+
+errno = CSUBCALL("c_sigaction_SIGQUIT")
+
+DO WHILE TRUE
+	errno = CFUNCALL(ret%, "c_get_exitflag")
+	if ret% = 0 then
+		EXIT DO
+	end if
+	PRINT mid$("\|/-", (cint(clock) and 3)+1, 1) + chr$(13);
+	sleep 0.5
+LOOP
+
+PRINT "terminate program."
+
+errno = CFUNCALL(ret%, "CanDeactivate", hPort%)
+if ret% then
+	PRINT "CanDeactivate error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", hPort%)
+	end
+end if
+
+errno = CFUNCALL(ret%, "CanClosePort", hPort%)
+
+? "bye.bye"
+end

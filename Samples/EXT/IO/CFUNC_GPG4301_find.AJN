@@ -1,0 +1,90 @@
+' ================================================================================
+' C言語連携＞GPIB送信テスト サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  PciGpibExExecFindListener を呼び出して、デバイス(リスナ)を探索し、
+'  見つかったデバイスに対して、IEEE 488.1共通コマンドの「*IDN?(識別問い合わせ)」コマンド
+'  を送信して、その受信結果を表示します。
+'  「*IDN?」コマンドを搭載しているデバイスは、デバイスのメーカや型式などの情報が得られます。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+' The device of board number 0 is initialized
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+
+' IFC is sent
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+
+' REN is asserted
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+
+' 探索したい1次アドレスをテーブル化
+DIM adrsTbl(31), findAdrsTbl(31)
+I = 0
+ADR = 1		' 1次アドレス=0は、自分自身 とする
+DO WHILE TRUE
+	adrsTbl(I) = ADR
+	I = I + 1
+	ADR = ADR + 1
+	IF ADR > 30 THEN EXIT DO
+LOOP
+adrsTbl(I) = -1
+
+' GPIBバスに繋がっている、デバイス(リスナ)を探索します
+errno = CFUNCALL(ret, "PciGpibExExecFindListener", 0, adrsTbl, findAdrsTbl, findCnt)
+PRINT "find=", ret, errno
+PRINT "探索="; adrsTbl
+PRINT "探索結果="; findAdrsTbl
+PRINT "探索結果数="; findCnt
+
+FOR I=0 TO findCnt - 1
+	' 通信対象のデバイスを指定します - 探索結果(findAdrsTbl)から、1個のデバイスのアドレスを取り出して設定します
+	adrsTbl(0) = findAdrsTbl(I)
+	adrsTbl(1) = -1
+
+	' IEEE 488.1共通コマンド の識別問い合わせ(*IDN?) を送信します
+	' 注意＞古いGPIB機器など では、このコマンドに応答しないものがあります
+	CALL SEND_DATA("*IDN?")
+
+	' 識別情報を得ます
+	S$ = RECV_DATA$()
+	PRINT "アドレス番号:"; adrsTbl(0); " の識別情報["; S$; "]"
+NEXT I
+
+' The device is finished
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+' メッセージ送信のサブルーチン
+SUB SEND_DATA(sdata$)
+	PRINT "Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー RET="+STR$(ret)
+END SUB
+
+' メッセージ受信のサブルーチン
+FUNCTION RECV_DATA$()
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 10000)	' 受信時に受け取る受信バッファ(10000バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー RET="+STR$(ret)
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "Receive Data = "; recvbuf$
+	PRINT "Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

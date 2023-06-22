@@ -1,0 +1,54 @@
+' ================================================================================
+' DIMAVG / DIMMEDIAN / DIMMAX / DIMMIN / DIMSUM / DIMSTDEVP / DIMVARP サンプルプログラム
+'  配列に対して、平均値(DIMAVG関数)、中央値(DIMMEDIAN関数)、
+'  最大値(DIMMAX関数)、最小値(DIMMIN関数)、合計値(DIMSUM関数)、
+'  標準偏差値(DIMSTDEVP関数)、分散値(DIMVARP関数) を求めます。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+LIST	A
+A = [ 6; 9; 9; 10; 10; 10; 100 ]
+
+' 平均値
+B = DIMAVG(A)
+CALL PRT1("DIMAVG", A, B)
+
+' 中央値
+B = DIMMEDIAN(A)
+CALL PRT1("DIMMEDIAN", A, B)
+
+' 最大値
+B = DIMMAX(A)
+CALL PRT1("DIMMAX", A, B)
+
+' 最小値
+B = DIMMIN(A)
+CALL PRT1("DIMMIN", A, B)
+
+' 合計値
+B = DIMSUM(A)
+CALL PRT1("DIMSUM", A, B)
+
+' 標準偏差値
+A = [ 1.2; 2.1; 3.1; 4.1; 5.1 ]
+B = DIMSTDEVP(A)
+CALL PRT1("DIMSTDEVP", A, B)
+
+' 分散値
+A = [ 1.2; 2.1; 3.1; 4.1; 5.1 ]
+B = DIMVARP(A)
+CALL PRT1("DIMVARP", A, B)
+
+END
+
+SUB PRT1(TITLE$, ARY AS LIST, V)
+	PRINT TITLE$; "の実行結果:"
+
+	FOR I=0 TO LDIM(ARY)-1
+		PRINT "引数(";I;")", ARY(I)
+	NEXT I
+	PRINT "結果   ", V
+	PRINT ""
+END SUB

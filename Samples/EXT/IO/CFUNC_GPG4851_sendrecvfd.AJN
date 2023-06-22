@@ -1,0 +1,143 @@
+' ================================================================================
+' C言語連携＞CAN通信テスト＞sendrecvfd サンプルプログラム 
+'  C言語連携機能を使って、GPG-4851のCAN通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4851付属の sendrecvfd.c サンプルの移植例です。
+'  メッセージを送受信します。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+' GPG-4851のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/ifcan.h")	' GPG-4851をインストール必須です
+CDECLARE "libifcan.so", s$
+
+' Open a device (ifcan1).
+errno = CFUNCALL(portHandle%, "CanOpenPort", "ifcan1")
+if portHandle% < 0 then
+	PRINT "Failed to open the port.", errno
+	end
+end if
+
+' Configure the filter that is received only 13h message of the standard format ID.
+filterMask% = &H00			' Filter is valid only part of ID.
+filterCode% = &H13 << 3		' ID: 13h
+errno = CFUNCALL(ret%, "CanSetAcceptanceFilterFD", portHandle%, 0, filterCode%, filterMask%)
+if ret then
+	PRINT "CanSetAcceptanceFilterFD Error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Get Port Config.
+OBJECT portConfig@ as MEMORY
+portConfig@ = CSTRUCT@("CAN_PORT_CONFIG_FD")
+errno = CFUNCALL(ret%, "CanGetConfigFD", portHandle%, portConfig@)
+if ret then
+	PRINT "CanGetPortConfigFD error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Set Port Config.
+errno = CFUNCALL(ret%, "CanSetConfigFD", portHandle%, portConfig@)
+if ret then
+	PRINT "CanSetConfigFD Error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Connect to the CAN bus.
+errno = CFUNCALL(ret%, "CanActivate", portHandle%)
+if ret% then
+	PRINT "CanActivate error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Transmit the CAN message.
+OBJECT sendMessage@ as MEMORY
+sendMessage@ = CSTRUCT@("CAN_MESSAGE_FD")
+sendMessage@.SETMEMVAL("ulLength", 15/*CAN_MSG_LEN_64*/)	' Data length: 64
+sendMessage@.SETMEMVAL("ulFlag", 3)			' CAN FD Frame
+sendMessage@.SETMEMVAL("ulID", &H13)		' ID: 13h
+for i=0 to (64 - 1)
+	sendMessage@.SETMEMVAL("bData["+str$(i)+"]", i)	' Data
+next i
+sendMessage@.SETMEMVAL("ulTime", 0)			' Delay time: no
+msgCount% = 1								' Number of messages: 1
+errno = CFUNCALL(ret%, "CanSendMessageFD", portHandle%, sendMessage@, msgCount%)
+if ret then
+	PRINT "CanSendMessageFD error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Wait until the data transfers.
+OBJECT portStatus@ as MEMORY
+portStatus@ = CSTRUCT@("CAN_PORT_STATUS_FD")
+count% = 0
+do while TRUE
+	errno = CFUNCALL(ret%, "CanGetStatusFD", portHandle%, portStatus@)
+	if ret% then
+		PRINT "CanGetStatusFD Error (ret:"; hex$(ret%); ")"
+		errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+		end
+	end if
+	if (portStatus@.GETMEMVAL("ulRXBCountFD") >= 1) or (count% > 30) then
+		exit do
+	else
+		sleep 1
+	end if
+	count% = count% + 1
+loop
+
+OBJECT receiveMessage@ as MEMORY
+receiveMessage@ = CSTRUCT@("CAN_MESSAGE_FD")
+if portStatus@.GETMEMVAL("ulRXBCountFD") >= 1 then
+	' Retrieve the CAN message.
+	msgCount% = 1
+	errno = CFUNCALL(ret%, "CanReceiveMessageFD", portHandle%, receiveMessage@, msgCount%)
+	if ret then
+		PRINT "CanReceiveMessageFD Error (ret:"; hex$(ret%); ")"
+		errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+		end
+	end if
+
+	' Display the receiving data.
+	select case receiveMessage@.GETMEMVAL("ulLength")
+	case 9/*CAN_MSG_LEN_12*/
+		msgLength% = 12
+	case 10/*CAN_MSG_LEN_16*/
+		msgLength% = 16
+	case 11/*CAN_MSG_LEN_20*/
+		msgLength% = 20
+	case 12/*CAN_MSG_LEN_24*/
+		msgLength% = 24
+	case 13/*CAN_MSG_LEN_32*/
+		msgLength% = 32
+	case 14/*CAN_MSG_LEN_48*/
+		msgLength% = 48
+	case 15/*CAN_MSG_LEN_64*/
+		msgLength% = 64
+	case else
+		msgLength% = receiveMessage@.GETMEMVAL("ulLength")
+	end select
+	PRINT "[ID:"; receiveMessage@.GETMEMVAL("ulID"); "]"
+	for i = 0 to msgLength - 1
+		PRINT hex$(receiveMessage@.GETMEMVAL("bData["+str$(i)+"]")); " ";
+	next i
+	PRINT ""
+end if
+
+' Disconnect from the CAN bus.
+errno = CFUNCALL(ret%, "CanDeactivate", portHandle%)
+if ret then
+	PRINT "CanDeactivate error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Close the device.
+errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+
+? "bye.bye"
+end

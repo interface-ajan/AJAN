@@ -1,0 +1,119 @@
+' ================================================================================
+' C言語連携＞DIOバスマスタテスト＞patternout_pae サンプルプログラム 
+'  C言語連携機能を使って、GPG-2X72Cのバスマスタライブラリを呼び出すサンプルプログラムです。
+'  GPG-2X72C付属のpatternout_pae.c サンプルの移植例です。
+'  PAE環境で、パターン出力モードで出力を行う単純なサンプルプログラムです。
+'  (パターン出力に必要となる最小限の設定のみ実行します)
+'  LPC/PEX-291144、LPC/PEX-292144 で出力使用時は、「dwRedirectWidth」 の設定を &H04 でなく &h02 を設定するようにしてください。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-2X72Cのヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbidiobm.h")	' GPG-2X72Cをインストール必須です
+s$ = ICONV$(s$, "UTF-8", "EUCJP")		' 2021/10/07時点で、fbidiobm.h は EUC形式文字列なので UTF-8文字列に変更します
+CDECLARE "libgpg2x72c.so", s$
+
+OBJECT DevConfEx@ AS MEMORY				' DIOBMCONFEX構造体に相当する情報をメモリに入れる用
+DevConfEx@ = CSTRUCT@("DIOBMCONFEX")
+OBJECT pBuffer@ AS MEMORY
+
+' Configure the device number to control. (DO device)
+INPUT "Device number:"; nDevice%
+
+' Configure the number of pattern outputs.
+ulSmplNum = 100
+
+' Open a device.
+errno = CFUNCALL(nRet%, "DioBmOpen", nDevice%)
+IF nRet% <> 0 THEN
+	PRINT "DioBmOpen error nRet:"; HEX$(nRet%)
+	goto EXIT_FREE
+END IF
+
+' Retrieve the pattern output condition of default setting.
+errno = CFUNCALL(nRet%, "DioBmGetDeviceConfigEx", nDevice%, DevConfEx@)
+IF nRet% <> 0 THEN
+	PRINT "DioBmGetDeviceConfigEx error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Configure the pattern output conditions.
+DevConfEx@.SETMEMVAL("dwMode",			&H08/*DIOBM_MODE_PATTERN_OUT*/)
+IF TRUE THEN
+	' 通常
+	DevConfEx@.SETMEMVAL("dwRedirectWidth",	&H04/*DIOBM_WIDTH_DWORD*/)
+ELSE
+	' LPC/PEX-291144、LPC/PEX-292144 は、BYTE / WORD転送のみ指定可能
+	DevConfEx@.SETMEMVAL("dwRedirectWidth",	&H02/*DIOBM_WIDTH_WORD*/)
+END IF
+DevConfEx@.SETMEMVAL("dwClock",			&H00010000/*DIOBM_CLK_100K*/)
+DevConfEx@.SETMEMVAL("dwSmplNum",		ulSmplNum)
+
+errno = CFUNCALL(nRet%, "DioBmSetDeviceConfigEx", nDevice%, DevConfEx@)
+IF nRet% <> 0 THEN
+	PRINT "DioBmSetDeviceConfigEx error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Configure the buffer for storing the pattern output data.
+errno = CFUNCALL(nRet%, "DioBmSetBufferConfig", nDevice%, -1&, ulSmplNum * 4)	' sizeof(unsigned int) is 4bytes
+IF nRet% <> 0 THEN
+	PRINT "DioBmSetBufferConfig error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+errno = CFUNCALL(nRet%, "DioBmGetBufferConfig", nDevice%, ptr&, dwBufferSize&)
+IF nRet% <> 0 THEN
+	PRINT "DioBmGetBufferConfig error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' DioBmGetBufferConfig で得られた サンプリングバッファのアドレスをアクセスできるようにします
+PRINT "ptr&=&H"; HEX$(ptr&); " dwBufferSize&="; dwBufferSize&
+pBuffer@ = CMEMMAP@(ptr&, dwBufferSize&)
+
+' Configure the pattern output data.
+FOR i = 0 TO ulSmplNum - 1
+	pBuffer@.POKEINT(I * 4/*sizeof(int)*/, i mod 32)
+NEXT i
+
+' Start the pattern output.
+errno = CFUNCALL(nRet%, "DioBmStart", nDevice%)
+IF nRet% <> 0 THEN
+	PRINT "DioBmStart error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Wait for the completion of the pattern output.
+DO WHILE TRUE
+	errno = CFUNCALL(nRet%, "DioBmGetStatus", nDevice%, ulStatus&)
+	IF nRet% <> 0 THEN
+		PRINT "DioBmGetStatus error nRet:"; HEX$(nRet%)
+		goto EXIT_CLOSE
+	END IF
+	'PRINT "ulStatus&=&H"; HEX$(ulStatus&, 8)
+	IF (ulStatus& and (&H040000/*DIOBM_STATUS_INOUT_ACTIVE*/ or &H0001/*DIOBM_STATUS_ACTIVE_DMA*/)) = 0 THEN EXIT DO
+
+	errno = CFUNCALL(nRet%, "DioBmGetCounter", nDevice%, nCounter&, dmaCounter&)
+	IF nRet% <> 0 THEN
+		PRINT "DioBmGetCounter error nRet:"; HEX$(nRet%)
+		goto EXIT_CLOSE
+	END IF
+	PRINT "nCounter&="; nCounter&; " dmaCounter&="; dmaCounter&
+LOOP
+
+PRINT "The data have been transferred."
+
+EXIT_CLOSE:
+
+' Close the device.
+errno = CFUNCALL(nRet%, "DioBmClose", nDevice%)
+
+' 後片付け
+OBJDELETE DevConfEx@
+OBJDELETE pBuffer@
+
+EXIT_FREE:
+
+? "bye.bye"
+end

@@ -1,0 +1,71 @@
+' ================================================================================
+' DIMEQ / DIMNE / DIMLT / DIMGT / DIMLTE / DIMGTE サンプルプログラム
+'  配列の関係比較演算(DIMEQ / DIMNE / DIMLT / DIMGT / DIMLTE / DIMGTE関数) を行います。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+DIM A(8), B(8)
+BOOL C(8)
+A = [ 2; 2; 2; 0; 0; 0; -2; -2; -2 ]
+B = [ 2; 0; -2; 2; 0; -2; 2; 0; -2 ]
+
+' 等しい演算(2引数版)
+C = DIMEQ(A, B)
+CALL PRT("DIMEQ(2引数版)")
+
+' 等しくない演算(2引数版)
+C = DIMNE(A, B)
+CALL PRT("DIMNE(2引数版)")
+
+' 小なり演算(2引数版)
+C = DIMLT(A, B)
+CALL PRT("DIMLT(2引数版)")
+
+' 大なり演算(2引数版)
+C = DIMGT(A, B)
+CALL PRT("DIMGT(2引数版)")
+
+' 小なりイコール演算(2引数版)
+C = DIMLTE(A, B)
+CALL PRT("DIMLTE(2引数版)")
+
+' 大なりイコール演算(2引数版)
+C = DIMGTE(A, B)
+CALL PRT("DIMGTE(2引数版)")
+
+DIM D%(2)
+
+' 等しい演算
+D% = [ 5; 5; 5 ]
+CALL PRT1("DIMEQ(結果がTRUE)", DIMEQ(D%))
+D% = [ 5; 5; 4 ]
+CALL PRT1("DIMEQ(結果がFALSE)", DIMEQ(D%))
+
+' 等しくない演算
+D% = [ 6; 5; 4 ]
+CALL PRT1("DIMNE(結果がTRUE)", DIMNE(D%))
+D% = [ 5; 5; 5 ]
+CALL PRT1("DIMNE(結果がFALSE)", DIMNE(D%))
+
+END
+
+SUB PRT(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+	PRINT "引数A", "引数B", "結果C"
+	FOR I=0 TO LDIM(A)-1
+		PRINT A(I), B(I), C(I)
+	NEXT I
+	PRINT ""
+END SUB
+
+SUB PRT1(TITLE$, E AS BOOL)
+	PRINT TITLE$; "の実行結果:"
+
+	FOR I=0 TO LDIM(D%)-1
+		PRINT "引数D%(";I;")", D%(I)
+	NEXT I
+	PRINT "結果E    ", E
+	PRINT ""
+END SUB

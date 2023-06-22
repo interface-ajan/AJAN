@@ -1,0 +1,38 @@
+' ================================================================================
+' C言語連携＞DIO制御テスト＞inpoint サンプルプログラム 
+'  C言語連携機能を使って、GPG-2000のDIOライブラリを呼び出すサンプルプログラムです。
+'  GPG-2000付属のinpoint.c サンプルの移植例です。
+'  「DioInputPoint」 関数を用いて、指定点数のデジタル入力を実施した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-2000のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbidio.h")	' GPG-2000をインストール必須です
+CDECLARE "libgpg2000.so", s$
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+INPUT "入力開始接点番号を入力してください:"; ulStartNum
+INPUT "入力接点数を入力してください:"; ulNum
+
+DIM lBuffer%(63)		' 64点分のバッファ
+
+' Open a device.
+errno = CFUNCALL(ret%, "DioOpen", dnum, 1/* FBIDIO_FLAG_SHARE */)
+PRINT "open=", HEX$(ret%), errno
+
+' 
+errno = CFUNCALL(ret%, "DioInputPoint", dnum, lBuffer%, ulStartNum, ulNum)
+PRINT "inputPoint=", HEX$(ret%), errno
+
+' Display of get value
+FOR I=0 TO ulNum - 1
+	PRINT "IN"; ulStartNum + I; ": "; HEX$(lBuffer%(I))
+NEXT I
+
+' Close the device.
+errno = CFUNCALL(ret%, "DioClose", dnum)
+PRINT "close=", HEX$(ret%), errno
+
+? "bye.bye"
+end

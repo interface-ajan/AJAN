@@ -1,0 +1,80 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Agilent 33120A＞APPLyコマンド事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  Agilent 33120A(ファンクションジェネレータ)を制御します。
+'  Agilent 33120Aの「6章 APPLyコマンドの使い方」の事例を再現します。
+'    ・APPLyコマンドと低レベルのコマンドを使ってバーストを設定する方法。
+'      開始位相を270度に設定し、オフセット電圧を追加すると、バーストのある
+'      「ハーバサイン」波形が生成されます。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 10; -1 ]			' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+CALL SEND_DATA("*RST")
+
+CALL SEND_DATA("OUTP:LOAD 50")
+CALL SEND_DATA("APPL:SIN 5000,5")
+CALL SEND_DATA("BM:NCYC 1")
+CALL SEND_DATA("BM:PHAS 270")
+CALL SEND_DATA("VOLT:OFFS 2.5")
+CALL SEND_DATA("TRIG:SOUR BUS")
+CALL SEND_DATA("BM:STAT ON")
+
+CALL SEND_DATA("*TRG")
+
+CALL SEND_DATA("SYST:ERR?")
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for Agilent 33120A
+	PRINT "Agilent 33120A : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー"
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from Agilent 33120A
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "Agilent 33120A : Receive Data = "; recvbuf$
+	PRINT "                 Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

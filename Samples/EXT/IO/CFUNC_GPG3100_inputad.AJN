@@ -1,0 +1,64 @@
+' ================================================================================
+' C言語連携＞AD制御テスト＞inputad サンプルプログラム 
+'  C言語連携機能を使って、GPG-3100のADライブラリを呼び出すサンプルプログラムです。
+'  GPG-3100付属のinputad.c サンプルの移植例です。
+'  「AdInputAD」 関数を用いて、1件のアナログ入力を実施した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-3100のお助けルーチンが入っている
+include "GPG3100_EX.AJN"
+
+' GPG-3100のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbiad.h")	' GPG-3100をインストール必須です
+CDECLARE "libgpg3100.so", s$
+
+OBJECT adSmplConfig@ AS MEMORY			' ADSMPLREQ構造体に相当する情報をメモリに入れる用
+adSmplConfig@ = CSTRUCT@("ADSMPLREQ")
+OBJECT conf@ AS MEMORY					' ADSMPLCHREQ構造体に相当する情報をメモリに入れる用
+conf@ = CSTRUCT@("ADSMPLCHREQ", 2)
+OBJECT AdData@ as memory				' AdInputAD関数で取得するアナログ入力結果の情報を入れる用
+AdData@ = CALLOC@(10)
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret, "AdOpen", dnum)
+PRINT "open=", ret, errno
+
+' Retrieve the sampling conditions.
+errno = CFUNCALL(ret, "AdGetSamplingConfig", dnum, adSmplConfig@)
+PRINT "getSmplConfig=", ret, errno
+'PRINT STR_DUMP$(adSmplConfig@.PEEKSTR$(0, adSmplConfig@.SIZEOF()))
+
+conf@.SETMEMVAL(0, "ulChNo", 1)
+conf@.SETMEMVAL(0, "ulRange", adSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange"))
+conf@.SETMEMVAL(1, "ulChNo", 2)
+conf@.SETMEMVAL(1, "ulRange", adSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange"))
+
+rng = conf@.GETMEMVAL(0, "ulRange")
+diff = adSmplConfig@.GETMEMVAL("ulSingleDiff")
+PRINT "入力仕様="; diff
+PRINT "レンジ(hex)=&H"; HEX$(rng, 8)
+STRUCT RANGE_INFO	info
+info = GET_RANGE_INFO(rng)		' レンジ値の説明、上限値、下限値を取得する
+PRINT "レンジ情報="; info
+
+errno = CFUNCALL(ret, "AdInputAD", dnum, 2, diff, conf@, AdData@)
+PRINT "inputAD=", ret, errno
+
+PRINT "Sampling data of channel 1:"; AdData@.PEEKHALF(0)
+PRINT "Sampling data of channel 2:"; AdData@.PEEKHALF(2)
+
+' Close the device.
+errno = CFUNCALL(ret, "AdClose", dnum)
+PRINT "close=", ret, errno
+
+' 後片付け
+OBJDELETE adSmplConfig@
+OBJDELETE conf@
+OBJDELETE AdData@
+
+? "bye.bye"
+end

@@ -1,0 +1,63 @@
+' ================================================================================
+' OCR(tesseract)ソフトの呼び出し サンプルプログラム 
+'  画面キャプチャ ボタンを押すと、gnome-screenshot を呼び出して、画面全体の
+'  スクリーンショットを撮ります。
+'  OCR処理 ボタンを押すと、スクリーンショット画面の画像データを元に、
+'  GET_OCR$ 関数(中は、tesseract (OCRソフト)) を呼び出して、解析した文字列を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+INCLUDE "EXT001.AJN"
+
+' ウィンドウと各GUI部品の作成
+GUCREATE WINDOW 1, "OCR呼び出し", 1,"32,0,0,14,1,28","1300,500",,
+
+GUCREATE BUTTON 1, 10, "画面キャプチャ", "32,0,0,14,1,9",,"200,0",
+ON GUEVT BUTTON 10 CALL CB_BTN_CAPTURE
+GUEVT BUTTON 10 ON
+
+GUCREATE IMAGE 1, 10, "/usr/share/interface/AJANPro/samples/GUI/SAMPLE.PNG", FIXED, 200, 200, , , "0,40",
+
+GUCREATE BUTTON 1, 11, "OCR処理", "32,0,0,14,1,9",,"800,0",
+ON GUEVT BUTTON 11 CALL CB_BTN_OCR
+GUEVT BUTTON 11 ON
+
+GUCREATE TEXTAREA 1, 10, "test",,"600,400","620,40",
+
+' ウィンドウの表示
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+? "bye.bye"
+end
+
+' 「画面キャプチャ」ボタンを押した時の処理
+' gnome-screenshot コマンドを呼び出して、画面をキャプチャして、
+' /tmp/1.png に画像ファイルとして残します。
+sub CB_BTN_CAPTURE(num, name$, evt)
+	? "CB_BTN_CAPTURE", num, name$, evt
+	if SHELL SYSTEM("gnome-screenshot --file=/tmp/1.png") = 0 then
+		? "スクリーンキャプチャ成功"
+		GUUPD IMAGE 10, "/tmp/1.png"
+		GUUPD IMAGE FIXED 10, 600, 400
+	end if
+end sub
+
+' 「OCR処理」ボタンを押した時の処理
+' 「画面キャプチャ」後に呼び出すと、/tmp/1.png を解析元画像として、
+' GET_OCR$ サブルーチン(中は、tesseract コマンド)を呼び出して、
+' テキスト情報を取り出します。
+sub CB_BTN_OCR(num, name$, evt)
+	? "CB_BTN", num, name$, evt
+	if FILEEXISTS("/tmp/1.png") then
+		s$ = GET_OCR$("/tmp/1.png", "")
+		's$ = SHELL CALLOUT$("tesseract /tmp/1.png stdout -l jpn+eng")
+		? "OCR呼び出し"
+		GUUPD TEXTAREA 10, s$
+	end if
+end sub

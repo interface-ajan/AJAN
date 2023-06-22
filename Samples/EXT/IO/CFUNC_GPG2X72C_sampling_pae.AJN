@@ -1,0 +1,106 @@
+' ================================================================================
+' C言語連携＞DIOバスマスタテスト＞sampling_pae サンプルプログラム 
+'  C言語連携機能を使って、GPG-2X72Cのバスマスタライブラリを呼び出すサンプルプログラムです。
+'  GPG-2X72C付属のsampling_pae.c サンプルの移植例です。
+'  PAE環境で、サンプリングモードでサンプリングを行う単純なサンプルプログラムです。
+'  (サンプリングに必要となる最小限の設定のみ実行します)
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-2X72Cのヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbidiobm.h")	' GPG-2X72Cをインストール必須です
+s$ = ICONV$(s$, "UTF-8", "EUCJP")		' 2021/10/07時点で、fbidiobm.h は EUC形式文字列なので UTF-8文字列に変更します
+CDECLARE "libgpg2x72c.so", s$
+
+OBJECT DevConfEx@ AS MEMORY				' DIOBMCONFEX構造体に相当する情報をメモリに入れる用
+DevConfEx@ = CSTRUCT@("DIOBMCONFEX")
+OBJECT pBuffer@ AS MEMORY
+
+' Configure the device number to control. (DI device)
+INPUT "Device number:"; nDevice%
+
+' Configure the number of sampling.
+ulSmplNum = 100
+
+' Open a device.
+errno = CFUNCALL(nRet%, "DioBmOpen", nDevice%)
+IF nRet% <> 0 THEN
+	PRINT "DioBmOpen error nRet:"; HEX$(nRet%)
+	goto EXIT_FREE
+END IF
+
+' Retrieve the sampling condition of deault setting.
+errno = CFUNCALL(nRet%, "DioBmGetDeviceConfigEx", nDevice%, DevConfEx@)
+IF nRet% <> 0 THEN
+	PRINT "DioBmGetDeviceConfigEx error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Configure the sampling conditions.
+DevConfEx@.SETMEMVAL("dwMode",			&H02/*DIOBM_MODE_SAMPLING*/)
+DevConfEx@.SETMEMVAL("dwRedirectWidth",	&H04/*DIOBM_WIDTH_DWORD*/)
+DevConfEx@.SETMEMVAL("dwClock",			&H00010000/*DIOBM_CLK_100K*/)
+DevConfEx@.SETMEMVAL("dwSmplNum",		ulSmplNum)
+PRINT DevConfEX@.TOJSON$()
+
+errno = CFUNCALL(nRet%, "DioBmSetDeviceConfigEx", nDevice%, DevConfEx@)
+IF nRet% <> 0 THEN
+	PRINT "DioBmSetDeviceConfigEx error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Configure the buffer for storing the pattern output data.
+errno = CFUNCALL(nRet%, "DioBmSetBufferConfig", nDevice%, -1&, ulSmplNum * 4)	' sizeof(unsigned int) is 4bytes
+IF nRet% <> 0 THEN
+	PRINT "DioBmSetBufferConfig error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+errno = CFUNCALL(nRet%, "DioBmGetBufferConfig", nDevice%, ptr&, dwBufferSize&)
+IF nRet% <> 0 THEN
+	PRINT "DioBmGetBufferConfig error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' DioBmGetBufferConfig で得られた サンプリングバッファのアドレスをアクセスできるようにします
+PRINT "ptr&=&H"; HEX$(ptr&); " dwBufferSize&="; dwBufferSize&
+pBuffer@ = CMEMMAP@(ptr&, dwBufferSize&)
+
+' Strat the sampling.
+errno = CFUNCALL(nRet%, "DioBmStart", nDevice%)
+IF nRet% <> 0 THEN
+	PRINT "DioBmStart error nRet:"; HEX$(nRet%)
+	goto EXIT_CLOSE
+END IF
+	
+' Wait for the completion of the sampling.
+DO WHILE TRUE
+	errno = CFUNCALL(nRet%, "DioBmGetStatus", nDevice%, ulStatus&)
+	IF nRet% <> 0 THEN
+		PRINT "DioBmGetStatus error nRet:"; HEX$(nRet%)
+		goto EXIT_CLOSE
+	END IF
+	'PRINT "ulStatus&=&H"; HEX$(ulStatus&, 8)
+	IF (ulStatus& and (&H040000/*DIOBM_STATUS_INOUT_ACTIVE*/ or &H0001/*DIOBM_STATUS_ACTIVE_DMA*/)) = 0 THEN EXIT DO
+LOOP
+
+PRINT "The data have been transferred."
+
+' Display the sampling data.
+FOR i = 0 TO ulSmplNum -1
+	PRINT FORMAT$(i+1, "0000"), HEX$(pBuffer@.PEEKINT(I * 4/*sizeof(int)*/), 8)
+NEXT I
+	
+EXIT_CLOSE:
+
+' Close the device.
+errno = CFUNCALL(nRet%, "DioBmClose", nDevice%)
+
+' 後片付け
+OBJDELETE DevConfEx@
+OBJDELETE pBuffer@
+
+EXIT_FREE:
+
+? "bye.bye"
+end

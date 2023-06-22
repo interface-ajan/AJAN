@@ -1,0 +1,29 @@
+' ================================================================================
+' SNDOPEN / SNDREAD / SNDWRITE / SNDCLOSE サンプルプログラム
+'  オーディオ入力からサンプリング入力(SNDREAD関数)後、
+'  オーディオ出力に対して同じデータをサンプリング出力(SNDWRITE命令)します。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+' オーディオ入力をオープン
+SNDOPEN "?RATE=8000&FORMAT=FLOAT32LE" FOR INPUT AS #1
+
+LIST BUF
+' オーディオ入力から256件をサンプリング入力
+BUF = SNDREAD(1, 256)
+PRINT "オーディオ入力件数="; LDIM(BUF)
+
+' オーディオ入力をクローズ
+SNDCLOSE #1
+
+' オーディオ出力をオープン
+SNDOPEN "?RATE=8000&FORMAT=FLOAT32LE" FOR OUTPUT AS #2
+
+' オーディオ出力に対して、入力したデータをサンプリング出力
+SNDWRITE #2, BUF
+PRINT "オーディオ出力:OK"
+
+' オーディオ出力をクローズ
+SNDCLOSE #2
+
+END

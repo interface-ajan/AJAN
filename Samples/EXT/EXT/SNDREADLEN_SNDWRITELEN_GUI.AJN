@@ -1,0 +1,90 @@
+' ================================================================================
+' SNDREADLEN / SNDREAD / SNDWRITELEN / SNDWRITE サンプルプログラム(GUI版)
+'  オーディオ入力の入力バッファ件数(SNDREADLEN)と
+'  オーディオ出力の出力バッファ書き込み可能件数(SNDWRITELEN)を読み取って、
+'  入出力バッファにデータがある分を、オーディオ入力(SNDREAD)してから
+'  オーディオ出力(SNDWRITE)します。
+'  これにより、データの途切れなく入力と出力ができます。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+OPTION GUI
+
+' オーディオ入出力を波形描画する用
+LIST SNDBUF
+' オーディオ入出力の一時バッファ
+LIST BUF
+
+' ****** メイン処理 ******
+
+' オーディオ入力をオープン(入力バッファ(FRAGSIZE)を十分に取る)
+SNDOPEN "?RATE=1000&FORMAT=FLOAT32LE&FRAGSIZE=10000" FOR INPUT AS #1
+' オーディオ出力をオープン(出力バッファ(TLENGTH)を十分に取る)
+SNDOPEN "?RATE=1000&FORMAT=FLOAT32LE&TLENGTH=100000&PREBUF=100" FOR OUTPUT AS #2
+
+' オーディオ出力のバッファが空の時の書き込み可能件数をメモしておく
+G_OUTBUF_SZ = SNDWRITELEN(2)
+' オーディオ入力が開始される
+BUF = SNDREAD(1, 1)
+
+' GUIウィンドウを作成
+GUCREATE WINDOW 1, "サンプル",1,,"400,200",,
+GUCREATE LINEGRAPH 1, 10,,"400,200",,
+' ウィンドウを表示
+GUSHOW 1
+
+' 3秒間ほど待機
+ST_TM = CLOCK
+ST = ST_TM
+DO WHILE (CLOCK - ST_TM) < 10.0
+
+	' 入力バッファ件数を得る
+	INSIZE = SNDREADLEN(1)
+	' 出力バッファ書き込み可能件数を得る
+	OUTSIZE = SNDWRITELEN(2)
+
+	' オーディオ入出力の処理
+	IF (INSIZE > 1500) AND (OUTSIZE > 1500) THEN
+		' 入力バッファ件数が1500件分あり、出力バッファ書き込み可能件数が1500件以上ある事を確認
+		' ※入出力バッファに余裕がある状態で SNDREAD / SNDWRITE するので、
+		' 　呼び出しに掛かる時間が短く済みます。
+
+		ST2 = CLOCK
+		' オーディオ入力からデータを読み取る
+		BUF = SNDREAD(1, 1000)
+		' オーディオ出力にデータを書き込む
+		SNDWRITE #2, BUF
+
+		PRINT INSIZE, OUTSIZE, G_OUTBUF_SZ, FORMAT$(CLOCK - ST2, "###.######")
+
+		' オーディオ入力したバッファを、描画用バッファに格納
+		ONEDIM INSERT SNDBUF, -1, BUF
+	END IF
+
+	' オーディオ入力したデータを逐次(0.1秒毎)に、波形グラフ描画
+	' ※描画用バッファがある程度溜まるまで、描画は遅延されます
+	NW = CLOCK
+	IF (NW - ST) > 0.1 THEN
+		' 描画用バッファに溜め込んだデータを、波形グラフ更新
+		SZ = UBOUND(SNDBUF)
+		? SZ
+		
+		IF SZ > 1000 THEN
+			' 描画用バッファの先頭500件分を表示
+			GUUPD LINEGRAPH VALUE 10, ( SNDBUF(0 to 500) ), 2, 2
+			GUUPD LINEGRAPH DRAW 10
+	
+			' 描画用バッファの先頭100件分をカット
+			' オーディオ入力で追記されるので、全体的に左にスクロールするように見えます
+			ONEDIM REMOVE SNDBUF, 0, 100
+		END IF
+		ST = NW
+	ELSE
+		' オーディオ入力してない時は、GUI描画を進める
+		F = GUMAIN ONELOOP(0)
+	END IF
+LOOP
+
+' GUIウィンドウを閉じる
+GUDELETE WINDOW 1
+
+END

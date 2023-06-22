@@ -1,0 +1,130 @@
+' ================================================================================
+' C言語連携＞UART通信テスト＞hd_send サンプルプログラム 
+'  C言語連携機能を使って、GPG-4141のシリアル通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4141付属の hd_send.c サンプルの移植例です。
+'  2線式半二重でメッセージを送信します。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+include "GPG4141_EX.AJN"
+
+' GPG-4141の呼び出しで必要なプロトタイプ宣言
+CDECLARE "libc.so.6", GPG4141_PROTOTYPE$
+
+' C言語で書いたサブルーチンを組み込みます
+CIMPORT "CFUNC_GPG4141_sub.c"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+int c_get_exitflag();
+void c_sigaction_SIGQUIT();
+int c_open_cp4141port(int DeviceID, int SubsystemID, int BoardID, int Channel);
+'''
+CDECLARE "", s$
+
+CLS
+' c_open_cp4141port は、PCI-4142系を探索して見つかったらオープンする
+errno = CFUNCALL(hPort%, "c_open_cp4141port", 4142, 1, 0, 1)
+if hPort% < 0 then
+	' デバイスが見つからない場合、手動でデバイス名を入れてもらう
+	INPUT "Input the  One  Port Device Name : "; DeviceName$
+	errno = CFUNCALL(hPort%, "open", DeviceName$, O_RDWR or O_NDELAY )				' Open device 
+	? "Open="; errno, Handle%
+end if
+if hPort% < 0 then
+	PRINT "The port is not found ", errno, hPort%
+	end
+end if
+
+errno = CSUBCALL("c_sigaction_SIGQUIT")
+
+errno = CFUNCALL(Ret%, "tcflush", hPort%, TCOFLUSH)
+OBJECT tty_config@ as MEMORY
+tty_config@ = CSTRUCT@("termios")
+errno = CFUNCALL(Ret%, "tcgetattr", hPort%, tty_config@)
+
+v% = tty_config@.GETMEMVAL("c_cflag")
+v% = v% and not (CBAUD or CRTSCTS& or CSIZE)
+v% = v% or      (B115200 or CS8 or CLOCAL or CREAD)
+tty_config@.SETMEMVAL("c_cflag", v%)
+v% = tty_config@.GETMEMVAL("c_iflag")
+tty_config@.SETMEMVAL("c_iflag", v% and not (IXON or IXOFF or ICRNL or ISTRIP))
+tty_config@.SETMEMVAL("c_oflag", 0)
+v% = tty_config@.GETMEMVAL("c_lflag")
+tty_config@.SETMEMVAL("c_lflag", v% and not (ICANON or ECHO))
+
+errno = CFUNCALL(Ret%, "tcsetattr", hPort%, TCSANOW, tty_config@)
+? "tcsetattr=", errno, Ret%
+if Ret% <> 0 then
+	PRINT "tcsetattr error"
+	end
+end if
+? tty_config@.tojson$()
+
+DuplexMode% = CP4141_HALF_DUPLEX_2W		' 2線式半二重(T信号のみ使用)
+'DuplexMode% = CP4141_HALF_DUPLEX_4W	' 4線式半二重(T,R信号使用)
+errno = CFUNCALL(Ret%, "ioctl", hPort%, CP4141_SET_DUPLEX_MODE, DuplexMode%)
+? "ioctl(half duplex)=", errno, Ret%
+if Ret% <> 0 then
+	PRINT "ioctl(CP4141_SET_DUPLEX_MODE) error ", errno, Ret%
+	errno = CFUNCALL(Ret%, "close", hPort%)
+	end
+end if
+
+DO WHILE TRUE
+	errno = CFUNCALL(Ret%, "c_get_exitflag")
+	if Ret% = 0 then
+		EXIT DO
+	end if
+	INPUT "send message:"; buffer$
+	if LENB(buffer$) > 0 then
+		' C言語版は fgets で改行コードが含まれるので同じように改行文字を含める
+		buffer$ = buffer$ + CHR$(10)
+	end if
+	length% = LENB(buffer$)
+	
+	' RTS ...RS-485ではC信号に相当 をONに
+	SetBit% = TIOCM_RTS
+	errno = CFUNCALL(Ret%, "ioctl", hPort%, TIOCMBIS, SetBit%)
+	if Ret% <> 0 then
+		PRINT "ioctl(TIOCMBIS) error"
+		errno = CFUNCALL(Ret%, "close", hPort%)
+		end
+	end if
+	
+	errno = CFUNCALL(Ret%, "write", hPort%, buffer$, length%)
+	? "write=", errno, Ret%
+	
+	' wait for tx holding register empty
+	retry_counter% = 1000
+	do while retry_counter%
+		retry_counter% = retry_counter% - 1
+		SLEEP 0.0001
+		
+		errno = CFUNCALL(Ret%, "ioctl", hPort%, TIOCSERGETLSR, SetBit%)
+		if Ret% <> 0 then
+			PRINT "ioctl(TIOCSERGETLSR) error"
+			errno = CFUNCALL(Ret%, "close", hPort%)
+			end
+		end if
+		
+		if SetBit% and TIOCSER_TEMT then
+			exit do
+		end if
+	loop
+	
+	' RTS ...RS-485ではC信号に相当 をOFFに
+	SetBit% = TIOCM_RTS
+	errno = CFUNCALL(Ret%, "ioctl", hPort%, TIOCMBIC, SetBit%)
+	if Ret% <> 0 then
+		PRINT "ioctl(TIOCMBIC) error"
+		errno = CFUNCALL(Ret%, "close", hPort%)
+		end
+	end if
+LOOP
+
+PRINT "terminate program."
+
+errno = CFUNCALL(Ret%, "close", hPort%)
+
+? "bye.bye"
+end

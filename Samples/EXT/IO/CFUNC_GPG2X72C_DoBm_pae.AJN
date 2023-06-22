@@ -1,0 +1,207 @@
+' ================================================================================
+' C言語連携＞DIOバスマスタテスト＞DoBm_pae サンプルプログラム 
+'  C言語連携機能を使って、GPG-2X72Cのバスマスタライブラリを呼び出すサンプルプログラムです。
+'  GPG-2X72C付属のDoBm_pae.c サンプルの移植例です。
+'  PAE環境で、パターン出力モードで出力を行うサンプルプログラムです。
+'  LPC/PEX-291144、LPC/PEX-292144 で出力使用時は、「dwRedirectWidth」 の設定を &H04 でなく &h02 を設定するようにしてください。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-2X72Cのヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbidiobm.h")	' GPG-2X72Cをインストール必須です
+s$ = ICONV$(s$, "UTF-8", "EUCJP")		' 2021/10/07時点で、fbidiobm.h は EUC形式文字列なので UTF-8文字列に変更します
+CDECLARE "libgpg2x72c.so", s$
+
+' motion.cでは、何かキーを押すと処理が停止するようにしていますが、
+' このサンプルでは、F2キーを押すと処理が停止するようにしています。
+IS_STOP = FALSE
+ON KEY(2) CALL CB_KEY_STOP
+KEY ON
+
+OBJECT DevConf@ AS MEMORY				' DIOBMCONFEX構造体に相当する情報をメモリに入れる用
+DevConf@ = CSTRUCT@("DIOBMCONF")
+OBJECT TrigConf@ AS MEMORY				'  DIOBMTRIGCONF構造体に相当する情報をメモリに入れる用
+TrigConf@ = CSTRUCT@("DIOBMTRIGCONF")
+OBJECT pdwBuffer@ AS MEMORY
+
+' Configure the device number to control. (DO device)
+INPUT "Device number:"; nDevice%
+
+' Open a device.
+errno = CFUNCALL(nRet%, "DioBmOpen", nDevice%)
+IF nRet% <> 0 THEN
+	call DsplyErrMessage(nRet%)
+	END
+END IF
+
+DevConf@.SETMEMVAL("dwMode", &H08/*DIOBM_MODE_PATTERN_OUT*/)
+IF TRUE THEN
+	' 通常
+	DevConf@.SETMEMVAL("dwRedirectWidth", &h04/*DIOBM_WIDTH_DWORD*/)
+ELSE
+	' LPC/PEX-291144、LPC/PEX-292144 は、BYTE / WORD転送のみ指定可能
+	DevConf@.SETMEMVAL("dwRedirectWidth", &h02/*DIOBM_WIDTH_WORD*/)
+END IF
+DevConf@.SETMEMVAL("dwEQConf", 0)
+DevConf@.SETMEMVAL("dwClock", &h00010000/*DIOBM_CLK_100K*/)
+DevConf@.SETMEMVAL("dwSmplNum", 1024)
+DevConf@.SETMEMVAL("dwTimingOption", 0)
+DevConf@.SETMEMVAL("dwSTBConf", 0)
+DevConf@.SETMEMVAL("dwACKConf", 0)
+DevConf@.SETMEMVAL("dwREQConf", 0)
+DevConf@.SETMEMVAL("dwOREConf", 0)
+DevConf@.SETMEMVAL("dwUREConf", 0)
+
+' Set a device condition
+errno = CFUNCALL(nRet%, "DioBmSetDeviceConfig", nDevice%, DevConf@)
+IF nRet% <> 0 THEN
+	call DsplyErrMessage(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+TrigConf@.SETMEMVAL("dwSoftTrigger", 0)
+TrigConf@.SETMEMVAL("dwStartLine", 0)
+TrigConf@.SETMEMVAL("dwEndLine", 0)
+TrigConf@.SETMEMVAL("dwStopLine", 0)
+TrigConf@.SETMEMVAL("dwTriggerDelayNum", 0)
+TrigConf@.SETMEMVAL("dwPatternEq", 0)
+TrigConf@.SETMEMVAL("dwPatternMask", 0)
+TrigConf@.SETMEMVAL("dwPatternData", 0)
+
+' Set a trigger condition
+errno = CFUNCALL(nRet%, "DioBmSetTriggerConfig", nDevice%, TrigConf@)
+IF nRet% <> 0 THEN
+	call DsplyErrMessage(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Set output data
+dwBufferSize& = 1024 * 4/*sizeof(unsigned int)*/
+
+errno = CFUNCALL(nRet%, "DioBmSetBufferConfig", nDevice%, -1&, dwBufferSize&)
+IF nRet% <> 0 THEN
+	call DsplyErrMessage(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+errno = CFUNCALL(nRet%, "DioBmGetBufferConfig", nDevice%, ptr&, dwBufferSize&)
+IF nRet% <> 0 THEN
+	call DsplyErrMessage(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' DioBmGetBufferConfig で得られた サンプリングバッファのアドレスをアクセスできるようにします
+PRINT "ptr&=&H"; HEX$(ptr&); " dwBufferSize&="; dwBufferSize&
+pdwBuffer@ = CMEMMAP@(ptr&, dwBufferSize&)
+
+FOR i = 0 TO 1024-1
+	pdwBuffer@.POKEINT(i * 4/*sizeof(int)*/, i)
+NEXT I
+
+' Strat output
+errno = CFUNCALL(nRet%, "DioBmStart", nDevice%)
+IF nRet% <> 0 THEN
+	call DsplyErrMessage(nRet%)
+	goto EXIT_CLOSE
+END IF
+
+' Wait for output
+PRINT "Waiting...(F2キーで中断)"
+dwStatus& = 0
+DO WHILE TRUE
+	errno = CFUNCALL(nRet%, "DioBmGetStatus", nDevice%, dwStatus&)
+	IF nRet% <> 0 THEN
+		call DsplyErrMessage(nRet%)
+		goto EXIT_CLOSE
+	END IF
+	'PRINT "dwStatus&=&H"; HEX$(dwStatus&, 8)
+	IF (dwStatus& and &h0001/*DIOBM_STATUS_ACTIVE_DMA*/) = 0 THEN EXIT DO
+
+	errno = CFUNCALL(nRet%, "DioBmGetCounter", nDevice%, nCounter&, dmaCounter&)
+	IF nRet% <> 0 THEN
+		call DsplyErrMessage(nRet%)
+		goto EXIT_CLOSE
+	END IF
+	PRINT "nCounter&="; nCounter&; " dmaCounter&="; dmaCounter&
+LOOP
+
+IF dwStatus& and &h0001/*DIOBM_STATUS_ACTIVE_DMA*/ THEN
+	PRINT "Canceld."
+	goto EXIT_CLOSE
+END IF
+
+PRINT "The data have been transferred."
+
+EXIT_CLOSE:
+
+' Close the device.
+errno = CFUNCALL(nRet%, "DioBmClose", nDevice%)
+
+' 後片付け
+OBJDELETE DevConf@
+OBJDELETE TrigConf@
+OBJDELETE pdwBuffer@
+
+EXIT_FREE:
+
+? "bye.bye"
+end
+
+' =============================================================================
+' F2キーを押した際の処理
+SUB CB_KEY_STOP(num%)
+	IS_STOP = TRUE
+END SUB
+
+SUB DsplyErrMessage(nErrCode%)
+	LOCAL szTemp$
+
+	szTemp$ = "Return value: "+HEX$(nErrCode%)+"h"+CHR$(10)
+
+	SELECT CASE nErrCode%
+	case 0					' DIOBM_ERROR_SUCCESS:	  // Completed successfully.
+		szTemp$ = szTemp$ +"The operation was successfully completed."
+	case &HC0000003			' DIOBM_ERROR_INVALID_HANDLE:
+		szTemp$ = szTemp$ + "The specified device handle is invalid."
+	case &HC0000007			' DIOBM_ERROR_INSUFFICIENT_BUFFER:
+		szTemp$ = szTemp$ + "The data area passed to system call is too small."
+	case &HC0000009			' DIOBM_ERROR_NOT_SUPPORTED:
+		szTemp$ = szTemp$ + "The function is not supported."
+	case &HC0001000			' DIOBM_ERROR_MEMORY_NOTALLOCATED:
+		szTemp$ = szTemp$ + "Failed to allocate the work area."
+	case &HC0001001			' DIOBM_ERROR_PARAMETER:
+		szTemp$ = szTemp$ + "The specified parameter is invalid."
+	case &HC0001002			' DIOBM_ERROR_INVALID_CALL:
+		szTemp$ = szTemp$ + "The called function is invalid."
+	case &HC0001003			' DIOBM_ERROR_DRVCAL:
+		szTemp$ = szTemp$ + "Failed to call the driver."
+	case &HC0001004			' DIOBM_ERROR_NULL_POINTER:
+		szTemp$ = szTemp$ + "A NULL pointer is passed between the driver and DLL."
+	case &HC0001006			' DIOBM_ERROR_NOW_SAMPLING:
+		szTemp$ = szTemp$ + "The sampling is running now."
+	case &HC0001007			' DIOBM_ERROR_STOP_SAMPLING:
+		szTemp$ = szTemp$ + "The sampling is stopped."
+	case &HC000100C			' DIOBM_ERROR_ANOTHER:
+		szTemp$ = szTemp$ + "An error occurred."
+	case &HC0001008			' DIOBM_ERROR_CREATE_THREAD:
+		szTemp$ = szTemp$ + "Failed to create the thread."
+	case &HC0001009			' DIOBM_ERROR_ALREADY_SET_EVENT:
+		szTemp$ = szTemp$ + "The event has already been registered."
+	case &HC000100A			' DIOBM_ERROR_DONT_SET_EVENT:
+		szTemp$ = szTemp$ + "The event hasn't been registered."
+	case &HC000100B			' DIOBM_ERROR_DONT_SET_BUFFER:
+		szTemp$ = szTemp$ + "No available buffer is specified."
+	case &HC000100D			' DIOBM_ERROR_NOT_OPEN:
+		szTemp$ = szTemp$ + "Not opend."
+	case &HC000100E			' DIOBM_ERROR_ALREADY_OPEN:
+		szTemp$ = szTemp$ + "Already opend."
+	case &HC000100F			' DIOBM_ERROR_NOT_DEVICE:
+		szTemp$ = szTemp$ + "Not device."
+	case &HC0001010			' DIOBM_ERROR_INVALID_DEVICE_NUMBER:
+		szTemp$ = szTemp$ + "The device number is invalid."
+	CASE ELSE
+		szTemp$ = szTemp$ + "An unexpected error occurred."
+	END SELECT
+	PRINT szTemp$
+END SUB
+

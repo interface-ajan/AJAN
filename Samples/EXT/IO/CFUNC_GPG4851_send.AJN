@@ -1,0 +1,96 @@
+' ================================================================================
+' C言語連携＞CAN通信テスト＞send サンプルプログラム 
+'  C言語連携機能を使って、GPG-4851のCAN通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4851付属のsend.c サンプルの移植例です。
+'  メッセージの送信を行います。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+' GPG-4851のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/ifcan.h")	' GPG-4851をインストール必須です
+CDECLARE "libifcan.so", s$
+
+' Open a device (ifcan1).
+errno = CFUNCALL(portHandle%, "CanOpenPort", "ifcan1")
+PRINT "CanOpenPort=", errno, portHandle%
+IF portHandle% < 0 THEN
+	PRINT "Failed to open the port.", errno
+	END
+END IF
+
+OBJECT	portConfig@ AS MEMORY
+portConfig@ = CSTRUCT@("CAN_PORT_CONFIG")
+
+' Get Port Config.
+errno = CFUNCALL(ret%, "CanGetConfig", portHandle%, portConfig@)
+PRINT "CanGetConfig=", errno, ret%
+IF ret% THEN
+	PRINT "CanGetPortConfig error(ret:"; HEX$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+' Connect to the CAN bus.
+errno = CFUNCALL(ret%, "CanActivate", portHandle%)
+PRINT "CanActivate=", errno, ret%
+IF ret% THEN
+	PRINT "CanActivate error(ret:"; HEX$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+OBJECT	sendMessage@ AS MEMORY
+sendMessage@ = CSTRUCT@("CAN_MESSAGE")
+
+' Transmit the CAN message.
+sendMessage@.SETMEMVAL("ulLength", 1)		' Data length: 1
+sendMessage@.SETMEMVAL("ulFlag", 0)			' Data frame
+sendMessage@.SETMEMVAL("ulID", &H30)		' ID: 30h
+sendMessage@.SETMEMVAL("bData[0]", &H55)	' Data: 55h
+sendMessage@.SETMEMVAL("ulTime", 0)			' Delay time: no
+msgCount& = 1								' Number of messages: 1
+errno = CFUNCALL(ret%, "CanSendMessage", portHandle%, sendMessage@, msgCount&)
+PRINT "CanSendMessage=", errno, ret%
+IF ret% THEN
+	PRINT "CanSendMessage error(ret:"; HEX$(ret); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+OBJECT	completionMessage@ AS MEMORY
+completionMessage@ = CSTRUCT@("CAN_MESSAGE")
+
+' Retrieve the transmission completion time of message.
+loopCount = 0
+DO WHILE TRUE
+	msgCount& = 1
+	errno = CFUNCALL(ret%, "CanGetCompletionMessage", portHandle%, completionMessage@, msgCount&)
+	PRINT "CanGetCompletionMessage=", errno, ret%
+	IF (ret% = 0/*IFCAN_ERROR_SUCCESS*/) and (msgCount& = 1) THEN
+		EXIT DO
+	END IF
+	
+	SLEEP 0.5
+	loopCount = loopCount + 1
+	
+	' In the case of FIFO mode, CanGetCompletionMessage function cannot be used. 
+	IF (loopCount > 10) and (portConfig@.GETMEMVAL("ulLineMode") and &H80000000/*CAN_FIFO_SEND_MODE*/) THEN
+		EXIT DO
+	END IF
+LOOP
+
+' Disconnect from the CAN bus.
+errno = CFUNCALL(ret%, "CanDeactivate", portHandle%)
+PRINT "CanDeactivate=", errno, ret%
+IF ret% THEN
+	PRINT "CanDeactivate error(ret:"; HEX$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	END
+END IF
+
+' Close the device.
+errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+PRINT "CanClosePort=", errno, ret%
+
+? "bye.bye"
+end

@@ -1,0 +1,86 @@
+' ================================================================================
+' DIMADD / DIMSUB / DIMDIV / DIMMOD / DIMMUL サンプルプログラム
+'  配列の算術演算(DIMADD / DIMSUB / DIMDIV / DIMMOD / DIMMUL関数) を行います。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+DIM A(4), B(4), C(4)
+A = [ -2; -1; 0; 1; 2 ]
+B = [ 2; 2; 2; 2; 2 ]
+
+' 加算演算(2引数版)
+C = DIMADD(A, B)
+CALL PRT("DIMADD(2引数版)")
+
+' 減算演算(2引数版)
+C = DIMSUB(A, B)
+CALL PRT("DIMSUB(2引数版)")
+
+' 割り算演算(2引数版)
+C = DIMDIV(A, B)
+CALL PRT("DIMDIV(2引数版)")
+
+' 剰余算演算(2引数版)
+C = DIMMOD(A, B)
+CALL PRT("DIMMOD(2引数版)")
+
+' 掛け算演算(2引数版)
+C = DIMMUL(A, B)
+CALL PRT("DIMMUL(2引数版)")
+
+DIM D(4), F(2)
+
+' 加算演算
+D = [ 1; 2; 3; 4; 5 ]
+CALL PRT1("DIMADD", DIMADD(D))
+
+DIM X$(4), Y$(4), Z$(4)
+X$ = [ "a"; "b"; "c"; "d"; "e" ]
+Y$ = [ "x"; "x"; "x"; "x"; "x" ]
+
+' 連結演算(2引数版)
+Z$ = DIMADD$(X$, Y$)
+CALL PRTS("DIMADD$(2引数版)")
+
+END
+
+SUB PRT(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+	PRINT "引数A", "引数B", "結果C"
+	FOR I=0 TO LDIM(A)-1
+		PRINT A(I), B(I), C(I)
+	NEXT I
+	PRINT ""
+END SUB
+
+SUB PRT1(TITLE$, E)
+	PRINT TITLE$; "の実行結果:"
+
+	FOR I=0 TO LDIM(D)-1
+		PRINT "引数D(";I;")", D(I)
+	NEXT I
+	PRINT "結果E   ", E
+	PRINT ""
+END SUB
+
+SUB PRT1F(TITLE$, E)
+	PRINT TITLE$; "の実行結果:"
+
+	FOR I=0 TO LDIM(F)-1
+		PRINT "引数F(";I;")", F(I)
+	NEXT I
+	PRINT "結果E   ", E
+	PRINT ""
+END SUB
+
+SUB PRTS(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+	PRINT "引数X$", "引数Y$", "結果Z$"
+	FOR I=0 TO LDIM(A)-1
+		PRINT X$(I), Y$(I), Z$(I)
+	NEXT I
+	PRINT ""
+END SUB
+

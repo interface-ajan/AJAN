@@ -1,0 +1,74 @@
+' ================================================================================
+' C言語連携＞HDLC通信テスト＞ReceiveMessage サンプルプログラム 
+'  C言語連携機能を使って、GPG-4116のHDLCライブラリを呼び出すサンプルプログラムです。
+'  GPG-4116付属のReceiveMessage.c サンプルの移植例です。
+'  メッセージを受信します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-4116のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcihdlc.h")	' GPG-4116をインストール必須です
+s$ = REPLACE$(s$, "long HdlcSetPriority", "//long HdlcSetPriority")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+s$ = REPLACE$(s$, "long HdlcGetPriority", "//long HdlcGetPriority")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+CDECLARE "libgpg4116.so", s$
+
+OBJECT	sInit@ AS MEMORY			' HDLCPORTINITDATA構造体に相当する情報をメモリに入れる用
+sInit@ = CSTRUCT@("HDLCPORTINITDATA")
+OBJECT	status@ AS MEMORY			' HDLCPORTSTATUS構造体に相当する情報をメモリに入れる用
+status@ = CSTRUCT@("HDLCPORTSTATUS")
+
+portNum = 2/* HDLC_PORTNO_4116_1 */
+INPUT "ポート番号を入力してください:"; portNum
+
+sInit@.SETMEMVAL("ulFormat", 0/* HDLC_FORMAT_NRZI */)
+sInit@.SETMEMVAL("ulFcs", 0/* HDLC_FCS_16 */)
+sInit@.SETMEMVAL("ulAddressMode", 0/* HDLC_ADDRESS_NONE */)
+sInit@.SETMEMVAL("ulLineMode", 0/* HDLC_LINE_FULL */)
+sInit@.SETMEMVAL("ulTxc", 1/* HDLC_SCLK_PTC */)
+sInit@.SETMEMVAL("ulRxc", 2/* HDLC_RCLK_DPLL */)
+sInit@.SETMEMVAL("ulSourceClock", 3/* HDLC_CLOCK_32000000 */)
+sInit@.SETMEMVAL("ulBaudRate", 250000)
+sInit@.SETMEMVAL("ulInterface", 1/* HDLC_INTERFACE_485 */)
+sInit@.SETMEMVAL("ulTxcMode", 0/* HDLC_STOUT_NONE */)
+sInit@.SETMEMVAL("ulSendTiming", 100 or &H10000/* HDLC_TIME_MICRO_SEC */)
+sInit@.SETMEMVAL("ulCloseTiming", 100 or &H10000/* HDLC_TIME_MICRO_SEC */)
+sInit@.SETMEMVAL("lpCallbackProc", 0)
+sInit@.SETMEMVAL("ulUserData", 0)
+
+' Open a device.
+errno = CFUNCALL(ret, "HdlcOpen", portNum, sInit@)
+PRINT "open=", HEX$(ret), errno
+ASSERT ret = 0, "fail open"
+
+DO WHILE TRUE
+	errno = CFUNCALL(ret, "HdlcGetStatus", portNum, status@)
+	PRINT "getStatus=", HEX$(ret), errno
+
+	errno = CFUNCALL(ret, "HdlcGetFrameCount", portNum, frameCount)
+	PRINT "getFrameCount=", HEX$(ret), errno
+
+	frm = status@.GETMEMVAL("ulReceiveFrame")
+	PRINT "ulReceiveFrame="; frm
+	PRINT "frameCount="; frameCount
+	IF frm <> 0 THEN EXIT DO
+
+	SLEEP 0.5
+LOOP
+
+receiveBuffer$ = STR_REPEAT$(CHRB$(0), 512)	' 受信バッファを、512バイト分作る
+errno = CFUNCALL(ret, "HdlcReceiveFrame", portNum, receiveBuffer$, frameLength%)
+PRINT "receiveFrame=", HEX$(ret), errno
+
+S$ = LEFTB$(receiveBuffer$, frameLength%)
+PRINT "receiveFrame data=["; S$; "]"
+
+' Close the device.
+errno = CFUNCALL(ret, "HdlcClose", portNum)
+PRINT "close=", HEX$(ret), errno
+
+' 後片付け
+OBJDELETE sInit@
+OBJDELETE status@
+
+? "bye.bye"
+end

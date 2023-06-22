@@ -1,0 +1,114 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Tektronix TDS224＞同期サンプリング事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  Tektronix TDS224(オシロスコープ)を制御します。
+'  Tektronix TDS224の「Status and Events」章の「Synchronization」の
+'  「Using the *OPC Query」項を元にしています。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 4; -1 ]			' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+' Device Clear
+errno = CFUNCALL(ret, "PciGpibExExecSdc", 0, adrsTbl)
+PRINT "sdc=", ret, errno
+ASSERT ret = 0, "SDCエラー"
+
+SLEEP 1
+
+CALL SEND_DATA("*RST")								' dmm をリセットする
+CALL SEND_DATA("*CLS")								' dmm ステータス・レジスタをクリアする
+
+CALL SEND_DATA("FACTORY")							' 工場出荷時設定にする
+CALL SEND_DATA("*OPC?")								' 現在の動作完了を待機
+S$ = RECV_DATA$()
+PRINT "opc?="; S$
+assert S$ = "1", "operation complete"
+
+SLEEP 1
+
+CALL SEND_DATA("HEADER OFF")						' 出力ヘッダ部をOFFにする
+CALL SEND_DATA("DATA:ENCDG ASCI")					' データフォーマットをASCII(カンマ区切り)形式へ
+CALL SEND_DATA("DATA:START 1")						' 最初のデータを1点目に設定
+CALL SEND_DATA("DATA:STOP 100")						' 最後のデータを100点目に設定
+
+' Set up single-sequence acquisition
+CALL SEND_DATA("SELECT:CH1 ON")						' CH1を選択
+CALL SEND_DATA("ACQUIRE:MODE SAMPLE")				' SAMPLEモードに設定します
+CALL SEND_DATA("ACQUIRE:STOPAFTER SEQUENCE")		' サンプリングの停止タイミングを、SEQUENCE に設定
+' Acquire waveform data
+CALL SEND_DATA("ACQUIRE:STATE ON")					' サンプリング開始
+' Set up the measurement parameters
+CALL SEND_DATA("MEASUREMENT:IMMED:TYPE PK2PK")		' 即時測定モードを、PK2PK に設定
+CALL SEND_DATA("MEASUREMENT:IMMED:SOURCE CH1")		' 即時測定を、CH1に選択
+
+' Wait until the acquisition is complete before taking the measurement
+CALL SEND_DATA("*OPC?")								' サンプリング停止まで待機
+PRINT "オシロスコープを操作して、サンプリング完了してください"
+' ここで、サンプリング完了するか、受信タイムアウトまで待機します
+? RECV_DATA$()
+
+CALL SEND_DATA("CURVE?")							' 波形データを読み出す
+S$ = RECV_DATA$()
+LIST ARY
+ARY = BINBLK2ARRAY(S$, "double")					' カンマ区切り -> 数値配列に変換
+PRINT "結果="; ARY
+
+CALL SEND_DATA("*ESR?")
+S$ = RECV_DATA$()
+PRINT "ERR CODE?="; S$
+CALL SEND_DATA("ALLEV?")
+S$ = RECV_DATA$()
+PRINT "ERR MSG?="; S$
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for Tektronix TDS224
+	PRINT "TDS 224 : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー RET="+STR$(ret)
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from Tektronix TDS224
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 10000)	' 受信時に受け取る受信バッファ(10000バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー RET="+STR$(ret)
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "TDS 224 : Receive Data = "; recvbuf$
+	PRINT "          Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

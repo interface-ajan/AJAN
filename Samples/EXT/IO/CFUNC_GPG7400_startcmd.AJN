@@ -1,0 +1,139 @@
+' ================================================================================
+' C言語連携＞モーションテスト＞startcmd サンプルプログラム 
+'  C言語連携機能を使って、GPG-7400のモーションライブラリを呼び出すサンプルプログラムです。
+'  GPG-7400付属のstartcmd.c サンプルの移植例です。
+'  コマンドバッファ機能を起動・停止を行います。
+'    1=コマンドバッファ機能起動
+'    2=コマンドバッファ機能停止
+'    99=プログラム終了
+'  インデックス1〜21にて、コマンドバッファ機能を起動しています。
+'
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' -----------------------------------------------------------------------------
+' メイン処理です
+
+' GPG-7400のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbimtn.h")	' GPG-7400をインストール必須です
+CDECLARE "libgpg7400.so", s$
+
+nDevice% = OpenBoard()
+IF nDevice% = -1 THEN
+	PRINT CHR$(13)+"  Error : Invalid device"+CHR$(13)
+	END
+END IF
+
+nRet% = ControlBoard(nDevice%)
+IF nRet% <> 0 THEN
+	CALL DispError(nRet%)
+ELSE
+	PRINT CHR$(10); "  End program"; CHR$(10)
+END IF
+
+errno = CFUNCALL(nRet%, "MtnClose", nDevice%)
+
+? "bye.bye"
+end
+
+' =============================================================================
+SUB Locate(x%, y%)
+	PRINT CHR$(&H1B); "["; (y+1); ";"; (x+1); "H";
+END SUB
+
+FUNCTION OpenBoard()
+
+	LOCAL	nRet%, nDevice%, errno
+
+	' display title
+	nRet% = SHELL SYSTEM("clear")
+	PRINT ""
+	PRINT " =================================================="
+	PRINT "    Sample program to start startcmd               "
+	PRINT "    Copyright 2021 Interface Corporation           "
+	PRINT " =================================================="
+	PRINT ""
+	PRINT "  Enter the device number in decimal : ";
+	INPUT nDevice%
+
+	errno = CFUNCALL(nRet%, "MtnOpen", nDevice%, 0/*MTR_FLAG_NORMAL*/)
+	PRINT "MtnOpen=", HEX$(nRet%), errno
+	IF nRet% <> 0 THEN nDevice% = -1
+
+	OpenBoard = nDevice%
+
+END FUNCTION
+
+FUNCTION ControlBoard(nDevice%)
+
+	LOCAL	nRet%, errno
+	LOCAL	Index
+	Index = 0
+
+	DO WHILE TRUE
+		CLS
+		call Locate(0, 6)
+		PRINT "      1 :Cmd Buffer Start"
+		PRINT "      2 :Cmd Buffer Stop"
+		PRINT "      99:Exit"
+		PRINT "      Number:";
+		INPUT C
+		IF C = 99 THEN EXIT DO
+
+		IF C = 1 THEN
+			' == MtnStartCmdBuffer ==
+			errno = CFUNCALL(nRet%, "MtnStartCmdBuffer", nDevice%, &H00 /*MTR_CMD_AUTO_START*/, Index + 1, Index + 21)
+			IF nRet% <> 0 THEN
+				ControlBoard = nRet%
+				EXIT FUNCTION
+			END IF
+		ELSEIF C = 2 THEN
+			' == MtnStopCmdBuffer ==
+			errno = CFUNCALL(nRet%, "MtnStopCmdBuffer", nDevice%)
+			IF nRet% <> 0 THEN
+				ControlBoard = nRet%
+				EXIT FUNCTION
+			END IF
+		END IF
+	LOOP
+
+END FUNCTION
+
+SUB DispError(ErrCode)
+
+	local szErr$
+  
+	CLS
+	call Locate(5, 6)
+
+	SELECT CASE ErrCode
+	CASE &Hc0000003		' MTR_ERROR_INVALID_DEVICE_NUMBER:
+		szErr$ = "The device handle is invalid."
+	CASE &Hc0000009		' MTR_ERROR_NOT_SUPPORTED:
+		szErr$ = "The function is not supported."
+	CASE &Hc0001000		' MTR_ERROR_NOW_MOVING:
+		szErr$ = "moter is running now."
+	CASE &Hc0001001		' MTR_ERROR_NOW_STOPPED:
+		szErr$ = "Moter is stopped."
+	CASE &Hc0001013		' MTR_ERROR_INVALID_AXIS:
+		szErr$ = "Invalid axis is specified."
+	CASE &Hc0001014		' MTR_ERROR_INVALID_SPEED:
+		szErr$ = "Invalid velocity is specified."
+	CASE &Hc0001015		' MTR_ERROR_INVALID_ACCDEC:
+		szErr$ = "Invalid acceleration and deceleration time is specified."
+	CASE &Hc0001016		' MTR_ERROR_INVALID_PULSE:
+		szErr$ = "Invalid number of pulse is specified."
+	CASE &Hc0001017		' MTR_ERROR_INVALID_PARAMETER:
+		szErr$ = "Invalid parameter is specified."
+	CASE &Hc0001020		' MTR_ERROR_NOW_INTERLOCKED:
+		szErr$ = "The interlock has been asserted."
+	CASE &Hc0001021		' MTR_ERROR_IMPOSSIBLE:
+		szErr$ = "The specified request is not supported."
+	CASE ELSE
+		szErr$ = "Unknown error"
+	END SELECT
+
+	PRINT "Error : "; szErr$; CHR$(10)
+
+END SUB
+

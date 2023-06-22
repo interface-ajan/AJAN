@@ -1,0 +1,47 @@
+' ================================================================================
+' QRCODE_GET サンプルプログラム 
+'  QRCODE_GET関数 を使って、GUI上にQRコードを描画するサンプルプログラムです。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+OPTION GUI
+
+GUCREATE WINDOW 1, "QRコード作成サンプル", 1, "32, 0, 0, 14, 1, 8", "400, 300", ,
+GUCREATE PIC 1, 10,, "300, 250","0, 50",
+GUCREATE LABEL 1, 11, "文字列入力ください:"
+GUCREATE TEXTBOX 1, 12, "Hello AJAN world",,"200, 20","130,0",
+GUSHOW 1
+
+ON GUEVT TEXTBOX 12 CALL CB_BTN
+GUEVT TEXTBOX 12 ON
+
+' 初期文字列を元に、QRコード化します
+call CB_BTN(0, "", 0)
+
+' GUIループを回す
+GUMAIN LOOP
+
+? "bye.bye"
+end
+
+' テキストボックスをEnterしたら飛んでくるルーチン
+' テキストボックスの文字列をQRコード化してグラフィック表示します
+SUB CB_BTN(NUM, NAME$, EVT)
+	LOCAL LIST ary
+	S$ = GUGET$ TEXTBOX(12)
+	ary = QRCODE_GET(S$)
+
+	margin = 4	' マージン
+	sz = 6   	' 1点のサイズ(dot)
+
+	GUGCLS PIC 10
+	
+	for y=0 to ubound(ary, 1)
+		for x=0 to ubound(ary, 2)
+			if ary(y, x) then
+				px = (margin + x) * sz
+				py = (margin + y) * sz
+				GUGRECTANGLE PIC 10, (px, py)-(sz, sz), 1, 2
+			end if
+		next x
+	next y
+END SUB

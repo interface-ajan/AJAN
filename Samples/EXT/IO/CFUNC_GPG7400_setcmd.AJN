@@ -1,0 +1,180 @@
+' ================================================================================
+' C言語連携＞モーションテスト＞setcmd サンプルプログラム 
+'  C言語連携機能を使って、GPG-7400のモーションライブラリを呼び出すサンプルプログラムです。
+'  GPG-7400付属のsetcmd.c サンプルの移植例です。
+'  X軸に対して、PTP動作の設定を行います。
+'  PTP動作の設定は、インデックス1〜21を使用しています。
+'
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' -----------------------------------------------------------------------------
+' メイン処理です
+
+' GPG-7400のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbimtn.h")	' GPG-7400をインストール必須です
+CDECLARE "libgpg7400.so", s$
+
+nDevice% = OpenBoard()
+IF nDevice% = -1 THEN
+	PRINT CHR$(13)+"  Error : Invalid device"+CHR$(13)
+	END
+END IF
+
+nRet% = ControlBoard(nDevice%)
+IF nRet% <> 0 THEN
+	CALL DispError(nRet%)
+ELSE
+	PRINT CHR$(10); "  End program"; CHR$(10)
+END IF
+
+errno = CFUNCALL(nRet%, "MtnClose", nDevice%)
+
+? "bye.bye"
+end
+
+' =============================================================================
+SUB Locate(x%, y%)
+	PRINT CHR$(&H1B); "["; (y+1); ";"; (x+1); "H";
+END SUB
+
+FUNCTION OpenBoard()
+
+	LOCAL	nRet%, nDevice%, errno
+
+	' display title
+	nRet% = SHELL SYSTEM("clear")
+	PRINT ""
+	PRINT " =================================================="
+	PRINT "    Sample program to start setcmd                 "
+	PRINT "    Copyright 2021 Interface Corporation           "
+	PRINT " =================================================="
+	PRINT ""
+	PRINT "  Enter the device number in decimal : ";
+	INPUT nDevice%
+
+	errno = CFUNCALL(nRet%, "MtnOpen", nDevice%, 0/*MTR_FLAG_NORMAL*/)
+	PRINT "MtnOpen=", HEX$(nRet%), errno
+	IF nRet% <> 0 THEN nDevice% = -1
+
+	OpenBoard = nDevice%
+
+END FUNCTION
+
+FUNCTION ControlBoard(nDevice%)
+
+	LOCAL	nRet%, errno
+	LOCAL	Index
+	Index = 0
+
+	' == MtnSetCmdBuffer ==
+	' PTP
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 1, &H01, &H87 /*MTR_CMD_MOVE*/, &H41 /*MTR_CMD_PTP*/)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' clock = 299
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 4, &H01, &H85 /*MTR_CMD_CLOCK*/, 299)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' LowSpeed = 50
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 6, &H01, &H81 /*MTR_CMD_LOW_SPEED*/, 50)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' HighSpeed = 200
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 8, &H01, &H82 /*MTR_CMD_SPEED*/, 200)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' ACC Time = 150
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 10, &H01, &H83 /*MTR_CMD_ACC*/, 150)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' DEC Time = 200
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 12, &H01, &H84 /*MTR_CMD_DEC*/, 200)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' ACC Speed = 0
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 14, &H01, &H89 /*MTR_CMD_ACC_SPEED*/, 0)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' DEC Speed = 0
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 16, &H01, &H8A /*MTR_CMD_DEC_SPEED*/, 0)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' Step = 5000
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 18, &H01, &H80 /*MTR_CMD_STEP*/, 5000)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' Start Mode = AccDec
+	errno = CFUNCALL(nRet%, "MtnSetCmdBufferData", nDevice%, Index + 21, &H01, &H50 /*MTR_CMD_START_MODE*/, &H53 /*MTR_CMD_ACC_DEC*/)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+END FUNCTION
+
+SUB DispError(ErrCode)
+
+	local szErr$
+  
+	CLS
+	call Locate(5, 6)
+
+	SELECT CASE ErrCode
+	CASE &Hc0000003		' MTR_ERROR_INVALID_DEVICE_NUMBER:
+		szErr$ = "The device handle is invalid."
+	CASE &Hc0000009		' MTR_ERROR_NOT_SUPPORTED:
+		szErr$ = "The function is not supported."
+	CASE &Hc0001000		' MTR_ERROR_NOW_MOVING:
+		szErr$ = "moter is running now."
+	CASE &Hc0001001		' MTR_ERROR_NOW_STOPPED:
+		szErr$ = "Moter is stopped."
+	CASE &Hc0001013		' MTR_ERROR_INVALID_AXIS:
+		szErr$ = "Invalid axis is specified."
+	CASE &Hc0001014		' MTR_ERROR_INVALID_SPEED:
+		szErr$ = "Invalid velocity is specified."
+	CASE &Hc0001015		' MTR_ERROR_INVALID_ACCDEC:
+		szErr$ = "Invalid acceleration and deceleration time is specified."
+	CASE &Hc0001016		' MTR_ERROR_INVALID_PULSE:
+		szErr$ = "Invalid number of pulse is specified."
+	CASE &Hc0001017		' MTR_ERROR_INVALID_PARAMETER:
+		szErr$ = "Invalid parameter is specified."
+	CASE &Hc0001020		' MTR_ERROR_NOW_INTERLOCKED:
+		szErr$ = "The interlock has been asserted."
+	CASE &Hc0001021		' MTR_ERROR_IMPOSSIBLE:
+		szErr$ = "The specified request is not supported."
+	CASE ELSE
+		szErr$ = "Unknown error"
+	END SELECT
+
+	PRINT "Error : "; szErr$; CHR$(10)
+
+END SUB
+

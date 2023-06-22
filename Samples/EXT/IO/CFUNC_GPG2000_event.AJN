@@ -1,0 +1,75 @@
+' ================================================================================
+' C言語連携＞DIO制御テスト＞evemt サンプルプログラム 
+'  C言語連携機能を使って、GPG-2000のDIOライブラリを呼び出すサンプルプログラムです。
+'  GPG-2000付属のevent.c サンプルの移植例です。
+'  割り込みイベントを捉えて表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-2000のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbidio.h")	' GPG-2000をインストール必須です
+CDECLARE "libgpg2000.so", s$
+
+' C言語で書いたサブルーチン部を組み込みます
+CIMPORT "CFUNC_GPG2000_event_sub.c", "-lgpg2000"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+void c_CallBackProc(unsigned long lUserData, unsigned char bEvent, unsigned short nDeviceNum);
+void c_set_gnflag(int v);
+int c_get_gnflag(void);
+'''
+CDECLARE "", s$
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret%, "DioOpen", dnum, 1/* FBIDIO_FLAG_SHARE */)
+PRINT "open=", HEX$(ret%), errno
+
+' Enable the latching circuits corresponding to IN1 through IN8
+errno = CFUNCALL(ret%, "DioSetLatchStatus", dnum, &H01)
+PRINT "setLatchStatus=", HEX$(ret%), errno
+
+' Register a callback function
+OBJECT	callBackProc@ AS POINTER
+callBackProc@ = CGETADRS@("c_CallBackProc")
+PRINT "CallBackProc address="; HEX$(callBackProc@.TOLNG())
+' 割り込み発生時に、C言語の関数(c_CallBackProc)をコールバックするように設定する
+errno = CFUNCALL(ret%, "DioRegistIsr", dnum, &H00000000, callBackProc@)
+PRINT "registIsr=", HEX$(ret%), errno
+
+' Assign interrupt sources (STB1, IN2, IN3, IN4)
+errno = CFUNCALL(ret%, "DioSetIrqConfig", dnum, &H01)
+PRINT "setIrqConfig=", HEX$(ret%), errno
+
+' Unmask STB1
+errno = CFUNCALL(ret%, "DioSetIrqMask", dnum, &H01)
+PRINT "setIrqMask=", HEX$(ret%), errno
+
+' Wait for interrupt from STB1
+errno = CSUBCALL("c_set_gnflag", 0)
+st_tm = CLOCK
+DO WHILE TRUE
+	errno = CFUNCALL(ret%, "c_get_gnflag")
+	IF ret% <> 0 THEN EXIT DO
+	SLEEP 0.5
+LOOP
+PRINT "割り込み検知に掛かった時間=", CLOCK - st_tm
+
+' Mask
+errno = CFUNCALL(ret%, "DioSetIrqMask", dnum, &H00)
+PRINT "setIrqMask=", HEX$(ret%), errno
+
+errno = CFUNCALL(ret%, "DioRegistIsr", dnum, &H00000000, 0)
+PRINT "registIsr=", HEX$(ret%), errno
+
+' Close the device.
+errno = CFUNCALL(ret%, "DioClose", dnum)
+PRINT "close=", HEX$(ret%), errno
+
+' 後片付け
+OBJDELETE callBackProc@
+
+? "bye.bye"
+end

@@ -1,0 +1,89 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Agilent E3645A＞Voltコマンド事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  Agilent E3645A(プログラマブルDC電源)を制御します。
+'  Agilent E3645Aの「5章 アプリケーション・プログラム」の事例を再現します。
+'    ・Voltコマンドを使って、0.6Vから0.8V まで、0.02 ずつ電圧を上げていきます。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 5; -1 ]				' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+CALL SEND_DATA("*RST")								' dev をリセットする
+CALL SEND_DATA("*CLS")								' dev ステータス・レジスタをクリアする
+
+CALL SEND_DATA("Current 2")							' Set current limit to 2A
+CALL SEND_DATA("Output on")							' Turn output on
+
+' Step from 0.6 to 0.8 volt in 0.02 steps
+voltage = 0.6
+DO WHILE voltage <= 0.8001
+	S$ = "Volt " + STR$(voltage)
+	CALL SEND_DATA(S$)								' 指定電圧(voltage) を出力
+
+	SLEEP 0.5
+	
+	CALL SEND_DATA("Measure:Current?")				' Measure output current
+	S$ = RECV_DATA$()
+	PRINT "出力電圧="; BINBLK2ARRAY(S$, "double")
+
+	voltage = voltage + 0.02
+LOOP
+
+CALL SEND_DATA("Output off")						' Turn output off
+
+CALL SEND_DATA("SYST:ERR?")
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for Agilent E3645A
+	PRINT "Agilent E3645A : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー"
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from Agilent E3645A
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "Agilent E3645A : Receive Data = "; recvbuf$
+	PRINT "                 Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

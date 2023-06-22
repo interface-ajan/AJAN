@@ -1,0 +1,82 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Agilent 34401A＞電圧値読み取り事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  GPG-4301付属のhp34401a.c サンプルの移植例です。
+'  Agilent 34401A(マルチメータ)を制御して、電圧値を読み取ります。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 22; -1 ]		' Address Table for Machines
+sdata1$ = "*RST"			' Send Data for HP 34401A
+sdata2$ = "*CLS"			' Send Data for HP 34401A
+sdata3$ = "MEASure:VOLTage:DC?"		' Send Data for HP 34401A
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Set NRFD Wait
+errno = CFUNCALL(ret, "PciGpibExSetConfig", 0, "/NRFDWAIT=ON")
+PRINT "set config=", ret, errno
+ASSERT ret = 0, "SET CONFIGエラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+' Set for Multimeter of HP 34401A
+' * Reset
+PRINT "HP 34401A : Send1 Data="; sdata1$
+errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata1$), sdata1$, 0)
+PRINT "send1 data=", ret, errno
+ASSERT ret = 0, "SEND1エラー"
+
+' Set for Multimeter of HP 34401A
+' * Clear
+PRINT "HP 34401A : Send2 Data="; sdata2$
+errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata2$), sdata2$, 0)
+PRINT "send2 data=", ret, errno
+ASSERT ret = 0, "SEND2エラー"
+
+' Set for Multimeter of HP 34401A
+' * Start
+FOR I=0 TO 10-1
+	PRINT "HP 34401A : Send3 Data="; sdata3$
+
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata3$), sdata3$, 0)
+	PRINT "send3 data=", ret, errno
+	ASSERT ret = 0, "SEND3エラー"
+
+	' Received from HP 34401A
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT I; ":Receive Data = "; recvbuf$
+	PRINT I; ":Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	V = BINBLK2ARRAY(recvbuf$, "double")		' 数値を取り出す
+	PRINT I; ":Voltage = "; V
+NEXT I
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end

@@ -1,0 +1,108 @@
+' ================================================================================
+' C言語連携＞AD制御テスト＞AdSampling サンプルプログラム 
+'  C言語連携機能を使って、GPG-3100のADライブラリを呼び出すサンプルプログラムです。
+'  GPG-3100付属のAdSampling.c サンプルの移植例です。
+'  「AdStartSampling」 関数を用いて、サンプリング入力を実施した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-3100のお助けルーチンが入っている
+include "GPG3100_EX.AJN"
+
+' GPG-3100のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbiad.h")	' GPG-3100をインストール必須です
+CDECLARE "libgpg3100.so", s$
+
+OBJECT	boardSpec@ AS MEMORY			' ADBOARDSPEC構造体に相当する情報をメモリに入れる用
+boardSpec@ = CSTRUCT@("ADBOARDSPEC")
+OBJECT adSmplConfig@ AS MEMORY			' ADSMPLREQ構造体に相当する情報をメモリに入れる用
+adSmplConfig@ = CSTRUCT@("ADSMPLREQ")
+OBJECT smplData@ AS MEMORY			' AdInputAD.c で、bSmplData, wSmplData, dwSmplData で格納するメモリに相当する
+smplData@ = CALLOC@(1024 * 2 * 4)
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret, "AdOpen", dnum)
+PRINT "open=", ret, errno
+
+errno = CFUNCALL(ret, "AdGetDeviceInfo", dnum, boardSpec@)
+PRINT "getDeiveInfo=", ret, errno
+'PRINT STR_DUMP$(boardSpec@.PEEKSTR$(0, boardSpec@.SIZEOF()))
+PRINT boardSpec@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+' Retrieve the sampling conditions.
+errno = CFUNCALL(ret, "AdGetSamplingConfig", dnum, adSmplConfig@)
+PRINT "getSmplConfig=", ret, errno
+'PRINT STR_DUMP$(adSmplConfig@.PEEKSTR$(0, adSmplConfig@.SIZEOF()))
+PRINT adSmplConfig@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+adSmplConfig@.SETMEMVAL("ulChCount", 2)
+adSmplConfig@.SETMEMVAL("SmplChReq[0].ulChNo", 1)
+adSmplConfig@.SETMEMVAL("SmplChReq[1].ulChNo", 2)
+adSmplConfig@.SETMEMVAL("ulSmplNum", 1024)
+errno = CFUNCALL(ret, "AdSetSamplingConfig", dnum, adSmplConfig@)
+PRINT "setSmplConfig=", ret, errno
+
+rng = adSmplConfig@.GETMEMVAL(0, "SmplChReq[0].ulRange")
+res = boardSpec@.GETMEMVAL("ulResolution")
+diff = adSmplConfig@.GETMEMVAL("ulSingleDiff")
+PRINT "分解能="; res
+PRINT "入力仕様="; diff
+PRINT "レンジ(hex)=&H"; HEX$(rng, 8)
+STRUCT RANGE_INFO	info
+info = GET_RANGE_INFO(rng)		' レンジ値の説明、上限値、下限値を取得する
+PRINT "レンジ情報="; info
+
+' Start the sampling with synchronous mode.
+errno = CFUNCALL(ret, "AdStartSampling", dnum, 1/* FLAG_SYNC */)
+PRINT "startSmpling=", ret, errno
+
+' Retrieve the sampling data to smplData
+ulSmplNum = 1024
+errno = CFUNCALL(ret, "AdGetSamplingData", dnum, smplData@, ulSmplNum)
+PRINT "getSamplingData=", ret, errno
+
+'PRINT STR_DUMP$(smplData@.PEEKSTR$(0, smplData@.SIZEOF()))
+
+' Display the retrieved result.
+DIM dt%(1)
+IDX = 0
+IF res <= 8 THEN
+	FOR I=0 TO ulSmplNum - 1
+		dt%(0) = smplData@.PEEKBYTE(IDX)
+		IDX = IDX + 1
+		dt%(1) = smplData@.PEEKBYTE(IDX)
+		IDX = IDX + 1
+		PRINT I; "件"; " デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+	NEXT I
+ELSEIF (res > 8) and (res <= 16) THEN
+	FOR I=0 TO ulSmplNum - 1
+		dt%(0) = smplData@.PEEKHALF(IDX)
+		IDX = IDX + 2
+		dt%(1) = smplData@.PEEKHALF(IDX)
+		IDX = IDX + 2
+		PRINT I; "件"; " デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+	NEXT I
+ELSE
+	FOR I=0 TO ulSmplNum - 1
+		dt%(0) = smplData@.PEEKINT(IDX)
+		IDX = IDX + 4
+		dt%(1) = smplData@.PEEKINT(IDX)
+		IDX = IDX + 4
+		PRINT I; "件"; " デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+	NEXT I
+END IF
+
+' Close the device.
+errno = CFUNCALL(ret, "AdClose", dnum)
+PRINT "close=", ret, errno
+
+' 後片付け
+OBJDELETE boardSpec@
+OBJDELETE adSmplConfig@
+OBJDELETE smplData@
+
+? "bye.bye"
+end

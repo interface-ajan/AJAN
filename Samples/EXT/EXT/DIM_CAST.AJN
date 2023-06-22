@@ -1,0 +1,49 @@
+' ================================================================================
+' DIMCINT / DIMCLNG / DIMCSNG / DIMCDBL / DIMCSTR$ サンプルプログラム
+'  文字列配列に対して、数値を取り出し(DIMCINT / DIMCLNG / DIMCSNG / DIMCDBL関数)、
+'  文字列配列に変換(DIMCSTR$関数)します。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+DIM A$(2)
+A$ = [ "123.456"; "456.789"; "hello" ]
+DIM MK(2)
+MK = [ TRUE; TRUE; FALSE ]
+
+DIM B(2)
+' 文字列→単精度整数 配列への変換
+B = DIMCINT(A$, MK)
+CALL PRT("DIMCINT")
+
+' 文字列→倍精度整数 配列への変換
+B = DIMCLNG(A$, MK)
+CALL PRT("DIMCLNG")
+
+' 文字列→単精度実数 配列への変換
+B = DIMCSNG(A$, MK)
+CALL PRT("DIMCSNG")
+
+' 文字列→倍精度実数 配列への変換
+B = DIMCDBL(A$, MK)
+CALL PRT("DIMCDBL")
+
+PRINT "DIMCSTR$の使い方例:"
+DIM C%(2)
+C% = [ 123; 456; 789 ]
+PRINT "元の数値データ:"; C%
+PRINT "DIMCSTR$で、数値を文字列化:"; DIMCSTR$(C%, [ TRUE; TRUE; TRUE ])
+PRINT "マスクを使う例:"; DIMCSTR$(C%, [ TRUE; TRUE; FALSE ])
+
+END
+
+SUB PRT(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+	PRINT "引数(A$),	マスク(MK),	結果(B)"
+	FOR I=0 TO LDIM(A$)-1
+		PRINT A$(I),, MK(I),, B(I)
+	NEXT I
+	PRINT ""
+END SUB
+

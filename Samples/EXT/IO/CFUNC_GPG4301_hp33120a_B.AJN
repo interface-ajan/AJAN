@@ -1,0 +1,79 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Agilent 33120A＞低レベルコマンド事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  Agilent 33120A(ファンクションジェネレータ)を制御します。
+'  Agilent 33120Aの「6章 低レベルコマンドの使い方」の事例を再現します。
+'    ・低レベル・コマンドを使ってAM波形を設定する方法
+'    ・*SAV コマンドを使って、機器構成をメモリにストアする方法
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 10; -1 ]			' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+CALL SEND_DATA("*RST")					' 本器をリセット
+
+CALL SEND_DATA("OUTP:LOAD 50")			' 出力抵抗は 50Ω
+CALL SEND_DATA("FUNC:SHAP SIN")			' 搬送波は 正弦波
+CALL SEND_DATA("FREQ 5000;VOLT 5")		' 搬送波は 5kHz(5 Vpp)
+CALL SEND_DATA("AM:INT:FUNC SIN")		' 変調波形は 正弦波
+CALL SEND_DATA("AM:INT:FREQ 200")		' 変調周波数は 200Hz
+CALL SEND_DATA("AM:DEPT 80")			' 変調度は 80%
+CALL SEND_DATA("AM:STAT ON")			' AM変調をオン
+
+CALL SEND_DATA("*SAV 1")				' メモリ1 にステートをストア
+
+CALL SEND_DATA("SYST:ERR?")
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for Agilent 33120A
+	PRINT "Agilent 33120A : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー"
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from Agilent 33120A
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "Agilent 33120A : Receive Data = "; recvbuf$
+	PRINT "                 Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

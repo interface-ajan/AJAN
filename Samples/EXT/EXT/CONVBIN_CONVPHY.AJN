@@ -1,0 +1,34 @@
+' ================================================================================
+' CONVBIN / CONVPHY サンプルプログラム
+'  CONVBIN関数で連続量の値をバイナリ値へ、
+'  CONVPHY関数でバイナリ値を連続量の値へ変換するサンプルプログラムです。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+RESOLUTION = 1024
+HIGH = 10
+LOW = 0
+HIGTDATA = HIGH - ((HIGH-LOW)/RESOLUTION)
+LIST SETDATA
+LIST PHYDATA
+LIST BINDATA
+
+' アナログ(連続量)値のテストデータを作ります
+FOR I = LOW TO HIGTDATA step ((HIGH-LOW)/RESOLUTION)
+	IF I = LOW THEN
+		SETDATA = I
+	ELSE
+		ONEDIM INSERT SETDATA, -1, I
+	END IF
+NEXT I
+
+BINDATA = CONVBIN(SETDATA, RESOLUTION, HIGH, LOW)	' アナログ→デジタル値 への変換
+PHYDATA = CONVPHY(BINDATA, RESOLUTION, HIGH, LOW)	' デジタル→アナログ値 への変換
+
+' 変換結果を表示
+FOR I = 0 TO LDIM(BINDATA)-1
+	PRINT "設定データ:"; SETDATA(I); " -> バイナリ値:" ; HEX$(BINDATA(I)); " 物理量:" ; PHYDATA(I)
+NEXT I
+
+? "bye.bye"
+END

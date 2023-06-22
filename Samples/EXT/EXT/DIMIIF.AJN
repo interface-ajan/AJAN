@@ -1,0 +1,50 @@
+' ================================================================================
+' DIMIIF / DIMIIF$ サンプルプログラム
+'  配列に対して、条件判定を使った配列の抽出(DIMIIF / DIMIIF$関数)を行います。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+BOOL A(4)
+A = [ TRUE; FALSE; TRUE; FALSE; TRUE ]
+DIM B(4), C(4), D(4)
+B = [ 1; 2; 3; 4; 5 ]
+C = [ -1; -2; -3; -4; -5 ]
+D = DIMIIF(A, B, C)		' A(数値)配列の各要素が真ならばB、偽ならばC を求めます
+CALL PRT("DIMIIF")
+
+A = [ TRUE; TRUE; TRUE; FALSE; FALSE ]
+D = DIMIIF(A, B, C)		' A(BOOL型)配列の各要素が真ならばB、偽ならばC を求めます
+CALL PRT("DIMIIF(評価Aを変えてみる)")
+
+DIM E$(4), F$(4), G$(4)
+A = [ TRUE; FALSE; TRUE; FALSE; TRUE ]
+E$ = [ "hello"; "AJAN"; "world"; "by"; "interface" ]
+F$ = [ "h"; "A"; "w"; "b"; "i" ]
+G$ = DIMIIF$(A, E$, F$)	' A(BOOL型)配列の各要素が真ならばE$、偽ならばF$ を求めます
+cALL PRTS("DIMIIF$")
+
+END
+
+' 実行結果を列挙表示するサブルーチン(DIMIIF用)
+SUB PRT(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+
+	PRINT "評価A", "真値B", "偽値C", "結果D"
+	FOR I=0 TO LDIM(A)-1
+		PRINT A(I), B(I), C(I), D(I)
+	NEXT I
+	PRINT ""
+END SUB
+
+' 実行結果を列挙表示するサブルーチン(DIMIIF$用)
+SUB PRTS(TITLE$)
+	PRINT TITLE$; "の実行結果:"
+
+	PRINT "評価A", "真値E$", "偽値F$", "結果G$"
+	FOR I=0 TO LDIM(A)-1
+		PRINT A(I), E$(I), F$(I), G$(I)
+	NEXT I
+	PRINT ""
+END SUB

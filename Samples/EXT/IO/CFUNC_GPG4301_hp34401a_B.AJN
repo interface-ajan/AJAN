@@ -1,0 +1,84 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞Agilent 34401A＞CONFIGコマンド事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  Agilent 34401A(マルチメータ)を制御します。
+'  Agilent 34401Aの「6章 CONFigureコマンドを使用した演算機能」の事例を再現します。
+'    ・CONFigureコマンドを dBm演算機能で使用します。
+'      CONFigureコマンドは、MEASure?コマンドに比べてプログラミングに多少柔軟性があります。
+'      このため、マルチメータの構成を「段階的」に変更できます。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 22; -1 ]			' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+CALL SEND_DATA("*RST")							' dmm をリセットする
+CALL SEND_DATA("*CLS")							' dmm ステータス・レジスタをクリアする
+
+CALL SEND_DATA("CALC:DBM:REF 50")				' 50Ω基準抵抗
+CALL SEND_DATA("CONF:VOLT:AC 1,0.001")			' dmm を 1amp ACレンジに設定する
+CALL SEND_DATA("DET:BAND 200")					' 200Hz(高速) ACフィルタを選択する
+CALL SEND_DATA("TRIG:COUN 5")					' dmm が 5トリガを受け付ける
+CALL SEND_DATA("TRIG:SOUR IMM")					' トリガ・ソースは IMMediate
+CALL SEND_DATA("CALC:FUNC DBM")					' dBm機能を選択する
+CALL SEND_DATA("CALC:STAT ON")					' 演算をイネーブルにする
+CALL SEND_DATA("READ?")							' 読み取り値を得る、出力バッファに送る
+
+LIST SS$
+SS$ = RECV_DATA$()								' 出力バッファから読み取り値を得る
+? "演算結果="; BINBLK2ARRAY(SS$, "double")
+
+CALL SEND_DATA("SYST:ERR?")
+S$ = RECV_DATA$()
+PRINT "ERR?="; S$
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for Agilent 34401A
+	PRINT "Agilent 34401A : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー"
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from Agilent 34401A
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "Agilent 34401A : Receive Data = "; recvbuf$
+	PRINT "                 Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+
+

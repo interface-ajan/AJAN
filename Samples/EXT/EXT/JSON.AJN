@@ -1,0 +1,78 @@
+' ================================================================================
+' JSON サンプルプログラム 
+'  JSON_PARSE@関数 で JSON型オブジェクトを作り、JSON_DUMP$関数で文字列に戻す事例です。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' JSON型を格納する変数の宣言
+OBJECT PT@ AS JSON, TT@ AS JSON
+
+' JSON形式の文字列です
+S$ = "[ true, false, null, 123, 12.34, ""Hello AJAN"", { ""name"": ""AJAN"", ""ver"": 1.0 } ]"
+PRINT "元の文字列="; S$
+
+' JSON形式の文字列を、JSON型オブジェクトに生成します
+PT@ = JSON_PARSE@(S$)
+PRINT "JSON型変数="; PT@
+
+' JSON型オブジェクトを、JSON形式の文字列に変換します
+PRINT "JSON形式文字列="; JSON_DUMP$(PT@)
+
+' JSON型オブジェクトの中を調べます
+SUB JSON_PRT(PT@ AS JSON, IDX, ADD$)
+	LOCAL			ID, S$, CNT, I
+	LOCAL LIST		ARY$
+	LOCAL OBJECT	PO@ AS JSON
+
+	S$ = STR_REPEAT$(" ", IDX)
+	' JSON型オブジェクトを調べます
+	ID = PT@.TYPEOF()
+	SELECT CASE ID
+	CASE 0	' オブジェクト
+		CNT = PT@.OBJECT_SIZE()
+		PRINT S$; ADD$; "オブジェクト{"
+		IF CNT > 0 THEN
+			ARY$ = PT@.OBJECT_KEYS$()
+			FOR I=0 TO LDIM(ARY$)-1
+				'CALL JSON_PRT(ARY$(I), IDX + 2)
+				PO@ = PT@.OBJECT_GET@(ARY$(I))
+				CALL JSON_PRT(PO@, IDX + 2, ARY$(I)+":")
+			NEXT I
+		END IF
+		PRINT S$; "}"
+	CASE 1	' 配列
+		CNT = PT@.ARRAY_SIZE()
+		PRINT S$; ADD$; "配列["
+		FOR I=0 TO CNT-1
+			PO@ = PT@.ARRAY_GET@(I)
+			CALL JSON_PRT(PO@, IDX + 2, "("+STR$(I)+")")
+		NEXT I
+		PRINT S$; "]"
+	CASE 2	' 文字列
+		PRINT S$; ADD$; CHR$(&H22)+PT@.GET_CSTR$()+CHR$(&H22)
+	CASE 3	' 整数値
+		PRINT S$; ADD$; PT@.GET_CLNG()
+	CASE 4	' 実数値
+		PRINT S$; ADD$; PT@.GET_CDBL()
+	CASE 5	' TRUE値
+		PRINT S$; ADD$; PT@.GET_CBOOL()
+	CASE 6	' FALSE値
+		PRINT S$; ADD$; PT@.GET_CBOOL()
+	CASE 7	' null値
+		PRINT S$; ADD$; "null値"
+	END SELECT
+END SUB
+PRINT "JSON型オブジェクトの中を調べます"
+CALL JSON_PRT(PT@, 1, "")
+
+' JSON型オブジェクトの配列の添字:5番目の、「Hello AJAN」を置き換えます
+PT@.ARRAY_SET(5, "Interface")
+
+' JSON型オブジェクトの配列の添字:6番目の、オブジェクト(連想配列)に、新たなキーを追加します
+TT@ = PT@.ARRAY_GET@(6)
+TT@.OBJECT_SET("test", "hello")
+
+' JSON型オブジェクトを、JSON形式の文字列に変換します
+PRINT "更新後の、JSON形式文字列="; JSON_DUMP$(PT@)
+
+END

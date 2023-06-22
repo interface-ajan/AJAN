@@ -1,0 +1,66 @@
+' ================================================================================
+' CSV2ARRAY$ / DIMCINT / DIMCSTR$ / DIMSUM サンプルプログラム
+'  CSV文字列を2次元配列に変換(CSV2ARRAY$関数)した後、任意の場所の値を
+'  取り出したり(DIMCINT関数)、計算したり(DIMSUM関数)、
+'  文字列配列に戻したり(DIMCSTR$関数)する応用例です。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+PRINT "CSV2ARRAY$との組み合わせ例:"
+
+S$ = '''年度,2017,2016,2015,2014
+西広島駅,9389,9353,9232,8930
+横川駅,17016,16901,16758,17762
+新白島駅,11044,9698,7900,6813
+広島駅,77174,74592,73218,72040
+天神川駅,10707,10599,10032,9577
+向洋駅,11728,11293,10728,10116
+海田市駅,9879,9647,9560,9164'''
+
+PRINT "元となるCSV文字列:["; S$; "]"
+LIST ARY$
+ARY$ = CSV2ARRAY$(S$,",", """", FALSE)
+PRINT "CSV文字列 -> 2次元文字列配列化:"
+CALL PRT2(ARY$)
+PRINT "  次元数:"; CDIM(ARY$)
+PRINT "  行数:"; LDIM(ARY$,1); " x 列数:"; LDIM(ARY$, 2)
+PRINT ""
+
+LIST BOOL MSK
+MSK = DIMCINT(ARY$)			' 2次元配列と同じサイズの BOOL配列を作る
+MSK = DIMXOR(MSK, MSK)		' BOOL配列の中身を、一旦 FALSEに全て揃える
+
+FOR Y=0 TO LDIM(ARY$, 1)-1
+	IF ARY$(Y, 0) = "広島駅" THEN
+		' 「広島駅」の行を探して -> 数値欄のある所のマスク値を TRUEに置き換える
+		FOR X=1 TO LDIM(ARY$, 2)-1
+			MSK(Y, X) = TRUE
+		NEXT X
+	END IF
+NEXT Y
+PRINT "マスク(広島駅の横の数値部分のみ TRUE になっている所に注目):"
+CALL PRT2(DIMCSTR$(MSK))
+
+PRINT "2次元文字列配列から、「広島駅」に関する数値を取り出す"
+' DIMCINTを呼び出す際、マスク(MSK)を使って抽出している所に着目
+LIST NUM%
+NUM% = DIMCINT(ARY$, MSK)
+PRINT "抽出結果(広島駅の横の数値部分が抽出されている):"
+CALL PRT2(DIMCSTR$(NUM%))
+
+PRINT "合計値:"; DIMSUM(NUM%)
+CNT% = DIMADD(MSK)		' マスク(MSK)のTRUEの数を数える
+PRINT "平均値:"; DIMSUM(NUM%) / CNT%
+
+END
+
+SUB PRT2(ARY$ AS LIST)
+	FOR Y=0 TO LDIM(ARY$,1)-1
+		FOR X=0 TO LDIM(ARY$,2)-1
+			PRINT CHR$(9); ARY$(Y,X);
+		NEXT X
+		PRINT ""
+	NEXT Y
+END SUB

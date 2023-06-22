@@ -1,0 +1,54 @@
+' ================================================================================
+' PYOBJ CREATE CODE / PYOBJ CALL FUNCTION / PYOBJ CALL METHOD PYOBJ CLOSE サンプルプログラム
+'  Python連携機能を使って Pythonで作ったコードを
+'  読み取り(PYOBJ CREATE CODE関数)、関数(PYOBJ CALL FUNCTION関数)や
+'  メソッド(PYOBJ CALL METHOD関数)を呼び出した後に閉じます。(PYOBJ CLOSE命令)
+'              Copyright 2019 Interface Corporation
+' ================================================================================
+
+' ↓Pythonコード部
+S$='''import sys
+
+def make_range(a, b):
+	# a から b までの等差配列を作る
+	return list(range(int(a), int(b)))
+
+class Sample:
+	# Sampleクラスを定義
+	
+	def __init__(self):
+		self.m_callcnt = 0
+	
+	def get_msg(self, a, b):
+		# 文字列(a)を b回繰り返した文字列を得るメソッド
+		self.m_callcnt += 1
+		return a * b
+	
+	def call_cnt(self):
+		# get_msgメソッドが呼ばれた回数を返す
+		return self.m_callcnt
+
+# Sampleクラスを生成して、obj オブジェクトにインスタンス化する
+obj = Sample()
+
+'''
+
+PRINT "Pythonコード["; S$; "]"
+' Pythonコードを取り込む
+ID = PYOBJ CREATE CODE(S$)
+
+PRINT "Pythonの、自作 make_range 関数を呼び出す"
+A = 1
+B = 10
+PRINT "  A="; A; " B="; B; " 結果="; PYOBJ CALL FUNCTION(ID, "make_range", A, B)
+
+PRINT "Pythonの、自作 Sample クラスのメソッドを呼び出す"
+PRINT "  get_msgメソッドの呼び出し:"; PYOBJ CALL METHOD(ID, "obj", "get_msg", "Interface", 3%)
+PRINT "  呼び出し回数:"; PYOBJ CALL METHOD(ID, "obj", "call_cnt")
+PRINT "  もう一度、get_msgメソッドの呼び出し:"; PYOBJ CALL METHOD(ID, "obj", "get_msg", "Interface", 2%)
+PRINT "  呼び出し回数:"; PYOBJ CALL METHOD(ID, "obj", "call_cnt")
+
+' Pythonの使用をクローズする
+PYOBJ CLOSE ID
+
+END

@@ -1,0 +1,90 @@
+' ================================================================================
+' C言語連携＞DA制御テスト＞DaOutputDA サンプルプログラム 
+'  C言語連携機能を使って、GPG-3300のDAライブラリを呼び出すサンプルプログラムです。
+'  GPG-3300付属のDaOutputDA.c サンプルの移植例です。
+'  「DaOutputDA」 関数を用いて、1件のアナログ出力を実施した結果を表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-3300のお助けルーチンが入っている
+include "GPG3300_EX.AJN"
+
+' GPG-3300のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbida.h")	' GPG-3300をインストール必須です
+s$ = ICONV$(s$, "UTF-8", "EUCJP")		' 2021/1/14時点で、fbida.h は EUC形式文字列なので UTF-8文字列に変更します
+s$ = REPLACE$(s$, "int DaOpenEx", "//int DaOpenEX")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+CDECLARE "libgpg3300.so", s$
+
+OBJECT	boardSpec@ AS MEMORY			' DABOARDSPEC構造体に相当する情報をメモリに入れる用
+boardSpec@ = CSTRUCT@("DABOARDSPEC")
+OBJECT daSmplConfig@ AS MEMORY			' DASMPLREQ構造体に相当する情報をメモリに入れる用
+daSmplConfig@ = CSTRUCT@("DASMPLREQ")
+OBJECT daSmplChReq@ AS MEMORY			' DASMPLCHREQ構造体に相当する情報をメモリに入れる用
+daSmplChReq@ = CSTRUCT@("DASMPLCHREQ", 2)
+OBJECT data@ AS MEMORY					' DaOutputDA.c で、bData, wData, dwData で格納するメモリに相当する
+data@ = CALLOC@(32)
+DIM dt%(1)
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret, "DaOpen", dnum)
+PRINT "open=", ret, errno
+
+errno = CFUNCALL(ret, "DaGetDeviceInfo", dnum, boardSpec@)
+PRINT "getDeiveInfo=", ret, errno
+'PRINT STR_DUMP$(boardSpec@.PEEKSTR$(0, boardSpec@.SIZEOF()))
+PRINT boardSpec@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+' Retrieve the sampling conditions.
+errno = CFUNCALL(ret, "DaGetSamplingConfig", dnum, daSmplConfig@)
+PRINT "getSmplConfig=", ret, errno
+'PRINT STR_DUMP$(adSmplConfig@.PEEKSTR$(0, daSmplConfig@.SIZEOF()))
+PRINT daSmplConfig@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+daSmplChReq@.SETMEMVAL(0, "ulChNo", 1)
+daSmplChReq@.SETMEMVAL(0, "ulRange", daSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange"))
+daSmplChReq@.SETMEMVAL(1, "ulChNo", 2)
+daSmplChReq@.SETMEMVAL(1, "ulRange", daSmplConfig@.GETMEMVAL("SmplChReq[0].ulRange"))
+
+rng = daSmplChReq@.GETMEMVAL(0, "ulRange")
+res = boardSpec@.GETMEMVAL("ulResolution")
+PRINT "分解能="; res
+PRINT "レンジ(hex)=&H"; HEX$(rng, 8)
+STRUCT RANGE_INFO	info
+info = GET_RANGE_INFO(rng)		' レンジ値の説明、上限値、下限値を取得する
+PRINT "レンジ情報="; info
+
+' Configure the number of output channels to 2  channels.
+IF res = 8 THEN
+	data@.POKEBYTE(0, &Hff)
+	data@.POKEBYTE(1, &H00)
+ELSEIF res = 12 THEN
+	data@.POKEHALF(0, &Hfff)
+	data@.POKEHALF(2, &H000)
+ELSEIF res = 16 THEN
+	data@.POKEHALF(0, &Hffff)
+	data@.POKEHALF(2, &H0000)
+ELSE
+	ASSERT FALSE, "no support resolution"
+END IF
+
+' Start the analog output.
+errno = CFUNCALL(ret, "DaOutputDA", dnum, 2, daSmplChReq@, data@)
+PRINT "outputDA=", ret, errno
+
+SLEEP 1
+
+' Close the device.
+errno = CFUNCALL(ret, "DaClose", dnum)
+PRINT "close=", ret, errno
+
+' 後片付け
+OBJDELETE boardSpec@
+OBJDELETE daSmplConfig@
+OBJDELETE daSmplChReq@
+OBJDELETE data@
+
+? "bye.bye"
+end

@@ -1,0 +1,66 @@
+' ================================================================================
+' C言語連携＞CAN通信テスト＞cyclic サンプルプログラム 
+'  C言語連携機能を使って、GPG-4851のCAN通信ライブラリを呼び出すサンプルプログラムです。
+'  GPG-4851付属の cyclic.c サンプルの移植例です。
+'  メッセージを送信します。
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+' GPG-4851のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/ifcan.h")	' GPG-4851をインストール必須です
+CDECLARE "libifcan.so", s$
+
+' Open a device (ifcan1).
+errno = CFUNCALL(portHandle%, "CanOpenPort", "ifcan1")
+if portHandle% < 0 then
+	PRINT "Failed to open the port.", errno
+	end
+end if
+
+' Connect to the CAN bus.
+errno = CFUNCALL(ret%, "CanActivate", portHandle%)
+if ret% then
+	PRINT "CanActivate error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Transmit the CAN message.
+OBJECT sendMessage@ as MEMORY
+sendMessage@ = CSTRUCT@("CAN_MESSAGE")
+sendMessage@.SETMEMVAL("ulLength", 1)		' Data length: 1
+sendMessage@.SETMEMVAL("ulFlag", 0)			' Data frame
+sendMessage@.SETMEMVAL("ulID", &H30)		' ID: 30h
+sendMessage@.SETMEMVAL("bData[0]", &H55)	' Data: 55h
+sendMessage@.SETMEMVAL("ulTime", 1000 * 100)	' Transmission cycle: 1000ms
+errno = CFUNCALL(ret%, "CanCyclicSendMessage", portHandle%, sendMessage@)
+if ret% then
+	PRINT "CanCyclicSendMessage error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Transmit periodically the data during 10 seconds.
+SLEEP 10
+
+' Stop the cycle transmission.
+errno = CFUNCALL(ret%, "CanStopCyclicSendMessage", portHandle%)
+if ret% then
+	PRINT "CanStopCyclicSendMessage error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Disconnect from the CAN bus.
+errno = CFUNCALL(ret%, "CanDeactivate", portHandle%)
+if ret then
+	PRINT "CanDeactivate error(ret:"; hex$(ret%); ")"
+	errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+	end
+end if
+
+' Close the device.
+errno = CFUNCALL(ret%, "CanClosePort", portHandle%)
+
+? "bye.bye"
+end

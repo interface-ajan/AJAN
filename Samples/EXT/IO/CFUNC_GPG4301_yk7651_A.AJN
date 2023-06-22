@@ -1,0 +1,72 @@
+' ================================================================================
+' C言語連携＞GPIB制御テスト＞YOKOGAWA 7651＞5V電圧出力事例 サンプルプログラム 
+'  C言語連携機能を使って、GPG-4301のGPIBライブラリを呼び出すサンプルプログラムです。
+'  YOKOGAWA 7651(プログラマブル直流電圧／電流源)を制御します。
+'  YOKOGAWA 7651の「6.4 サンプルプログラム集」の、(1)の事例を再現します。
+'    (1) 7651のレンジを10mVとし、+5.0000mVを設定した後、出力を on にする。
+'        また、設定データを読み出し、表示する。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GPG-4301のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/pcigpib.h")	' GPG-4301をインストール必須です
+CDECLARE "libgpg4301.so", s$
+
+DIM	adrsTbl(1)
+adrsTbl = [ 1; -1 ]			' Address Table for Machines
+
+' Initialize Board Number 0
+errno = CFUNCALL(ret, "PciGpibExInitBoard", 0, 0)
+PRINT "init=", ret, errno
+ASSERT ret = 0, "初期化エラー"
+
+' Send IFC(InterFace Clear)
+errno = CFUNCALL(ret, "PciGpibExSetIfc", 0, 1)	' 100us
+PRINT "ifc=", ret, errno
+ASSERT ret = 0, "IFCエラー"
+
+' Available REN(Remote Enable)
+errno = CFUNCALL(ret, "PciGpibExSetRen", 0)
+PRINT "ren=", ret, errno
+ASSERT ret = 0, "RENエラー"
+
+' 7651の設定
+CALL SEND_DATA("F1R2S5E-3E")		' DCV 10mVレンジ +5.000mV
+CALL SEND_DATA("O1E")				' 出力 on
+
+' 設定データの読み出し
+CALL SEND_DATA("OD")				' 設定データを出力
+S$ = RECV_DATA$()
+V = BINBLK2ARRAY(S$, "double")
+PRINT "設定データ=["; S$; "]["; V; "]"
+
+' Finish Board
+errno = CFUNCALL(ret, "PciGpibExFinishBoard", 0)
+PRINT "finish=", ret, errno
+
+? "bye.bye"
+end
+
+SUB SEND_DATA(sdata$)
+	' Send for YOKOGAWA 7651
+	PRINT "YOKOGAWA 7651 : Send Data="; sdata$
+	errno = CFUNCALL(ret, "PciGpibExSendData", 0, adrsTbl, LENB(sdata$), sdata$, 0)
+	PRINT "send data=", ret, errno
+	ASSERT ret = 0, "SENDエラー"
+END SUB
+
+FUNCTION RECV_DATA$()
+	' Received from YOKOGAWA 7651
+	recvbuf$ = STR_REPEAT$(CHRB$(0), 100)	' 受信時に受け取る受信バッファ(100バイト)を作る
+	length = LENB(recvbuf$)
+	errno = CFUNCALL(ret, "PciGpibExRecvData", 0, adrsTbl, length, recvbuf$, 0)
+	ASSERT ret = 0, "RECEIVEエラー"
+	recvbuf$ = LEFTB$(recvbuf$, length)
+
+	' Display Data
+	PRINT "YOKOGAWA 7651 : Receive Data = "; recvbuf$
+	PRINT "                Length of Receive Data = "; length
+	PRINT STR_DUMP$(recvbuf$)
+	RECV_DATA$ = recvbuf$
+END FUNCTION
+

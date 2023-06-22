@@ -1,0 +1,132 @@
+' ================================================================================
+' C言語連携＞AD制御テスト＞AdWaitEvent サンプルプログラム 
+'  C言語連携機能を使って、GPG-3100のADライブラリを呼び出すサンプルプログラムです。
+'  GPG-3100付属のAdWaitEvent.c サンプルの移植例です。
+'  コールバックを使ったサンプリング入力を行います。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-3100のお助けルーチンが入っている
+include "GPG3100_EX.AJN"
+
+' GPG-3100のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbiad.h")	' GPG-3100をインストール必須です
+CDECLARE "libgpg3100.so", s$
+
+' C言語で書いたサブルーチン部 を組み込みます
+CIMPORT "CFUNC_GPG3100_AdWaitEvent_sub.c"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+void c_event_proc(int dummy);
+void c_set_flag(int v);
+int c_get_flag(void);
+'''
+CDECLARE "", s$
+
+OBJECT	boardSpec@ AS MEMORY			' ADBOARDSPEC構造体に相当する情報をメモリに入れる用
+boardSpec@ = CSTRUCT@("ADBOARDSPEC")
+OBJECT adSmplConfig@ AS MEMORY			' ADSMPLREQ構造体に相当する情報をメモリに入れる用
+adSmplConfig@ = CSTRUCT@("ADSMPLREQ")
+OBJECT smplData@ AS MEMORY			' AdInputAD.c で、bSmplData, wSmplData, dwSmplData で格納するメモリに相当する
+smplData@ = CALLOC@(1024 * 2 * 4)
+
+dnum = 1
+INPUT "デバイス番号を入力してください:"; dnum
+
+' Open a device.
+errno = CFUNCALL(ret, "AdOpen", dnum)
+PRINT "open=", ret, errno
+
+' Configure callback function.
+OBJECT	event_proc@ AS POINTER
+event_proc@ = CGETADRS@("c_event_proc")		' 割り込み発生時に、C言語の関数をコールバックするようにアドレスを得る
+PRINT "event_proc address="; HEX$(event_proc@.TOLNG())
+' 割り込み発生時に、C言語の関数(c_event_proc)をコールバックするように設定する
+errno = CFUNCALL(ret, "AdSetBoardConfig", dnum, 0, event_proc@, 0)
+PRINT "setBoardConfig=", ret, errno
+
+errno = CFUNCALL(ret, "AdGetDeviceInfo", dnum, boardSpec@)
+PRINT "getDeiveInfo=", ret, errno
+'PRINT STR_DUMP$(boardSpec@.PEEKSTR$(0, boardSpec@.SIZEOF()))
+PRINT boardSpec@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+' Retrieve the sampling conditions.
+errno = CFUNCALL(ret, "AdGetSamplingConfig", dnum, adSmplConfig@)
+PRINT "getSmplConfig=", ret, errno
+'PRINT STR_DUMP$(adSmplConfig@.PEEKSTR$(0, adSmplConfig@.SIZEOF()))
+PRINT adSmplConfig@.TOJSON$()			' 構造体情報をJSON形式で出力
+
+' Configure the sampling conditions.
+adSmplConfig@.SETMEMVAL("ulChCount", 1)
+adSmplConfig@.SETMEMVAL("SmplChReq[0].ulChNo", 1)
+adSmplConfig@.SETMEMVAL("ulSmplNum", 1024)
+errno = CFUNCALL(ret, "AdSetSamplingConfig", dnum, adSmplConfig@)
+PRINT "setSmplConfig=", ret, errno
+
+rng = adSmplConfig@.GETMEMVAL(0, "SmplChReq[0].ulRange")
+res = boardSpec@.GETMEMVAL("ulResolution")
+diff = adSmplConfig@.GETMEMVAL("ulSingleDiff")
+PRINT "分解能="; res
+PRINT "入力仕様="; diff
+PRINT "レンジ(hex)=&H"; HEX$(rng, 8)
+STRUCT RANGE_INFO	info
+info = GET_RANGE_INFO(rng)		' レンジ値の説明、上限値、下限値を取得する
+PRINT "レンジ情報="; info
+
+' C言語ルーチン内のflag値を 1にセットします
+errno = CSUBCALL("c_set_flag", 1)
+st_tm = CLOCK
+
+' Start the sampling with synchronous mode.
+errno = CFUNCALL(ret, "AdStartSampling", dnum, 2/* FLAG_ASYNC */)
+PRINT "startSmpling=", ret, errno
+
+' Wait for the end of sampling.
+DO WHILE TRUE
+	' C言語ルーチン内のflag値を読み取ります。割り込みが発生したら、得られる値が 0 になります
+	errno = CFUNCALL(ret, "c_get_flag")
+	PRINT "c_get_flag=", ret
+	IF ret = 0 THEN EXIT DO
+	SLEEP 0.1
+LOOP
+PRINT "サンプリングに掛かった時間="; CLOCK - st_tm
+
+' Retrieve the sampling data to smplData
+ulSmplNum = 1024
+errno = CFUNCALL(ret, "AdGetSamplingData", dnum, smplData@, ulSmplNum)
+PRINT "getSamplingData=", ret, errno
+'PRINT STR_DUMP$(smplData@.PEEKSTR$(0, smplData@.SIZEOF()))
+
+' Display the retrieved result.
+IDX = 0
+IF res <= 8 THEN
+	FOR I=0 TO ulSmplNum - 1
+		dt% = smplData@.PEEKBYTE(IDX)
+		IDX = IDX + 1
+		PRINT I; "件"; " デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+	NEXT I
+ELSEIF (res > 8) and (res <= 16) THEN
+	FOR I=0 TO ulSmplNum - 1
+		dt% = smplData@.PEEKHALF(IDX)
+		IDX = IDX + 2
+		PRINT I; "件"; " デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+	NEXT I
+ELSE
+	FOR I=0 TO ulSmplNum - 1
+		dt% = smplData@.PEEKINT(IDX)
+		IDX = IDX + 4
+		PRINT I; "件"; " デジタル値:"; dt%; " -> アナログ値:"; CONVPHY(dt%, 1 << res, info.HIGH, info.LOW)
+	NEXT I
+END IF
+
+' Close the device.
+errno = CFUNCALL(ret, "AdClose", dnum)
+PRINT "close=", ret, errno
+
+' 後片付け
+OBJDELETE boardSpec@
+OBJDELETE adSmplConfig@
+OBJDELETE smplData@
+
+? "bye.bye"
+end

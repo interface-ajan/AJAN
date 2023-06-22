@@ -1,0 +1,47 @@
+' ================================================================================
+' STRDELB$, STRINSB$ 文字列操作サンプルプログラム 
+'  文字列に対して、STRDELB$関数で指定バイト長の削除、
+'  STRINSB$関数で挿入を行います。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+CLS
+
+S$ = "1234567890"
+
+PRINT "元の文字列:"; S$
+PRINT "STRDELB$の例(2バイト目から2バイト削除):"; STRDELB$(S$, 2, 2)
+PRINT "STRINSB$の例(2バイト目から2バイト挿入):"; STRINSB$(S$, 2, "AB")
+
+PRINT "---"
+PRINT "STRDEL$ / STRINS$ と STRDELB$ / STRINSB$ の違い"
+
+S$ = "あいうえお1"
+PRINT "元の文字列:"; S$
+PRINT "内部ダンプ:"; MOJI_DUMP$(S$)
+PRINT "文字長:"; LEN(S$)
+PRINT "バイト長:"; LENB(S$)
+PRINT ""
+PRINT "注意!: 日本語は1文字が複数バイトで構成されるので、区切り位置で削除／挿入しないと文字化けします"
+PRINT "　　   そのため、以降は 操作後のバイト長、内部ダンプで示します"
+
+PRINT "STRDEL$(2文字削除):"; LENB(STRDEL$(S$, 2, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(STRDEL$(S$, 2, 2))
+PRINT "STRDELB$(2バイト削除):"; LENB(STRDELB$(S$, 2, 2))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(STRDELB$(S$, 2, 2))
+
+PRINT "STRINS$(2文字目から挿入):"; LENB(STRINS$(S$, 2, "12"))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(STRINS$(S$, 2, "12"))
+PRINT "STRINSB$(2バイト目から挿入):"; LENB(STRINSB$(S$, 2, "12"))
+PRINT "  内部ダンプ:"; MOJI_DUMP$(STRINSB$(S$, 2, "12"))
+
+' 文字列の内部ダンプを得ます
+FUNCTION MOJI_DUMP$(S$)
+	R$ = ""
+	FOR I=1 TO LENB(S$)
+		R$ = R$ + " " + HEX$(ASCB(MIDB$(S$,I,1)))
+	NEXT I
+	MOJI_DUMP$ = R$
+END FUNCTION
+
+END

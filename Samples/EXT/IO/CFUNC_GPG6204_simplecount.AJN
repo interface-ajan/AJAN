@@ -1,0 +1,45 @@
+' ================================================================================
+' C言語連携＞3モードカウンタ制御テスト＞simplecount サンプルプログラム 
+'  C言語連携機能を使って、GPG-6204の3モードカウンタライブラリを呼び出すサンプルプログラムです。
+'  GPG-6204付属のsimplecount.c サンプルの移植例です。
+'  位相差パルスをカウントして連続表示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' GPG-6204のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbipenc.h")	' GPG-6204をインストール必須です
+s$ = REPLACE$(s$, "int PencOpenEx", "//int PencOpenEx")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+s$ = REPLACE$(s$, "unsigned char ucBoardID", "//unsigned char ucBoardID")	' 2021/1/14時点で、未実装関数が定義されているので対象から除外します
+CDECLARE "libgpg6204.so", s$
+
+nDevice = 1
+INPUT "デバイス番号を入力してください:"; nDevice
+
+' Open a device.
+errno = CFUNCALL(ret%, "PencOpen", nDevice, 2/* PENC_FLAG_SHARE */)
+PRINT "open=", HEX$(ret%), errno
+ASSERT ret% = 0, "fail open"
+
+' Set the pulse count mode, clear mode, and comparator output of channel 1 to
+' phase-shifted pulse count mode, asynchronous clear, and equal detection, respectively
+nChannel = 1
+errno = CFUNCALL(ret%, "PencSetMode", nDevice, nChannel, &H04, 0, 1, 0)
+PRINT "setMode=", ret%, errno
+
+' Display the retrieved count value.
+FOR I=0 TO 1000 - 1
+	' Read counter
+	errno = CFUNCALL(ret%, "PencGetCounter", nDevice, nChannel, dwCounter&)
+	PRINT "getCounter=", ret%, errno
+
+	PRINT I; " data="; HEX$(dwCounter&, 8)
+
+	SLEEP 0.001
+NEXT I
+
+' Close the device.
+errno = CFUNCALL(ret%, "PencClose", nDevice)
+PRINT "close=", ret%, errno
+
+? "bye.bye"
+end

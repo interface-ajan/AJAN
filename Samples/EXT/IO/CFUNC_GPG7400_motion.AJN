@@ -1,0 +1,338 @@
+' ================================================================================
+' C言語連携＞モーションテスト＞motion サンプルプログラム 
+'  C言語連携機能を使って、GPG-7400のモーションライブラリを呼び出すサンプルプログラムです。
+'  GPG-7400付属のmotion.c サンプルの移植例です。
+'  コンパレータ条件により、X軸〜U軸のモータをX軸から順に下記の動作で起動させます。
+'    X軸：連続動作
+'    Y軸：連続動作
+'    Z軸：原点復帰動作
+'    U軸：PTP動作
+'  元のmotion.c では、何かキーを押すと処理が停止しますが、このサンプルでは
+'  F2キーを押すと処理が停止するようになっています。
+'  IDE上で実行すると出力するメッセージが流れます。端末上で実行すると画面上に固定されます。
+'
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' -----------------------------------------------------------------------------
+' メイン処理です
+
+' GPG-7400のヘッダファイルを読み取ります
+s$ = str_freadall$("/usr/include/fbimtn.h")	' GPG-7400をインストール必須です
+CDECLARE "libgpg7400.so", s$
+
+' C言語で書いたサブルーチンを組み込みます
+CIMPORT "CFUNC_GPG7400_motion_sub.c"
+' C言語で書いたサブルーチンを、AJANから呼び出せるようにプロトタイプ宣言を読み取ります
+s$ = '''
+void c_func(unsigned long event, unsigned long user);
+void c_set_gCall(int v);
+int c_get_gCall(void);
+'''
+CDECLARE "", s$
+
+' motion.cでは、何かキーを押すと処理が停止するようにしていますが、
+' このサンプルでは、F2キーを押すと処理が停止するようにしています。
+IS_STOP = FALSE
+ON KEY(2) CALL CB_KEY_STOP
+KEY ON
+
+nDevice% = OpenBoard()
+IF nDevice% = -1 THEN
+	PRINT CHR$(13)+"  Error : Invalid device"+CHR$(13)
+	END
+END IF
+
+nRet% = ControlBoard(nDevice%)
+IF nRet% <> 0 THEN
+	CALL DispError(nRet%)
+ELSE
+	PRINT CHR$(10); "  End program"; CHR$(10)
+END IF
+
+errno = CFUNCALL(nRet%, "MtnClose", nDevice%)
+
+? "bye.bye"
+end
+
+' =============================================================================
+' F2キーを押した際の処理
+SUB CB_KEY_STOP(num%)
+	IS_STOP = TRUE
+END SUB
+
+
+SUB Locate(x%, y%)
+	PRINT CHR$(&H1B); "["; (y+1); ";"; (x+1); "H";
+END SUB
+
+FUNCTION OpenBoard()
+
+	LOCAL	nRet%, nDevice%, errno
+
+	' display title
+	nRet% = SHELL SYSTEM("clear")
+	PRINT ""
+	PRINT " =================================================="
+	PRINT "    Sample program to start motion                 "
+	PRINT "    Copyright 2002 Interface Corporation           "
+	PRINT " =================================================="
+	PRINT ""
+	PRINT "  Enter the device number in decimal : ";
+	INPUT nDevice%
+
+	errno = CFUNCALL(nRet%, "MtnOpen", nDevice%, 0/*MTR_FLAG_NORMAL*/)
+	PRINT "MtnOpen=", HEX$(nRet%), errno
+	IF nRet% <> 0 THEN nDevice% = -1
+
+	OpenBoard = nDevice%
+
+END FUNCTION
+
+FUNCTION ControlBoard(nDevice%)
+
+	LOCAL	nRet%, errno
+
+	LOCAL OBJECT	Motion@ AS MEMORY
+	Motion@ = CSTRUCT@("MTNMOTION", 4)
+	LOCAL OBJECT	Comp@ AS MEMORY
+	Comp@ = CSTRUCT@("MTNCOMP", 4)
+	LOCAL OBJECT	Mask@ AS MEMORY
+	Mask@ = CSTRUCT@("MTNEVENTTABLE", 4)
+	LOCAL OBJECT	sync@ AS MEMORY
+	sync@ = CALLOC@(2 * 4)		' sizeof(unsigned short) is 2bytes
+	LOCAL	status&(3)
+	LOCAL	counter&(3)
+	LOCAL	speed!(3)
+	LOCAL	mode&(3)
+	mode& = [ &H00/*MTR_JOG*/; &H00/*MTR_JOG*/; &H00/*MTR_ORG*/; &H02/*MTR_PTP*/ ]
+	LOCAL	szIn$(3)
+	LOCAL	szAxis$(3)
+	szAxis$ = [ "Axis X"; "Axis Y"; "Axis Z"; "Axis U" ]
+	LOCAL OBJECT	c_func@ AS POINTER
+	c_func@ = CGETADRS@("c_func")
+	LOCAL	gCall%
+
+	' == MtnSetEvent ==
+	' Mask[4] = {axis X, axis Y, axis Z, axis U}
+	FOR I=0 TO 3
+		Mask@.SETMEMVAL(I, "wPulseOut", &H01)
+		Mask@.SETMEMVAL(I, "wComparator", &H00)
+		Mask@.SETMEMVAL(I, "wCounter", &H00)
+		Mask@.SETMEMVAL(I, "wSignal", &H00)
+		Mask@.SETMEMVAL(I, "wReserved", &H00)
+	NEXT I
+	errno = CFUNCALL(nRet%, "MtnSetEvent", nDevice%, &H0f, Mask@, c_func@, &H1234)	' c_func はコールバックポインタです
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' == MtnSetPulseOut ==
+	errno = CFUNCALL(nRet%, "MtnSetPulseOut", nDevice%, &H0f, 0 /*MTR_METHOD*/, &H01)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' Clear counter
+	' == MtnWriteCounter ==
+	' counter[4] = {axis X, axis Y, axis Z, axis U}
+	errno = CFUNCALL(nRet%, "MtnWriteCounter", nDevice%, &H0f, 1 /*MTR_COUNTER*/, counter&)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' == MtnSetComparator ==
+	' Comp[4] = {axis X, axis Y, axis Z, axis U}
+	' Axis X
+	Comp@.SETMEMVAL(0, "wConfig", &H01 /*MTR_EQ*/)
+	Comp@.SETMEMVAL(0, "wMotion", &H01 /*MTR_STOP*/)
+	Comp@.SETMEMVAL(0, "lCounter", 500)
+	Comp@.SETMEMVAL(0, "wCntType", &H00 /*MTR_CMP_COUNTER*/)
+	' Axis Y
+	Comp@.SETMEMVAL(1, "wConfig", &H03 /*MTR_EQ_DOWN*/)
+	Comp@.SETMEMVAL(1, "wMotion", &H02 /*MTR_DEC*/)
+	Comp@.SETMEMVAL(1, "lCounter", -500)
+	Comp@.SETMEMVAL(1, "wCntType", &H00 /*MTR_CMP_COUNTER*/)
+	' Axis Z
+	Comp@.SETMEMVAL(2, "wConfig", &H05 /*MTR_GT*/)
+	Comp@.SETMEMVAL(2, "wMotion", &H01 /*MTR_STOP*/)
+	Comp@.SETMEMVAL(2, "lCounter", 1000)
+	Comp@.SETMEMVAL(2, "wCntType", &H00 /*MTR_CMP_COUNTER*/)
+	' Axis U
+	Comp@.SETMEMVAL(3, "wConfig", &H00 /*MTR_NO*/)
+	Comp@.SETMEMVAL(3, "wMotion", &H00 /*MTR_NO*/)
+	Comp@.SETMEMVAL(3, "lCounter", 0)
+	Comp@.SETMEMVAL(3, "wCntType", &H00 /*MTR_CMP_COUNTER*/)
+	errno = CFUNCALL(nRet%, "MtnSetComparator", nDevice%, &H0f, &H01 /*MTR_COMP1*/, Comp@)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' == MtnSetSync ==
+	' sync[4] = {axis X, axis Y, axis Z, axis U}
+	sync@.POKEHALF(2 * 0, &H00 /*MTR_NO*/)
+	sync@.POKEHALF(2 * 1, &H01 /*MTR_X*/)
+	sync@.POKEHALF(2 * 2, &H02 /*MTR_Y*/)
+	sync@.POKEHALF(2 * 3, &H04 /*MTR_Z*/)
+	errno = CFUNCALL(nRet%, "MtnSetSync", nDevice%, &H0f, &H00 /*MTR_START_MODE*/, sync@)
+	IF nRet% <> 0 THEN
+		ControlBoard = nRet%
+		EXIT FUNCTION
+	END IF
+
+	' == MtnSetMotion ==
+	' Motion[4] = {axis X, axis Y, axis Z, axis U}
+	' Axis X
+	Motion@.SETMEMVAL(0, "wClock", 299)
+	Motion@.SETMEMVAL(0, "wAccMode", &H00 /*MTR_ACC_NORMAL*/)
+	Motion@.SETMEMVAL(0, "fLowSpeed", 50.0)
+	Motion@.SETMEMVAL(0, "fSpeed", 200.0)
+	Motion@.SETMEMVAL(0, "ulAcc", 500)
+	Motion@.SETMEMVAL(0, "ulDec", 200)
+	Motion@.SETMEMVAL(0, "fSAccSpeed", 0.0)
+	Motion@.SETMEMVAL(0, "fSDecSpeed", 0.0)
+	Motion@.SETMEMVAL(0, "lStep", 1 /*MTR_CW*/)
+	' Axis Y
+	Motion@.SETMEMVAL(1, "wClock", 299)
+	Motion@.SETMEMVAL(1, "wAccMode", &H01 /*MTR_ACC_SIN*/)
+	Motion@.SETMEMVAL(1, "fLowSpeed", 10.0)
+	Motion@.SETMEMVAL(1, "fSpeed", 150.0)
+	Motion@.SETMEMVAL(1, "ulAcc", 300)
+	Motion@.SETMEMVAL(1, "ulDec", 500)
+	Motion@.SETMEMVAL(1, "fSAccSpeed", 0.0)
+	Motion@.SETMEMVAL(1, "fSDecSpeed", 0.0)
+	Motion@.SETMEMVAL(1, "lStep", -1 /*MTR_CCW*/)
+	' Axis Z
+	Motion@.SETMEMVAL(2, "wClock", 299)
+	Motion@.SETMEMVAL(2, "wAccMode", &H00 /*MTR_ACC_NORMAL*/)
+	Motion@.SETMEMVAL(2, "fLowSpeed", 10.0)
+	Motion@.SETMEMVAL(2, "fSpeed", 100.0)
+	Motion@.SETMEMVAL(2, "ulAcc", 100)
+	Motion@.SETMEMVAL(2, "ulDec", 100)
+	Motion@.SETMEMVAL(2, "fSAccSpeed", 0.0)
+	Motion@.SETMEMVAL(2, "fSDecSpeed", 0.0)
+	Motion@.SETMEMVAL(2, "lStep", 1 /*MTR_CW*/)
+	' Axis U
+	Motion@.SETMEMVAL(3, "wClock", 299)
+	Motion@.SETMEMVAL(3, "wAccMode", &H01 /*MTR_ACC_SIN*/)
+	Motion@.SETMEMVAL(3, "fLowSpeed", 10.0)
+	Motion@.SETMEMVAL(3, "fSpeed", 200.0)
+	Motion@.SETMEMVAL(3, "ulAcc", 300)
+	Motion@.SETMEMVAL(3, "ulDec", 500)
+	Motion@.SETMEMVAL(3, "fSAccSpeed", 0.0)
+	Motion@.SETMEMVAL(3, "fSDecSpeed", 0.0)
+	Motion@.SETMEMVAL(3, "lStep", 1000)
+	FOR I=0 TO 3
+		errno = CFUNCALL(nRet%, "MtnSetMotion", nDevice%, (&H01 << I), mode&(i), Motion@)
+		IF nRet% <> 0 THEN
+			ControlBoard = nRet%
+			EXIT FUNCTION
+		END IF
+	NEXT I
+
+	' == MtnStartMotion ==
+	FOR I=0 TO 3
+		errno = CFUNCALL(nRet%, "MtnStartMotion", nDevice%, (&H01 << i), &H00 /*MTR_ACC*/, mode&(i))
+		IF nRet% <> 0 THEN
+			ControlBoard = nRet%
+			EXIT FUNCTION
+		END IF
+	NEXT I
+
+	' ***** watch status ********************************
+	
+	DO WHILE (IS_STOP = FALSE)
+		' == MtnReadCounter ==
+		' counter[4] = {axis X, axis Y, axis Z, axis U}
+		errno = CFUNCALL(nRet%, "MtnReadCounter", nDevice%, &H0f, &H01 /*MTR_COUNTER*/, counter&)
+		IF nRet% <> 0 THEN
+			ControlBoard = nRet%
+			EXIT FUNCTION
+		END IF
+	
+		' == MtnReadSpeed ==
+		' speed[4] = {axis X, axis Y, axis Z, axis U}
+		errno = CFUNCALL(nRet%, "MtnReadSpeed", nDevice%, &H0f, speed!)
+		IF nRet% <> 0 THEN
+			ControlBoard = nRet%
+			EXIT FUNCTION
+		END IF
+		
+		' == MtnGetStatus ==
+		' status[4] = {axis X, axis Y, axis Z, axis U}
+		errno = CFUNCALL(nRet%, "MtnGetStatus", nDevice%, &H0f, &H00 /*MTR_BUSY*/, status&)
+		IF nRet% <> 0 THEN
+			ControlBoard = nRet%
+			EXIT FUNCTION
+		END IF
+		
+		FOR I=0 TO 3
+			szIn$(I) = " ** "
+			SELECT CASE status&(I) and &H07
+			CASE &H01
+				szIn$(I) = " -- "
+			CASE &H02
+				szIn$(I) = " UP "
+			CASE &H04
+				szIn$(I) = "DOWN"
+			END SELECT
+		NEXT I
+		
+		call Locate(0, 6)
+		FOR I=0 TO 3
+			PRINT "   +---------------------------------------------+ "
+			PRINT "   |  "; szAxis$(I); " : velocity ["; szIn$(I); "] : "; FORMAT$(speed!(I), "000.0"); " Hz        | "
+			PRINT "   |  "; szAxis$(I);" : pulse count : "; FORMAT$(counter&(I), "000000000");"           | "
+		NEXT I
+		PRINT "   +---------------------------------------------+ "
+	
+	LOOP
+	
+	call Locate(6, 20)
+	errno = CFUNCALL(gCall%, "c_get_gCall")
+	PRINT "CallBack count - "; gCall%;" "
+
+END FUNCTION
+
+SUB DispError(ErrCode)
+
+	local szErr$
+  
+	CLS
+	call Locate(5, 6)
+
+	SELECT CASE ErrCode
+	CASE &Hc0000003		' MTR_ERROR_INVALID_DEVICE_NUMBER:
+		szErr$ = "The device handle is invalid."
+	CASE &Hc0000009		' MTR_ERROR_NOT_SUPPORTED:
+		szErr$ = "The function is not supported."
+	CASE &Hc0001000		' MTR_ERROR_NOW_MOVING:
+		szErr$ = "moter is running now."
+	CASE &Hc0001001		' MTR_ERROR_NOW_STOPPED:
+		szErr$ = "Moter is stopped."
+	CASE &Hc0001013		' MTR_ERROR_INVALID_AXIS:
+		szErr$ = "Invalid axis is specified."
+	CASE &Hc0001014		' MTR_ERROR_INVALID_SPEED:
+		szErr$ = "Invalid velocity is specified."
+	CASE &Hc0001015		' MTR_ERROR_INVALID_ACCDEC:
+		szErr$ = "Invalid acceleration and deceleration time is specified."
+	CASE &Hc0001016		' MTR_ERROR_INVALID_PULSE:
+		szErr$ = "Invalid number of pulse is specified."
+	CASE &Hc0001017		' MTR_ERROR_INVALID_PARAMETER:
+		szErr$ = "Invalid parameter is specified."
+	CASE &Hc0001020		' MTR_ERROR_NOW_INTERLOCKED:
+		szErr$ = "The interlock has been asserted."
+	CASE &Hc0001021		' MTR_ERROR_IMPOSSIBLE:
+		szErr$ = "The specified request is not supported."
+	CASE ELSE
+		szErr$ = "Unknown error"
+	END SELECT
+
+	PRINT "Error : "; szErr$; CHR$(10)
+
+END SUB
+
