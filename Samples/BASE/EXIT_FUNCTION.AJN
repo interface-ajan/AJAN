@@ -1,0 +1,32 @@
+' ================================================================================
+' EXIT FUNCTION サンプルプログラム 
+'  三角形の面積を求めるユーザー定義関数を定義します。
+'  引数の底辺、高さの値が負数の場合、EXIT FUNCTION命令で、
+'  ユーザー定義関数を途中で抜けます。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' 底辺(B)と高さ(H)から三角形の面積を得ます
+FUNCTION MENSEKI(B, H)		'ユーザ定義関数 MENSEKI
+	IF B < 0 OR H < 0 THEN
+		MENSEKI = 0
+		EXIT FUNCTION '底辺か高さが負数なので関数を抜ける
+	END IF
+	MENSEKI = B * H / 2
+END FUNCTION
+
+'ここからメインの処理
+CLS
+
+PRINT "三角形の面積を求めます"
+INPUT "底辺："; TEIHEN
+INPUT "高さ："; TAKASA
+
+ANSWER = MENSEKI(TEIHEN, TAKASA)	' 三角形の面積を求める、ユーザ定義関数を呼ぶ
+IF ANSWER <= 0 THEN
+	PRINT "底辺か高さが負数になっています"
+ELSE
+	PRINT "面積は　"; ANSWER
+END IF
+
+END

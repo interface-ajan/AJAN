@@ -1,0 +1,30 @@
+' ================================================================================
+' DICT,GET_DICT_KEYS$,HAS_DICT_KEY,LDICT サンプルプログラム 
+'  DICT命令で宣言した連想配列にデータを格納し、
+'  キーの数(LDICT)、キーの一覧(GET_DICT_KEYS$)、キーの有無(HAS_DICT_KEY)、
+'  指定したキーの値を 表示します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' 画面クリア
+CLS
+
+' 連想配列変数を宣言
+DICT INFO$
+
+'要素を代入します
+INFO$("NAME") = "Interface"
+INFO$("URL") = "http://www.interface.co.jp"
+
+? "キーの総数は";LDICT(INFO$);"です"
+? "キー値一覧:" ; GET_DICT_KEYS$(INFO$)
+? "キー値 ADDRESSはINFO$に";
+IF HAS_DICT_KEY(INFO$,"ADDRESS") THEN
+	? "あります"
+ELSE
+	? "ありません"
+END IF
+? "名前:"; INFO$("NAME")
+? "URL:"; INFO$("URL")
+
+END

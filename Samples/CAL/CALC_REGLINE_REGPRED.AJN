@@ -1,0 +1,80 @@
+' ================================================================================
+' CALC_REGLINE / CALC_REGPRED のサンプルプログラムです。
+'  CALC_REGLINE関数で、2つのデータ列から回帰直線となる傾きと切片を求めます。
+'  CALC_REGPRED関数で、CALC_REGLINE関数で求めた傾きと切片から予測値を求めるます。
+'  GUIコマンドと組み合わせて、簡単なグラフプロットを行っています。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+option gui
+
+include "CAL001.AJN"
+
+GUCREATE WINDOW 1, "回帰直線のサンプル", 1, "32, 0, 0, 14, 1, 9", "300, 250", ,
+GUCREATE PIC 1, 10,,"210, 210","50, 10",
+
+ON GUEVT WINDOW 1 CALL cb_WINDOW
+GUEVT WINDOW 1 ON
+
+GUSHOW 1
+
+GUGCLS PIC 10
+' グラフの基準線を描画
+GUGLINE PIC 10, (10, 10)-(10, 200), 1
+GUGLINE PIC 10, (10, 200)-(200, 200), 1
+
+? "*回帰直線"
+list ary1, ary2
+ary1 = [ 10, 20, 30, 40, 50, 60 ]
+ary2 = [ 5, 20, 100, 300, 400, 450 ]
+
+g_kx = 2.5		' グラフ描画時のX方向の係数
+g_ky = 0.3		' グラフ描画時のY方向の係数
+call draw_pt(ary1, ary2, 3)
+
+struct CALC_REGLINE_ITEM	info
+info = CALC_REGLINE(ary1, ary2)
+? "回帰直線結果:", info
+? "傾き=", info.A
+? "切片=", info.B
+
+' 回帰直線を描画する
+y1 = CALC_REGPRED(info.A, info.B, 0)
+y2 = CALC_REGPRED(info.A, info.B, 70)
+? y1, y2
+GUGLINE PIC 10, (get_x(0), get_y(y1))-(get_x(70), get_y(y2)), 2
+
+'call wait(1)
+gumain loop
+
+? "bye.bye"
+end
+
+SUB cb_window(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+sub wait(sec)
+	st_tm = clock
+	do while (clock - st_tm) < sec
+		f = gumain oneloop(0)
+	loop
+end sub
+
+sub draw_pt(xa as list, ya as list, c)
+	local i, x, y
+	for i=0 to ubound(xa)
+		x = get_x(xa(i))
+		y = get_y(ya(i))
+		GUGRECTANGLE PIC 10, (x-2, y-2)-(4, 4), true, c
+	next i
+end sub
+
+function get_x(x)
+	get_x = (x * g_kx) + 10
+end function
+
+function get_y(y)
+	get_y = 200 - (y * g_ky)
+end function

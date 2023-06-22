@@ -1,0 +1,38 @@
+' ================================================================================
+' DATE$, WEEK サンプルプログラム 
+'  今日の日付をDATE$関数で求めて、WEEK関数で曜日を表示します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+CLS
+
+'今日の日付を改行せずに表示
+PRINT "今日は";DATE$;"(";
+
+'WEEK関数の戻り値で今日の曜日を表示
+SELECT CASE WEEK(DATE$)
+	CASE 1 '日曜日
+		PRINT "日";
+	CASE 2 '月曜日
+		PRINT "月";
+	CASE 3 '火曜日
+		PRINT "火";
+	CASE 4 '水曜日
+		PRINT "水";
+	CASE 5 '木曜日
+		PRINT "木";
+	CASE 6 '金曜日
+		PRINT "金";
+	CASE 7 '土曜日
+		PRINT "土";
+	CASE ELSE
+		PRINT ""'改行
+		PRINT "曜日の指定が不正です"
+		END
+END SELECT
+
+PRINT ")です"
+
+'今日からの日付演算結果を表示
+PRINT "1年後の日付の1週間前は";DATE$(1,0,-7);"です"
+
+END

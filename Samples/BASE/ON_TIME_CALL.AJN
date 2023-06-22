@@ -1,0 +1,38 @@
+' ================================================================================
+' ON TIME$ CALL サンプルプログラム 
+'  時間が00秒になるまで、現在の時刻を表示し続けます。
+'  指定した時間になると、ON TIME$ CALL命令で定義したサブルーチンに
+'  ジャンプし、フラグ(Flag)を立てて終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' 時計が指定時間になると動作するサブルーチン
+SUB OnTime(TM$)
+	? TM$;"になりました"
+	Flag = TRUE
+END SUB
+
+'1秒ごとに動作するサブルーチン
+SUB OnTimer
+	CLS
+	PRINT TIME$
+END SUB
+
+BOOL Flag = FALSE
+
+ON TIMER(1000) CALL OnTimer	'1秒ごとに動作するサブルーチンを登録
+
+CLS
+
+ON TIME$("*:*:00") CALL OnTime	'時計が00秒になると、OnTimeへ飛ぶ
+TIME$ ON			'定時割り込みを有効
+TIMER ON			'定間隔割り込みを有効
+
+DO WHILE Flag = FALSE  'サブルーチンが呼び出されるまで待つ
+LOOP
+
+TIMER OFF			'定間隔割り込みを無効
+PRINT "STOP" 
+TIME$ OFF			'定時割り込みを無効
+
+END

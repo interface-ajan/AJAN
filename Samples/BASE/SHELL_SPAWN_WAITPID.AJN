@@ -1,0 +1,20 @@
+' ================================================================================
+' SHELL CALLOUT$, SHELL SYSTEM サンプルプログラム 
+'  SHELL SPAWN 関数を使って、Linux の xeyes アプリを起動します。
+'  xeyesアプリの pid値 を使って、SHELL WAITPID 関数で終了待ちします。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+
+' xeyesアプリを起動します
+PID = SHELL SPAWN("xeyes")
+PRINT "PID="; PID
+
+PRINT "起動した xeyes アプリを閉じてください"
+
+' xeyesアプリが終了するまで待機します
+RET = SHELL WAITPID(PID)
+PRINT "xeyesアプリが終了="; RET
+
+'終了
+END

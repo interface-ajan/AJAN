@@ -1,0 +1,32 @@
+' ================================================================================
+' DEFINE STRUCT ~ END STRUCT,STRUCT サンプルプログラム 
+'  IDとアドレスを記録する構造体(DEFINE STRUCT〜END STRUCT命令)の
+'  配列変数を宣言し、値を代入した後、それぞれのメンバ値を表示します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+CLS
+
+' 構造体の定義
+DEFINE STRUCT SITE
+	ID		' ID
+	ADDR$	' アドレス
+END STRUCT
+' 構造体配列変数を宣言
+STRUCT SITE OFFICE(2)
+
+'構造体のメンバに代入
+OFFICE(0).ID = 1
+OFFICE(0).ADDR$ = "Hiroshima"
+OFFICE(1).ID = 2
+OFFICE(1).ADDR$ = "Osaka"
+OFFICE(2).ID = 3
+OFFICE(2).ADDR$ = "Tokyo"
+
+FOR I = 0 TO 2
+	'構造体のメンバを表示
+	PRINT "ID:"; OFFICE(I).ID
+	PRINT "ADDR:"; OFFICE(I).ADDR$
+NEXT I
+
+END

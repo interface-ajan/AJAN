@@ -1,0 +1,122 @@
+' ================================================================================
+' CALC_FFT_EX_STRUCT / CALC_IFFT_EX_STRUCT のサンプルプログラムです。
+'  FFT / 逆FFT演算のサンプルプログラムです。
+'  波形データを元に、CALC_FFT_EX_STRUCT関数でFFT演算し、
+'  CALC_IFFT_EX_STRUCT関数で逆FFT演算します。
+'  演算結果をGUI機能を使って波形グラフ表示します。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+INCLUDE "CAL001.AJN"
+
+' ウィンドウ作成
+IF TRUE THEN
+	' ウィンドウ作成
+	FONT$ = "31, 0, 0, 14, 1, 8"
+	SIZE$ = "1200, 600"
+	POSI$ = "0, 0"
+	GUCREATE WINDOW 1, "メインウィンドウ", 1, FONT$, SIZE$, POSI$, TIP$
+	
+	SIZE$ = "600, 300"
+	GUCREATE LINEGRAPH 1, 10, , SIZE$, POSI$,
+	GUCREATE LABEL 1, 20, "左上",,,POSI$,
+	POSI$ = "0, 300"
+	GUCREATE LINEGRAPH 1, 11, , SIZE$, POSI$,
+	GUCREATE LABEL 1, 21, "左下",,,POSI$,
+	POSI$ = "600, 0"
+	GUCREATE LINEGRAPH 1, 12, , SIZE$, POSI$,
+	GUCREATE LABEL 1, 22, "右上",,,POSI$,
+	POSI$ = "600, 300"
+	GUCREATE LINEGRAPH 1, 13, , SIZE$, POSI$,
+	GUCREATE LABEL 1, 23, "右下",,,POSI$,
+	
+	GUSHOW 1
+END IF
+
+' 波形作成
+DIM W(255), ZERO(255)
+
+' 10HZ, 4HZ, 2HZの周波数の合成波形を生成します
+' (配列Aは固定長なので、生成した波形データは固定長配列にカットされて格納されます)
+A1 = 1.0
+list freq_list
+freq_list = [ 10.0; 4; 2 ]
+fs = 100.0
+AMP = A1 / ldim(freq_list)
+
+for n=0 to ldim(W) - 1
+	S = 0.0
+	for i=0 to ldim(freq_list)-1
+		f = freq_list(i)
+		S = S + (AMP * SIN(2 * 3.1415926 * f * n / fs))
+	next i
+	W(n) = S		' 実数
+next n
+
+STRUCT CALC_CMPL	V1, V2, V3
+V1.REAL = W			' 実数
+V1.IMAG = ZERO		' 虚数
+
+' 波形データは、実数と虚数に分かれているので、グラフ描画用に絶対値に変換します
+LIST A
+A = CALC CMPL2ABS(1, V1)
+
+? "入力前"
+GUUPD LABEL 20, "元波形"
+GUADD LINEGRAPH VALUE 10, ( A ), 2, 2
+GUUPD LINEGRAPH DRAW 10
+
+? "FFT後"
+' 合成波形(V1)を元に、FFT演算します(結果はV2へ)
+V2 = CALC_FFT_EX_STRUCT(V1)
+
+' FFT演算結果は、実数と虚数に分かれているので、グラフ描画用に絶対値に変換します
+LIST B
+B = CALC CMPL2ABS(1, V2)
+
+GUUPD LABEL 21, "FFT後"
+GUADD LINEGRAPH VALUE 11, ( B ), 2, 2
+GUUPD LINEGRAPH DRAW 11
+
+? "逆FFT後"
+' FFT演算結果(V2)に対して、逆FFT演算します(結果はV3へ)
+V3 = CALC_IFFT_EX_STRUCT(V2)
+
+' 逆FFT演算結果は、実数と虚数に分かれているので、グラフ描画用に絶対値に変換します
+LIST C
+C = CALC CMPL2ABS(1, V3)
+
+GUUPD LABEL 23, "逆FFT後"
+GUADD LINEGRAPH VALUE 13, ( C ), 2, 2
+GUUPD LINEGRAPH DRAW 13
+
+? "差分"
+DIM D(255)
+' 合成波形(A)とFFT演算に対する逆FFT演算結果(C)との差分を求めます
+FOR I = 0 TO LDIM(D) - 1
+	D(I) = ABS(A(I) - C(I))
+	ASSERT D(I) < 1.0, "差分がほぼ一致する事を期待"
+NEXT I
+GUUPD LABEL 22, "差分"
+GUADD LINEGRAPH RANGE 12, -10, 10
+GUUPD LINEGRAPH GRID 12, 1, 100
+GUUPD LINEGRAPH LABEL 12, "Y", "X"
+GUADD LINEGRAPH VALUE 12, ( D ), 2, 2
+GUUPD LINEGRAPH DRAW 12
+
+' 3秒ほどグラフを描画して終了します
+ST = CLOCK
+DO WHILE TRUE
+	F = GUMAIN ONELOOP(0)
+	EN = CLOCK
+	IF (EN - ST) > 3.0 THEN
+		EXIT DO
+	END IF
+LOOP
+
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

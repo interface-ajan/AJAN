@@ -1,0 +1,35 @@
+' ================================================================================
+' SHELL CALLOUT$, SHELL SYSTEM サンプルプログラム 
+'  SHELL CALLOUT$ 関数と SHELL SYSTEM 関数を使って、
+'  Linux の zenity コマンドを使った、UI的な対話の事例を示します。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+' zenity実行時、「Gtk-Message: GtkDialog mapped without a transient parent. This is discouraged.」
+' と表示されるのを抑制する為の tips
+SUP$ = " 2>/dev/null"
+
+' zenityのファイル選択ダイアログを呼び出す
+FPATH$ = SHELL CALLOUT$("zenity --file-selection --filename=" + CURDIR$ + SUP$)
+
+' zenityの質問ダイアログを呼び出す
+RET = SHELL SYSTEM("zenity --question --text=""あなたが選んだファイルは「" + FPATH$ + "」ですね？""" + SUP$)
+PRINT RET
+
+SELECT CASE RET
+CASE 0
+	PRINT "YESが選択されました"
+CASE 1
+	PRINT "NOが選択されました"
+CASE -1
+	PRINT "想定外の異常です"
+CASE 5
+	PRINT "タイムアウトです"
+END SELECT
+
+' zenityのパスワードを呼び出す
+MSG$ = SHELL CALLOUT$("zenity --password --text=""適当なパスワード文字列を入力してみてください""" + SUP$)
+PRINT "入力されたパスワード文字列「"; MSG$; "」"
+
+'終了
+END

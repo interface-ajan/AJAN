@@ -1,0 +1,97 @@
+' ================================================================================
+' CALC_ANOMALY_LEARN / CALC_ANOMALY_SCORE のサンプルプログラムです。
+'  CALC_ANOMALY_LEARN関数で、異常度および異常度最大値の学習を行い、
+'  CALC_ANOMALY_SCORE関数で、新たに観測したデータの異常度の計算を行います。
+'  GUIコマンドと組み合わせて、簡単なグラフプロットを行っています。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+OPTION GUI
+
+include "CAL001.AJN"
+
+GUCREATE WINDOW 1, "異常度計算のサンプル", 1, "32, 0, 0, 14, 1, 9", "300, 250", ,
+GUCREATE PIC 1, 10,,"210, 210","50, 10",
+GUCREATE LABEL 1, 20, "異常度",,"10,10","10,10",
+GUCREATE LABEL 1, 21, "時間",,"10,10","250,210",
+
+ON GUEVT WINDOW 1 CALL cb_WINDOW
+GUEVT WINDOW 1 ON
+
+GUSHOW 1
+
+GUGCLS PIC 10
+' グラフの基準線を描画
+GUGLINE PIC 10, (10, 10)-(10, 200), 1
+GUGLINE PIC 10, (10, 200)-(200, 200), 1
+
+? "*異常度学習"
+list ary1, ary2
+ary1 = [ 75, 80, 90, 95 ]
+ary2 = [ 85, 92, 100, 78 ]
+
+struct CALC_ANOM	info
+info = CALC_ANOMALY_LEARN(ary1)
+? "異常度学習結果:", info
+
+g_k = 40		' グラフ描画時の係数
+pre_x = -1		' draw_ptサブルーチンで使用。前回値X
+pre_y = -1		' draw_ptサブルーチンで使用。前回値Y
+' 異常度の学習した際のポイント描画
+call draw_pt([0, 20, 40, 60], info.ANOM_ARY, 5)
+
+' 異常度のしきい値の線を引く
+y = get_y(info.ANOM_MAX)
+GUGLINE PIC 10, (10, y)-(200, y), 6
+
+' 新しいデータの異常度判定 および グラフ描画への反映
+for i=0 to ubound(ary2)
+	x = (8 + (2 * i)) * 10
+	y = CALC_ANOMALY_SCORE(info.MUHAT, info.VARHAT, ary2(i))
+	if y < info.ANOM_MAX then
+		c = 5	' しきい値内
+	else
+		c = 2	' しきい値を越えた
+	end if
+	call draw_pt([ x ], [ y ], c)
+next i
+
+'call wait(1)
+gumain loop
+
+? "bye.bye"
+end
+
+SUB cb_window(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+sub wait(sec)
+	st_tm = clock
+	do while (clock - st_tm) < sec
+		f = gumain oneloop(0)
+	loop
+end sub
+
+sub draw_pt(xa as list, ya as list, c)
+	local i, x, y
+	for i=0 to ubound(xa)
+		x = get_x(xa(i))
+		y = get_y(ya(i))
+		if pre_x >= 0 then
+			GUGLINE PIC 10, (pre_x, pre_y)-(x, y), 19
+		end if
+		GUGRECTANGLE PIC 10, (x-2, y-2)-(4, 4), true, c
+		pre_x = x
+		pre_y = y
+	next i
+end sub
+
+function get_x(x)
+	get_x = x + 10
+end function
+
+function get_y(y)
+	get_y = 200 - (y * g_k)
+end function

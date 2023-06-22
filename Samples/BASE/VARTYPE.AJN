@@ -1,0 +1,75 @@
+' ================================================================================
+' VARTYPE サンプルプログラム 
+'  VARTYPE関数で、様々な変数の型情報を得ます。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+INT_VAR% = 1
+LONG_VAR& = 2
+FLOAT_VAR! = 3
+DOUBLE_VAR# = 4
+STRIN$ = "STRING"
+BOOL BL
+DATETIME DT
+
+ENUM
+  EN1
+  EN2
+END ENUM
+
+DEFINE STRUCT SAMPLE_STRUCT
+     ID
+     ADDR$
+END STRUCT
+
+STRUCT SAMPLE_STRUCT ST
+LIST INT_VAR_LIST%
+DICT STRING_DICT$
+DIM DOUBLE_ARY(1)
+
+PRINT "変数型               : VARTYPE関数の戻り値"
+PRINT "文字列               : &H"; HEX$(VARTYPE(STRIN$))
+PRINT "単精度整数           : &H"; HEX$(VARTYPE(INT_VAR%))
+PRINT "倍精度整数           : &H"; HEX$(VARTYPE(LONG_VAR&))
+PRINT "単精度実数           : &H"; HEX$(VARTYPE(FLOAT_VAR!))
+PRINT "倍精度実数           : &H"; HEX$(VARTYPE(DOUBLE_VAR#))
+PRINT "論理                 : &H"; HEX$(VARTYPE(BL))
+PRINT "列挙                 : &H"; HEX$(VARTYPE(EN1))
+PRINT "構造体               : &H"; HEX$(VARTYPE(ST))
+PRINT "日付時刻             : &H"; HEX$(VARTYPE(DT))
+PRINT "配列(倍精度実数)      : &H"; HEX$(VARTYPE(DOUBLE_ARY))
+PRINT "連想配列(文字列)      : &H"; HEX$(VARTYPE(STRING_DICT$))
+PRINT "可変長配列(単精度整数): &H"; HEX$(VARTYPE(INT_VAR_LIST%))
+
+? "INT_VAR_LIST%は";
+FOR I = 0 TO 32
+	SHIFT% = VARTYPE(INT_VAR_LIST%) >> I 
+	IF (SHIFT% AND 1%) = 1 THEN
+		SELECT CASE I
+			CASE 0: 
+				? "文字列型です"
+			CASE 1:
+				? "単精度整数型です"
+			CASE 2:
+				? "倍精度整数型です"
+			CASE 3:
+				? "単精度実数型です"
+			CASE 4:
+				? "倍精度実数型です"
+			CASE 5:
+				? "論理型です"
+			CASE 6:
+				? "列挙型です"
+			CASE 7:
+				? "構造体型です"
+			CASE 8:
+				? "日付時刻型です"
+			CASE 27:
+				? "そして、配列です"
+			CASE 29:
+				? "さらに、連想配列です"
+			CASE 30:
+				? "さらに、可変長連想配列です"
+		END SELECT
+	END IF
+NEXT I 

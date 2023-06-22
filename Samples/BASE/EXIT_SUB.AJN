@@ -1,0 +1,31 @@
+' ================================================================================
+' EXIT SUB サンプルプログラム 
+'  三角形の面積を求めるサブルーチンを定義します。
+'  底辺、高さの値が負数の場合、EXIT SUB命令で、サブルーチンを途中で抜けます。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+' 底辺(TEIHEN)と高さ(TAKASA)から三角形の面積を求めて、AA に代入します
+SUB MENSEKI			'サブルーチン MENSEKI
+	IF TEIHEN < 0 OR TAKASA < 0 THEN
+		AA = -1
+		EXIT SUB
+	END IF
+	AA = TEIHEN * TAKASA / 2
+END SUB
+
+'ここからメインの処理
+CLS
+
+PRINT "三角形の面積を求めます"
+INPUT "底辺："; TEIHEN
+INPUT "高さ："; TAKASA
+
+CALL MENSEKI		' 三角形の面積を求める、サブルーチンを呼ぶ		
+IF AA < 0 THEN
+	PRINT "底辺か高さが負数になっています"
+ELSE
+	PRINT "面積は　";AA
+END IF
+
+END

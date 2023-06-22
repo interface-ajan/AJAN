@@ -1,0 +1,52 @@
+' ================================================================================
+' ENUM ~ END ENUM,SELECT CASE〜END SELECT サンプルプログラム 
+'  ENUM〜END ENUMで列挙型を定義し、SELECT CASE命令を利用して、
+'  メニュー選択機能を作ります
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+ENUM
+	WHAT_AJAN     '代入しなかったら0からの連番
+	BOOT_AJAN
+	RUN_AJAN
+	END_AJAN
+	END_MENU = 99 '代入すると以降は、その数値からの連番
+END ENUM
+
+A$ = "0"
+CLS
+
+DO WHILE VAL(A$) <> END_MENU '99が選ばれるまで続ける
+	PRINT "------------------------------------------------"
+	PRINT "以下からメニューを選んで数値を入力してください"
+	PRINT " 0: AJANとは"
+	PRINT " 1: AJANの起動の仕方"
+	PRINT " 2: AJANプログラムの実行の仕方"
+	PRINT " 3: AJANの終了の仕方"
+	PRINT "99: このプログラムを終了する"
+	PRINT ">>>";
+	LINE INPUT A$
+	CLS
+	'入力した値を元に分岐
+	SELECT CASE VAL(A$)
+		CASE WHAT_AJAN '0
+			PRINT "AJANはIoT特化型言語です"
+			PRINT "AJANで簡単にIoTシステムを構築できます"
+			PRINT "AJANはInterface Linux Systemのソフトウェアです"
+		CASE BOOT_AJAN '1
+			PRINT "左上のメニューから「アプリケーション」→「Interface」"
+			PRINT "→「AJAN」→「AJAN」を選択して起動させます"
+		CASE RUN_AJAN  '2
+			PRINT "プログラムを入力したあと、ウインドウ左下の▶を押すか、"
+			PRINT "Ctrl+F11キーを押して実行します"
+		CASE END_AJAN  '3
+			PRINT "右上の☒を押すと終了できます"
+			PRINT "メニューバーの「ファイル(F)」から「終了(Q)」を選んでも終了できます"
+		CASE END_MENU  '99
+			PRINT "終了します"
+		CASE ELSE      '上記以外
+			? "選択肢にありません"
+	END SELECT
+LOOP
+
+END

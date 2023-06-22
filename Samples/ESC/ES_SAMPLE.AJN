@@ -1,0 +1,63 @@
+' ================================================================================
+' ES_DATA_WRITE, ES_DATA_READ サンプルプログラム 
+'  エッジサーバーに対して、読み書きを行うサンプルプログラムです。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+HOST$="127.0.0.1"		' エッジサーバーが localhost にある場合はこちらを有効に
+
+DICT  ES$
+
+? "ES_DATA_WRITE:"
+dim A$(3,4)
+' 0行は項目名を列挙する
+A$(0,0) = "col01"
+A$(0,1) = "col02"
+A$(0,2) = "col03"
+A$(0,3) = "col04"
+A$(0,4) = "col05"
+' 1行目以降から中身
+FOR y=1 TO LDIM(A$,1)-1
+	FOR x=0 TO LDIM(A$,2)-1
+		A$(y,x) = STR$(y)+"-"+STR$(x)
+	NEXT x
+NEXT y
+ES$ = ES_DATA_WRITE(A$, "host:"+HOST$+";table:test5")
+? ES$
+IF ES$("ERR") <> "0" THEN
+	? "エラー発生:"; ES$
+END IF
+
+LIST B$
+? "ES_DATA_READ(ヘッダ行なし):"
+ES$ = ES_DATA_READ(B$, "host:"+HOST$+";table:test5;column_output:off")
+? ES$
+IF ES$("ERR") <> "0" THEN
+	? "エラー発生:"; ES$
+END IF
+? B$
+
+? "ES_DATA_READ(ヘッダ行あり):"
+ES$ = ES_DATA_READ(B$, "host:"+HOST$+";table:test5;schema:interface")
+? ES$
+IF ES$("ERR") <> "0" THEN
+	? "エラー発生:"; ES$
+END IF
+? B$
+
+LIST C$
+? "ES_DATA_DELETE(全行削除):"
+ES$ = ES_DATA_READ(c$, "host:"+HOST$+";table:test5")
+? ES$
+IF ES$("ERR") <> "0" THEN
+	? "エラー発生:"; ES$
+END IF
+
+ES$ = ES_DATA_DELETE(c$, "host:"+HOST$+";table:test5")
+? ES$
+IF ES$("ERR") <> "0" THEN
+	? "エラー発生:"; ES$
+END IF
+
+? "bye.bye"
+END

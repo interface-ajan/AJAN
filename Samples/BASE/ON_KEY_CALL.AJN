@@ -1,0 +1,64 @@
+' ================================================================================
+' ON KEY CALL サンプルプログラム 
+'  F1〜F4キーを押すと、ON KEY CALL命令で定義したサブルーチンに
+'  ジャンプし、様々な処理を行います。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' 5秒間待つイベント処理
+SUB WAIT_TIME
+	PRINT "5秒たちました"
+	TM_FLAG = TRUE '5秒経過したことを知らせる
+END SUB
+ON TIMER(5000) CALL WAIT_TIME 'F3が押された時用イベントを登録
+
+'ファンクションキーを押したときの処理
+SUB FUNC(fnum)
+	SELECT CASE fnum
+	CASE 1
+		PRINT "F1が押されました。"
+	CASE 2
+		CLS
+		PRINT "F2が押されました。"
+		PRINT "画面をクリアしました。"
+	CASE 3
+		PRINT "F3が押されました"
+		PRINT "5秒間キー入力を保留します"
+		TM_FLAG = FALSE
+		KEY STOP 'ファンクションキー割り込みを保留
+		TIMER ON 'タイマー開始
+		DO WHILE TM_FLAG = FALSE 'フラグがTRUEになるまで待つ
+		LOOP
+		TIMER OFF 'タイマー停止
+		PRINT "再開します"
+		KEY ON 'ファンクションキー割り込み再開
+	CASE 4
+		PRINT "F4が押されました。"
+		PRINT "プログラムを終了します。"
+		END_FLAG = TRUE
+	CASE ELSE
+	END SELECT
+END SUB
+
+'画面を初期化
+CLS
+
+'終了フラグを初期化
+END_FLAG = FALSE
+
+'ファンクションキーを押した時の分岐先を定義
+ON KEY(1) CALL FUNC
+ON KEY(2) CALL FUNC
+ON KEY(3) CALL FUNC
+ON KEY(4) CALL FUNC
+
+'ファンクションキーによる割り込みを許可
+KEY ON
+
+'プログラムを動かしつづける
+MAIN:
+IF END_FLAG = TRUE THEN
+	KEY OFF
+	END
+END IF
+GOTO MAIN

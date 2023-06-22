@@ -1,0 +1,23 @@
+' ================================================================================
+' BOOL サンプルプログラム 
+'  BOOL命令で宣言した、変数の真偽をそれぞれIF文で評価し、処理を分岐させます。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+CLS
+
+BOOL A = TRUE, B = FALSE
+
+IF A THEN 'AがTRUEなら
+	PRINT "AはTrueです"
+ELSE
+	PRINT "AはFalseです"
+END IF
+
+IF B THEN 'BがTRUEなら
+	PRINT "BはTrueです"
+ELSE
+	PRINT "BはFalseです"
+END IF
+
+END

@@ -1,0 +1,51 @@
+' ================================================================================
+' DEFINE THREAD〜END THREAD,ATTACH THREAD,DETACH THREAD サンプルプログラム 
+'  DEFINE THREAD〜END THREAD命令でスレッドルーチンを定義し、
+'  ATTACH THREAD命令で、複数のスレッドを作成し、
+'  それぞれが別の変数に対して並列に演算します。
+'  演算後、DETACH THREAD命令で、スレッドを終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+CLS
+
+'スレッド1
+DEFINE THREAD Thread1(num)
+    PRINT "スレッド番号";num
+thread_lbl1:
+    IF A1 < 11 THEN
+        A1=A1+1
+    END IF
+    GOTO thread_lbl1
+END THREAD
+
+'スレッド2
+DEFINE THREAD Thread2(num)
+    PRINT "スレッド番号";num
+thread_lbl2:
+    IF A2 < 21 THEN
+       A2=A2+1
+    END IF
+    GOTO thread_lbl2
+END THREAD
+
+A1=0
+A2=0
+PRINT "ATTACH THREAD"
+ATTACH THREAD 1, Thread1	'スレッド1を作成してTHREAD1を実行
+ATTACH THREAD 2, Thread2	'スレッド2を作成してTHREAD2を実行
+
+DO WHILE 1
+    IF A1 > 10 THEN
+        IF A2 > 20 THEN
+           EXIT DO
+       END IF
+   END IF
+LOOP
+
+PRINT "DETACH THREAD"
+DETACH THREAD 1				'スレッド1を終了
+DETACH THREAD 2				'スレッド2を終了
+PRINT "A1="; A1; " A2="; A2
+
+END

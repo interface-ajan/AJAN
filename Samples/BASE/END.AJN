@@ -1,0 +1,31 @@
+' ================================================================================
+' END サンプルプログラム 
+'  1秒ごとに、文字列を切り替えて表示しますが、途中 END命令で終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+CLS
+
+DIM MESSAGE$(3)
+MESSAGE$(0) = "AJANはIoTに特化した言語です。"
+MESSAGE$(1) = "使いやすいコマンドを揃えています。"
+MESSAGE$(2) = "簡単に誰でもプログラムを作れます。" 'ここから先は表示されない
+MESSAGE$(3) = "AJANを始めてみましょう!"
+
+SUB MESSAGE 'メッセージを表示するサブルーチン
+	CLS
+	PRINT MESSAGE$(CNT)
+	IF CNT = 2 THEN
+		END		' プログラムを終了します
+	END IF
+	CNT = CNT + 1
+END SUB
+
+ON TIMER(1000) CALL MESSAGE '1秒ごとに表示するサブルーチンを設定
+
+CNT = 0
+TIMER ON 'タイマー開始
+DO WHILE FLAG = FALSE '終了フラグがFALSEの間待つ
+LOOP
+TIMER OFF 'タイマー終了
+
+END

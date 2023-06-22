@@ -1,0 +1,3 @@
+PRINT "MY_LIBRARY.AJNファイル"
+PRINT "A =";A
+A = 20

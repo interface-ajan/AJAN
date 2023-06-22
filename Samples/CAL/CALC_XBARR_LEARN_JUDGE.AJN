@@ -1,0 +1,134 @@
+' ================================================================================
+' CALC_XBARR_LEARN / CALC_XBARR_JUDGE のサンプルプログラムです。
+'  CALC_XBARR_LEARN関数で、Xbar-R管理図用の学習を行います。
+'  CALC_XBARR_JUDGE関数で、CALC_XBARR_LEARN関数で求めた
+'  学習値を参考に、判定処理を行います。
+'  GUIコマンドと組み合わせて、簡単なグラフプロットを行います。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+option gui
+
+include "CAL001.AJN"
+
+GUCREATE WINDOW 1, "Xbar-R管理図のサンプル", 1, "32, 0, 0, 14, 1, 9", "300, 500", ,
+GUCREATE PIC 1, 10,,"210, 210","50, 10",
+GUCREATE PIC 1, 20,,"210, 210","50, 230",
+GUCREATE LABEL 1, 100, "Xbar管理図",,"10,10", "10,10",
+GUCREATE LABEL 1, 110, "R管理図",,"10,10", "10,230",
+
+ON GUEVT WINDOW 1 CALL cb_WINDOW
+GUEVT WINDOW 1 ON
+
+GUSHOW 1
+
+GUGCLS PIC 10
+' グラフの基準線を描画
+GUGLINE PIC 10, (10, 10)-(10, 200), 1
+GUGLINE PIC 10, (10, 200)-(200, 200), 1
+GUGLINE PIC 20, (10, 10)-(10, 200), 1
+GUGLINE PIC 20, (10, 200)-(200, 200), 1
+
+? "*Xbar-R管理図"
+list ary1
+redim ary1(99)
+for i=0 to ubound(ary1)
+	ary1(i) = rnd() * 10	' 学習用のデータを、乱数を使ってテスト的に作っている
+next i
+
+g_kx = 10		' グラフ描画時のX方向の係数
+g_ky = 10		' グラフ描画時のY方向の係数
+pre_x = -1		' draw_pt_Xbarサブルーチンで使用。前回値X
+pre_y = -1		' draw_pt_Xbarサブルーチンで使用。前回値Y
+pre_xr = -1		' draw_pt_Rサブルーチンで使用。前回値X
+pre_yr = -1		' draw_pt_Rサブルーチンで使用。前回値Y
+
+struct CALC_XBARR_ITEM	info
+info = CALC_XBARR_LEARN(ary1, 10)
+? "Xbar-R管理図学習結果:", info
+
+' Xbar管理図の学習結果
+y = get_y(info.XCENTER)
+GUGLINE PIC 10, (10, y)-(200, y), 2
+y = get_y(info.XUPCL)
+GUGLINE PIC 10, (10, y)-(200, y), 6
+y = get_y(info.XLOCL)
+GUGLINE PIC 10, (10, y)-(200, y), 6
+call draw_pt_Xbar([1 to 10], info.XBAR, 3)
+' R管理図の学習結果
+y = get_y(info.RCENTER)
+GUGLINE PIC 20, (10, y)-(200, y), 2
+y = get_y(info.RUPCL)
+GUGLINE PIC 20, (10, y)-(200, y), 6
+y = get_y(info.RLOCL)
+if isnan(y) = FALSE then
+	GUGLINE PIC 20, (10, y)-(200, y), 6
+end if
+call draw_pt_R([1 to 10], info.R, 3)
+
+' 新しいデータのXbarR管理図の判定
+list ary2
+redim ary2(49)
+for i=0 to ubound(ary2)
+	ary2(i) = rnd() * 10	' 判定用のデータを、乱数を使ってテスト的に作っている
+next i
+
+struct CALC_XBARR_ITEM	info2
+info2 = CALC_XBARR_JUDGE(info, ary2)
+? "Xbar-R管理図判定結果:", info2
+call draw_pt_Xbar([11 to 15], info2.XBAR, 5)
+call draw_pt_R([11 to 15], info2.R, 5)
+
+'call wait(1)
+gumain loop
+
+? "bye.bye"
+end
+
+SUB cb_window(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+sub wait(sec)
+	st_tm = clock
+	do while (clock - st_tm) < sec
+		f = gumain oneloop(0)
+	loop
+end sub
+
+sub draw_pt_Xbar(xa as list, ya as list, c)
+	local i, x, y
+	for i=0 to ubound(xa)
+		x = get_x(xa(i))
+		y = get_y(ya(i))
+		if pre_x >= 0 then
+			GUGLINE PIC 10, (pre_x, pre_y)-(x, y), 19
+		end if
+		GUGRECTANGLE PIC 10, (x-2, y-2)-(4, 4), true, c
+		pre_x = x
+		pre_y = y
+	next i
+end sub
+
+sub draw_pt_R(xa as list, ya as list, c)
+	local i, x, y
+	for i=0 to ubound(xa)
+		x = get_x(xa(i))
+		y = get_y(ya(i))
+		if pre_xr >= 0 then
+			GUGLINE PIC 20, (pre_xr, pre_yr)-(x, y), 19
+		end if
+		GUGRECTANGLE PIC 20, (x-2, y-2)-(4, 4), true, c
+		pre_xr = x
+		pre_yr = y
+	next i
+end sub
+
+function get_x(x)
+	get_x = (x * g_kx) + 10
+end function
+
+function get_y(y)
+	get_y = 200 - (y * g_ky)
+end function

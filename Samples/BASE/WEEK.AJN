@@ -1,0 +1,40 @@
+' ================================================================================
+' WEEK サンプルプログラム 
+'  日付時刻値に対して、WEEK関数を使って曜日を求めます。
+'				Copyright 2019 Interface Corporation
+' ================================================================================
+
+DATETIME	DT
+DT = CDATETIME(DATE$)	' 今日の日付を日付時刻型に
+
+FOR I=0 TO 7
+	' 日付時刻型の値を文字列に
+	' 次の項目で、WEEK関数で曜日に該当する数値を求める
+	' 次の項目で、WEEK関数で曜日に該当する数値を添え字に、曜日文字列化するサブルーチン WEEK_TO$ を呼び出す
+	PRINT "日付:"; DT; " 曜日(WEEKの値):"; WEEK(DT); " 文字列:"; WEEK_TO$(DT, 4)
+
+	' 日付時刻変数 DT に、+1(1日に相当) を加算する
+	DT = DT + 1
+NEXT I
+
+END
+
+' 指定日付(DT)の曜日を、指定した形式(ID%)で、文字列で得る
+' ID%:	1=日、月、のような表記 / 2=日曜、月曜、のような表記 / 3=Sun, Mon,のような表記 / 4=Sunday, Monday,のような表記
+FUNCTION WEEK_TO$(DT AS DATETIME, ID%)
+	local list	ary$
+	select case ID%
+	case 1
+		ary$ = [ "日"; "月"; "火"; "水"; "木"; "金"; "土" ]
+	case 2
+		ary$ = [ "日曜"; "月曜"; "火曜"; "水曜"; "木曜"; "金曜"; "土曜" ]
+	case 3
+		ary$ = [ "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" ]
+	case 4
+		ary$ = [ "Sunday"; "Monday"; "Tuesday"; "Wednesday"; "Thursday"; "Friday"; "Saturday" ]
+	case else
+		assert FALSE, "サポートされてない ID% を指定された"
+	end select
+
+	WEEK_TO$ = ary$(WEEK(DT) - 1)
+END FUNCTION

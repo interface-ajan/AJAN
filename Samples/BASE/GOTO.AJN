@@ -1,0 +1,24 @@
+' ================================================================================
+' GOTO サンプルプログラム 
+'  入力値と条件が合わなければ、指定したラベルまでGOTO命令でジャンプします。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+CLS
+
+ANSWER = 123
+PRINT "数当てゲーム"
+INPUT "0〜999までの番号(数値)を入力してください:"; A
+
+IF A > ANSWER THEN
+	PRINT "もっと小さいです"
+	GOTO END_LABEL		' END_LABELまでジャンプします
+ELSEIF A < ANSWER THEN
+	PRINT "もっと大きいです"
+	GOTO END_LABEL		' END_LABELまでジャンプします
+END IF
+PRINT "正解!"
+
+END_LABEL:
+
+END

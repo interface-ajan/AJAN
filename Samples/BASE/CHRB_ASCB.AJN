@@ -1,0 +1,59 @@
+' ================================================================================
+' CHRB$/ASCB/MIDB$ サンプルプログラム 
+'  0〜255までの値を格納したバイナリデータを、CHRB$関数で 1バイトずつ
+'  文字列に変換します。
+'  その後、文字列を MIDB$関数で1バイトずつ取り出して、ASCB関数で
+'  バイナリデータに変換します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+'  -----------------------------
+'  バイナリデータを文字列に変換
+'  -----------------------------
+FUNCTION BINtoSTR$()
+	STR_DTA$ = ""
+	FOR I = 0 TO LDIM(A)-1
+		C$ = CHRB$(A(I))
+		B$(I) = C$
+		STR_DTA$ = STR_DTA$ + C$
+	NEXT I
+	BINtoSTR$ = STR_DTA$
+END FUNCTION
+
+' -----------------------------
+' 文字列をバイナリに変換
+' -----------------------------
+SUB STRtoBIN(STR_DATA$)
+	FOR I = 0 TO LENB(STR_DATA$)-1
+		SMP$ = MIDB$(STR_DATA$, I+1, 1)
+		C = ASCB(SMP$)
+		IF I = 0 THEN
+			BIN_DATA(0) = C
+		ELSE
+			ONEDIM INSERT BIN_DATA, -1, C
+		END IF
+	NEXT I
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+DIM A(255)
+FOR I = 0 TO 255
+	A (I) = I
+NEXT I
+
+PRINT "[バイナリデータ]"
+PRINT A
+
+' バイナリデータを文字列に変換
+DIM B$(255)
+STRRET$ = BINtoSTR$()
+
+' 文字列をバイナリに変換
+DIM BIN_DATA(0)
+CALL STRtoBIN(STRRET$)
+PRINT "[文字列をバイナリに変換]"
+PRINT BIN_DATA
+
+END

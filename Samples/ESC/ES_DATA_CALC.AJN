@@ -1,0 +1,161 @@
+' ================================================================================
+' ES_EXPORT_CSV, ES_IMPORT_CSV サンプルプログラム 
+'  エッジサーバーからデータをCSVにエクスポートし、
+'  エクスポートしたCSVを、LibreOffice Calcでオープンします。
+'  LibreOffice Calc で保存した CSV を再びエッジサーバにインポートします。
+'  呼び出し例：
+'    ./ES_DATA_CALC "host:127.0.0.1;table:table5;path:/tmp/table5.csv"
+'				Copyright 2022 Interface Corporation
+' ================================================================================
+
+LIST	ARGV$
+ARGV$ = GETCOMMANDLINEARGS$()
+
+IF LDIM(ARGV$) < 2 THEN
+	CALL USAGE()
+	END
+END IF
+
+' エッジサーバのパラメータを取得
+PARAM$ = ARGV$(1)
+
+DICT	PARAM_ARY$
+' パラメータから連想配列に分解
+PARAM_ARY$ = PARAM_TO_DICT(PARAM$)
+? PARAM_ARY$
+' パラメータの解析
+
+' テーブル名の取得(これは必須)
+IF HAS_DICT_KEY(PARAM_ARY$, "table") THEN
+	TABLE$ = PARAM_ARY$("table")
+ELSEIF HAS_DICT_KEY(PARAM_ARY$, "テーブル") THEN
+	TABLE$ = PARAM_ARY$("テーブル")
+ELSE
+	PRINT "ERROR: テーブル(table)名が指定されていません"
+	END
+END IF
+' csvファイルパスを取得
+IF HAS_DICT_KEY(PARAM_ARY$, "path") THEN
+	CSV_FPATH$ = PARAM_ARY$("path")
+ELSEIF HAS_DICT_KEY(PARAM_ARY$, "パス") THEN
+	CSV_FPATH$ = PARAM_ARY$("パス")
+ELSE
+	PRINT "CSVファイルパスが指定されてないので、適当な名前を設定します"
+	CSV_FPATH$ = "/tmp/"+TABLE$+".csv"
+	PARAM_ARY$("path") = CSV_FPATH$
+END IF
+' 連想配列からパラメータへの統合
+PARAM$ = DICT_TO_PARAM$(PARAM_ARY$)
+
+DICT	RET$
+PRINT "エッジサーバからCSVにエクスポートします["; PARAM$; "]"
+RET$ = ES_DATA_EXPORT_CSV(PARAM$)
+IF RET$("ERR") <> "0" THEN
+	PRINT "ERROR: エッジサーバからのエクスポートに失敗しました"
+	END
+END IF
+
+PRINT "エクスポートしたCSV("; CSV_FPATH$; ")を LibreOffice Calcで開きます"
+IF OPEN_CALC(CSV_FPATH$) = FALSE THEN
+	PRINT "CSVは何も修正されていません"
+ELSE
+	PRINT "CSVは修正されました"
+	CMD$ = "zenity --question --title ""エッジサーバへの反映確認"" --text ""CSV("+CSV_FPATH$+")が修正されたので、エッジサーバに反映して良いですか？"""
+	YES_NO = SHELL SYSTEM(CMD$)
+	? YES_NO
+	IF YES_NO = 0 THEN
+		PRINT "CSVからエッジサーバにインポート(反映)します["; PARAM$; "]"
+		RET$ = ES_DATA_IMPORT_CSV(PARAM$)
+		IF RET$("ERR") <> "0" THEN
+			PRINT "ERROR: エッジサーバへのインポートに失敗しました"
+			END
+		END IF
+	END IF
+END IF
+
+PRINT "全ての作業を完了しました"
+END
+
+' ---------------------------------------------------------------------------------------------
+' サブルーチン群
+
+' CSVファイルを LibreOffice Calcで開きます
+' @return	true=更新された / false=何も更新していない
+FUNCTION OPEN_CALC(CSV_FPATH$) AS BOOL
+	LOCAL				EXE_FPATH$, CMD$, RET
+	LOCAL				PRE_SZ, POST_SZ
+	LOCAL DATETIME		PRE_DT, POST_DT
+
+	IF FILEEXISTS(CSV_FPATH$) = FALSE THEN
+		PRINT "ERROR: CSV("; CSV_FPATH$; ")が存在しません"
+		END
+	END IF
+	PRE_SZ = FILESTAT(CSV_FPATH$, 8)		' ファイルサイズ
+	PRE_DT = FILESTAT(CSV_FPATH$, 12)		' 最終修正時間
+
+	EXE_FPATH$ = STRIP$(SHELL CALLOUT$("which libreoffice7.0"))
+	IF LEN(EXE_FPATH$) = 0 THEN
+			EXE_FPATH$ = STRIP$(SHELL CALLOUT$("which libreoffice"))
+	END IF
+	IF LEN(EXE_FPATH$) = 0 THEN
+		PRINT "ERROR: LibreOffice Calc が見つかりません"
+		END
+	END IF
+	? EXE_FPATH$
+	CMD$ = EXE_FPATH$ + " --calc --infilter=""csv:44,34,76,1"" "+csv_fpath$
+	? CMD$
+	RET = SHELL SYSTEM(CMD$)
+	? RET, CMD$
+
+	POST_SZ = FILESTAT(CSV_FPATH$, 8)		' ファイルサイズ
+	POST_DT = FILESTAT(CSV_FPATH$, 12)		' 最終修正時間
+	? PRE_SZ, PRE_DT, POST_SZ, POST_DT
+	IF (PRE_SZ <> POST_SZ) OR (PRE_DT <> POST_DT) THEN
+		OPEN_CALC = TRUE
+	ELSE
+		OPEN_CALC = FALSE
+	END IF
+END FUNCTION
+
+' パラメータ文字列から連想配列に変換して返す
+FUNCTION PARAM_TO_DICT$(PARAM$) AS DICT
+	LOCAL DICT		RET$
+	LOCAL LIST		ARY$, SS$
+	LOCAL			I, K$, V$
+	ARY$ = SPLIT$(STRIP$(PARAM$), ";")
+	FOR I=0 TO UBOUND(ARY$)
+		SS$ = SPLIT$(ARY$(I), ":")
+		K$ = STRIP$(SS$(0))
+		V$ = STRIP$(SS$(1))
+		RET$(K$) = V$
+	NEXT I
+	PARAM_TO_DICT$ = RET$
+END FUNCTION
+
+' 連想配列からパラメータ文字列に変換して返す
+FUNCTION DICT_TO_PARAM$(DICT PARAM_ARY$)
+	LOCAL LIST		ARY$
+	LOCAL			I, K$, V$, RET$
+	ARY$ = GET_DICT_KEYS$(PARAM_ARY$)
+	FOR I=0 TO UBOUND(ARY$)
+		K$ = ARY$(I)
+		V$ = PARAM_ARY$(K$)
+		RET$ = RET$ + ";" + K$ + ":" + V$
+	NEXT I
+	RET$ = STRIP$(RET$, ";")
+	DICT_TO_PARAM$ = RET$
+END FUNCTION
+
+' 使い方説明
+SUB USAGE()
+	LOCAL	NAME$
+	NAME$ = PATH GET BASENAME$(ARGV$(0))
+	PRINT "名前"
+	PRINT "	"; NAME$; " - エッジサーバからCSVに取り出して、LibreOffice Calc で編集し、再びエッジサーバに入れる"
+	PRINT ""
+	PRINT "書式"
+	PRINT "	"; NAME$; " ""<パラメータ>"""
+	PRINT ""
+	PRINT "	パラメータ: ES_DATA_EXRPORT_CSV / ES_DATA_IMPORT_CSV で指定するパラメータを指定してください"
+	PRINT "	　　　　　　例：""host:127.0.0.1;table:table1;path:/tmp/table1.csv"""
+END SUB

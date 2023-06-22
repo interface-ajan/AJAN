@@ -1,0 +1,28 @@
+' ================================================================================
+' SHELL RUN,SHELL CODE,SHELL OUTPUT$ サンプルプログラム 
+'  SHELL RUN 関数を使って、Linux の lsコマンドを呼び出し、
+'  SHELL CODE 関数で戻り値と、SHELL OUTPUT$ 関数で、ファイル一覧の
+'  文字列情報を取得して表示します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+CLS
+
+'Linuxのlsコマンドを実行
+SHELL RUN "ls"
+
+'実行結果を取得
+RET = SHELL CODE
+IF RET = 0 THEN
+	PRINT "コマンドの実行に成功しました"
+ELSE
+	PRINT "コマンドの実行に失敗しました"
+	END
+END IF
+
+'標準出力を取得
+PRINT "ファイル一覧を表示します"
+PRINT SHELL OUTPUT$
+
+'終了
+END
