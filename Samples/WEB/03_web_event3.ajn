@@ -1,0 +1,38 @@
+'====================================================================
+' Web イベント入力サンプルプログラム 
+'  テキストボックス内のデータが変更されると、ブザーを鳴らします。(SuperCD用)
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_LABEL "LABEL1", "20", "20", "入力した回数分ブザーを鳴らします (SuperCD用)"
+
+WEB_TEXT     "TEXT1", "60", "20"                    'テキストボックス配置
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_COLOR,    "BLUE"    '文字色変更
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_DISABLED, "FALSE"   '書き込み可
+
+ON WEB "TEXT1", "CHANGE" CALL SUB_TEXT, "", "" 'テキスト変更時処理を登録
+
+'テキスト変更時 呼ばれる処理
+SUB SUB_TEXT(ID$, PARAM1$, PARAM2$)
+    COUNT = VAL(AJAN_WEB_FORM$("TEXT1"))
+	IF (COUNT > 10) THEN
+		COUNT = 10
+	END IF
+    
+    FOR I=0 TO COUNT-1	'回数分ブザーを鳴らす
+        BUZZERCONTROL "CONTROL=ON"
+        SLEEP 0.3
+        BUZZERCONTROL "CONTROL=OFF"
+    NEXT
+
+	WEB_TEXT_SET "TEXT1", AJAN_TEXT_VALUE, ""  'テキストをクリア
+END SUB
+
+'ボタンイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

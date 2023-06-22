@@ -1,0 +1,48 @@
+'====================================================================
+' Web イベント入力サンプルプログラム 
+'  ボタンや画像をクリックするとイベントが発生して画面に反映します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "イベント処理" 'Webタイトル
+WEB_LABEL  "LABEL1", "20", "20", "ボタン,画像 クリックすると処理を行います"
+
+'ボタン配置
+WEB_BUTTON "BUTTON1", "80",  "20", "メッセージ表示"
+
+'画像配置
+WEB_IMG     "ID_IMG1", "160", "20"                        '画像データ配置
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_FILE,   "static/ajan.gif" '画像ファイル設定
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_WIDTH,  "150"             '画像ファイル幅設定
+
+'ボタン/画像クリック時の動作登録
+ON WEB "BUTTON1", "CLICK" CALL SUB_MSG,  "Hello", "Ajan!"
+ON WEB "ID_IMG1", "CLICK" CALL SUB_IMG,  "", ""
+
+'ボタンクリック時処理：メッセージ表示
+SUB SUB_MSG(ID$, PARAM1$, PARAM2$)
+    WEB_MSG_BOX ID$ + "が押されました。\n" + PARAM1$ + " " + PARAM2$
+END SUB
+
+'画像クリック時処理：画像差し替え
+IMG_FLG = 0
+SUB SUB_IMG(ID$, PARAM1$, PARAM2$)
+	IF IMG_FLG = 0 THEN
+		IMG$ = "static/interface.gif"
+		IMG_FLG = 1
+	ELSE
+		IMG$ = "static/ajan.gif"
+		IMG_FLG = 0
+	END IF
+	WEB_IMG_SET "ID_IMG1", AJAN_IMG_FILE,  IMG$'画像ファイル設定
+END SUB
+	
+'ボタンイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

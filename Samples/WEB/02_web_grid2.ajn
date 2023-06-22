@@ -1,0 +1,51 @@
+'====================================================================
+' Web データグリッドサンプルプログラム 
+'  各種オプションを指定してデータグリッドを表示します。
+'            Copyright 2020,2022 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "データグリッド表示" 'Webタイトル
+
+WEB_LABEL   "LABEL1",  "20", "30", "データグリッド 列名/列幅指定、検索ボックス表示、"
+WEB_LABEL   "LABEL2",  "50", "30", "列フォーマット(HTML形式/金額)指定"
+
+DIM COLUMN$(2) = ["ID", "名称", "価格"] '列名
+
+'表示データ生成
+DATA_NUM = 1000
+LIST DATA$
+REDIM DATA$(DATA_NUM-1 ,2)
+FOR INDEX = 0 TO DATA_NUM-1
+    DATA$(INDEX,0) = STR$(INDEX+1)
+    DATA$(INDEX,1) = "<a href=""xxxx.ajn"">製品-" + STR$(INDEX+1) + "</a>" 'HTML形式のデータ
+    DATA$(INDEX,2) = STR$(ROUND(RND() * 1000000,0))
+NEXT    
+
+WEB_GRID     "GRID1", "90",  "20"										'データグリッド配置
+WEB_GRID_SET "GRID1", AJAN_GRID_WIDTH,                   "", "500"		'グリッド幅
+WEB_GRID_SET "GRID1", AJAN_GRID_HEIGHT,                  "", "600"		'グリッド高さ
+WEB_GRID_SET "GRID1", AJAN_GRID_ROW_HEIGHT,              "", "30"		'行の高さ
+
+WEB_GRID_SET "GRID1", AJAN_GRID_FONT_SIZE,               "", "22"		'文字サイズ
+WEB_GRID_SET "GRID1", AJAN_GRID_FONT_COLOR,              "", "#002358"	'文字色
+WEB_GRID_SET "GRID1", AJAN_GRID_HEADER_FONT_COLOR,       "", "WHITE"	'ヘッダ部の文字色
+WEB_GRID_SET "GRID1", AJAN_GRID_HEADER_BACKGROUND_COLOR, "", "#204a87"	'ヘッダ列の背景色
+WEB_GRID_SET "GRID1", AJAN_GRID_HEADER_FONT_SIZE,        "", "18"		'ヘッダ列の文字サイズ
+WEB_GRID_SET "GRID1", AJAN_GRID_FILTER_BACKGROUND_COLOR, "", "#729fcf"	'検索ボックスの背景色
+WEB_GRID_SET "GRID1", AJAN_GRID_DATA_BACKGROUND_COLOR,   "", "#e9f2ff"	'データ部の背景色
+
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN,           "", "ID,名称,価格"		'列名 (カンマ区切り指定)
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH,      "1", "100"			'列幅 1列目
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH,      "2", "230"			'列幅 2列目
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH,      "3", "150"			'列幅 3列目
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_ALIGN,      "1", "CENTER"		'列 左右寄せ設定 1列目
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_ALIGN,      "3", "RIGHT"			'列 左右寄せ設定 3列目 
+WEB_GRID_SET "GRID1", AJAN_GRID_FILTER_ENABLE,     "", AJAN_TRUE		'検索ボックス表示
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "2", "HTML"			'2列目：HTML形式フォーマット
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "3", "PRICE_YEN"		'3列目：金額フォーマット
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "3", ".00"			'小数点以下2桁 指定
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH,      "",  "AUTO"			'列幅：自動
+
+WEB_GRID_SET "GRID1", AJAN_GRID_DATA,              AJAN_FALSE, DATA$	'データ設定/先頭行を列名にしない

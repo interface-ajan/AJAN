@@ -1,0 +1,73 @@
+'====================================================================
+' Web ボタンサンプルプログラム 
+'  プッシュボタンを押している間、カウンタを増加します。
+'　トグルボタンがONの間、カウンタが増加します。
+'            Copyright 2021,2022 Interface Corporation
+'====================================================================
+INCLUDE	"WEB.AJN"
+
+WEB_LABEL "", "20", "10", "[プッシュボタン]　ボタンを押している間、カウントアップします。"
+WEB_LABEL "", "200", "10", "[トグルボタン　]　ボタンがONの間、カウントアップします。"
+WEB_LABEL "", "220", "10", "（50カウントで自動的に止まります）"
+
+'プッシュボタン設置
+WEB_BUTTON 		"PB1", "60", "50", "PUSH"
+WEB_BUTTON_SET	"PB1", AJAN_BUTTON_TYPE, "PUSH"
+WEB_BUTTON_SET	"PB1", AJAN_BUTTON_IMG_FILE, "static/BUTTON_OFF.png,static/BUTTON_ON.png"
+'WEB_BUTTON_SET	"PB1", AJAN_BUTTON_COLOR, "silver"		'OFFの色（画像を使わない場合有効）
+'WEB_BUTTON_SET	"PB1", AJAN_BUTTON_COLOR_ON, "yellow"	'ONの色（画像を使わない場合有効）
+
+'トグルボタン設置
+WEB_BUTTON 		"TB1", "240", "50", "TOGGLE"
+WEB_BUTTON_SET	"TB1", AJAN_BUTTON_TYPE, "TOGGLE"
+WEB_BUTTON_SET	"TB1", AJAN_BUTTON_IMG_FILE, "static/BUTTON_OFF.png,static/BUTTON_ON.png"
+'WEB_BUTTON_SET	"TB1", AJAN_BUTTON_COLOR, "silver"		'OFFの色（画像を使わない場合有効）
+'WEB_BUTTON_SET	"TB1", AJAN_BUTTON_COLOR_ON, "yellow"	'ONの色（画像を使わない場合有効）
+
+'カウンタ設置
+PB_CNT = 0
+TB_CNT = 0
+WEB_LABEL "CNT1", "80",  "250" , STR$(PB_CNT)
+WEB_LABEL "CNT2", "260", "250" , STR$(TB_CNT)
+
+'イベント設定
+ON WEB "PB1", "CHANGE" CALL PB_EVENT, "", ""
+ON WEB "TB1", "CHANGE" CALL TB_EVENT, "", ""
+
+'プッシュボタンイベント処理
+SUB PB_EVENT(ID$, PARAM1$, PARAM2$)
+	PB_STAT$ = AJAN_WEB_FORM$(ID$)
+END SUB
+
+'トグルボタンイベント処理
+SUB TB_EVENT(ID$, PARAM1$, PARAM2$)
+	TB_STAT$ = AJAN_WEB_FORM$(ID$)
+END SUB
+
+'イベント処理ループ
+PB_STAT$ = ""
+TB_STAT$ = ""
+DO WHILE TRUE
+	'プッシュボタンがONの時カウントアップする
+	IF PB_STAT$ = "1" THEN
+		PB_CNT = PB_CNT + 1
+		WEB_LABEL_SET "CNT1", AJAN_LABEL_VALUE,  STR$(PB_CNT)
+	END IF
+
+	'トグルボタンがONの時カウントアップする
+	IF TB_STAT$ = "1" THEN
+		TB_CNT = TB_CNT + 1
+		WEB_LABEL_SET "CNT2", AJAN_LABEL_VALUE,  STR$(TB_CNT)
+
+		' 50カウントで自動停止
+		IF TB_CNT = 50 THEN
+			WEB_BUTTON_SET "TB1", AJAN_BUTTON_CLICK, ""
+			TB_CNT = 0
+		END IF
+	END IF
+
+	SLEEP 0.1
+	IF(AJAN_END_FLG = 1) THEN
+		END
+	END IF
+LOOP

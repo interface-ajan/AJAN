@@ -1,0 +1,128 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  グラフのデータを周期的に更新します。
+'  一つのグラフに複数系列の折れ線グラフを表示して更新します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+CONST TIMER_CYCLE     = 10  '基本タイマ周期(ms)
+CONST DATA_NUM        = 100 'グラフ表示件数(件)
+
+CONST GET_DATA_CYCLE  = 40  'データ取得周期 (ms)(基本タイマ周期の倍数で指定)
+CONST WEB_DISP_CYCLE  = 100 'Web画面表示周期(ms)(基本タイマ周期の倍数で指定)
+CONST LABEL_DISP_NUM  = 10  'ラベル表示間隔 (件)
+
+LIST  LABEL$, X_GRID_COLOR$, DATA$, DATA2$, DATA3$
+REDIM LABEL$        (DATA_NUM-1) 
+REDIM X_GRID_COLOR$ (DATA_NUM-1) 
+REDIM DATA$         (DATA_NUM-1)
+REDIM DATA2$        (DATA_NUM-1)
+REDIM DATA3$        (DATA_NUM-1)
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "複数系列のデータを自動更新" 'Webタイトル
+WEB_LABEL     "", "10", "20", "グラフ内 複数系列のデータを自動更新"
+WEB_LABEL     "", "40", "20", "データ取得、Web表示の周期をそれぞれ指定"
+
+'グラフ配置
+WEB_GRAPH     "ID_GRAPH1", "70", "20"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT, "500"     '高さ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH    ,"700"     '横幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME_DISPLAY, AJAN_FALSE '凡例非表示
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_TYPE, "LINE"
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_TYPE, "LINE"
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_TYPE, "LINE"
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TICKS_COLOR  ,"BLUE" '軸目盛文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TICKS_SIZE   ,"20"   '軸目盛サイズ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_X_TICKS_ROTATE ,"90" 'X軸目盛 回転角度
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$ 
+
+'X軸グリッド線(縦)一定間隔毎に色を変える
+FOR I=0 TO DATA_NUM-1
+    IF (I MOD 10 = 0) THEN
+        X_GRID_COLOR$(I) = "NAVY"
+    ELSE
+        X_GRID_COLOR$(I) = "WHITE"
+    END IF
+NEXT
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_X_GRID_COLOR_LIST , X_GRID_COLOR$
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_COLOR ,"#3465a4"   
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_BORDER_COLOR ,"#4e9a06"
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_BORDER_COLOR ,"#ce5c00"
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_STEPPED_LINE , AJAN_TRUE 'ステップ状のグラフ表示
+
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA, DATA$ 
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA, DATA$ 
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA, DATA$ 
+
+ON TIMER(TIMER_CYCLE) CALL DISP_DATA  'タイマ設定
+TIMER ON                              'タイマ開始
+
+GET_DATA_COUNT   = 0
+WEB_DISP_COUNT   = 0
+
+'タイマで呼ばれる処理
+SUB DISP_DATA
+
+    '一定周期毎にデータ取得
+    IF (GET_DATA_COUNT * TIMER_CYCLE >= GET_DATA_CYCLE) THEN
+	    'データを生成して配列に格納
+	    ADD_DATA$  = STR$(ROUND(RND() * 100,0))
+	    ADD_DATA2$ = STR$(ROUND(RND() * 500,0))
+	    ADD_DATA3$ = STR$(ROUND(RND() * 1000,0))
+	    ONEDIM REMOVE DATA$,  0, 1  '1件削除
+	    ONEDIM REMOVE DATA2$, 0, 1
+	    ONEDIM REMOVE DATA3$, 0, 1
+	    ONEDIM INSERT DATA$,  -1, ADD_DATA$  '1件追加
+	    ONEDIM INSERT DATA2$, -1, ADD_DATA2$
+	    ONEDIM INSERT DATA3$, -1, ADD_DATA3$
+		GET_DATA_COUNT = 0
+
+	    '一定件数毎にラベル付与
+	    ADD_LABEL$ = ""
+	    IF (LABEL_DISP_COUNT >= LABEL_DISP_NUM) THEN
+			ADD_LABEL$ = TIME$
+			LABEL_DISP_COUNT = 0
+	    END IF
+	    ONEDIM REMOVE LABEL$, 0, 1           '1件削除
+	    ONEDIM INSERT LABEL$, -1, ADD_LABEL$ '1件追加
+		LABEL_DISP_COUNT = LABEL_DISP_COUNT + 1		
+
+    END IF
+	GET_DATA_COUNT = GET_DATA_COUNT + 1
+
+    '一定周期毎にWeb画面に表示
+    IF (WEB_DISP_COUNT * TIMER_CYCLE >= WEB_DISP_CYCLE) THEN
+        '複数系列のデータを都度追加/グラフ更新するとパフォーマンスが低下するため
+        '各系列のデータをそれぞれセットのみ行い、最後にまとめてグラフ画面更新を行います。
+        
+        'ラベル、データをWebのグラフにセット（データセットのみ)
+        WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL_SETONLY, LABEL$
+        WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_SETONLY,        DATA$
+        WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_SETONLY,        DATA2$
+        WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_SETONLY,        DATA3$
+
+        'グラフ画面の更新
+        WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_REFRESH, "" 
+        WEB_DISP_COUNT = 0
+    END IF
+    WEB_DISP_COUNT = WEB_DISP_COUNT + 1
+
+END SUB
+
+
+'タイマイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+    SLEEP 1
+    IF(AJAN_END_FLG = 1) THEN
+        TIMER OFF    'タイマ停止
+        END            'ネットワーク切断時:終了する
+    END IF
+LOOP
+    

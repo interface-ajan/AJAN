@@ -1,0 +1,15 @@
+'====================================================================
+' Web フレームサンプルプログラム 
+'  フレームに、ローカルのWebページを表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+INCLUDE "WEB.AJN"
+
+WEB_FRAME     "FRAME1", "10",  "10"     'フレーム配置
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_WIDTH, "350"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_HEIGHT, "200"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BACKGROUND_COLOR, "WHITE"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_WIDTH, "1"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_COLOR, "NAVY"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_STYLE, "SOLID"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_URL, "data/web_frame_page.htm"

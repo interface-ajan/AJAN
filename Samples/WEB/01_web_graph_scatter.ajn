@@ -1,0 +1,142 @@
+'====================================================================
+' Web グラフサンプルプログラム 
+'  散布図を表示します。
+'            Copyright 2021 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "散布図" 'Webタイトル
+
+'折れ線グラフ配置
+WEB_GRAPH     "ID_GRAPH1", "50", "40"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE, "SCATTER"		'散布図設定
+
+'各種設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE, "散布図"			'グラフタイトル
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME, "データ1"			'凡例
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_NAME, "データ2"
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_NAME, "回帰曲線"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_POINT_RADIUS, 5			'データ1の点の大きさ
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_POINT_RADIUS, 5			'データ2の点の大きさ
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_POINT_RADIUS, 0			'回帰曲線は点を表示しない
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_COLOR, "RED"		'データ1は赤
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_BORDER_COLOR, "GREEN"	'データ2は緑
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_BORDER_COLOR, "GRAY"	'回帰曲線はグレー
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_POINT_STYLE, "cross"	'点の形
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_POINT_STYLE, "crossRot"	
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_X_TICKS_LOGARITHMIC, AJAN_TRUE	'X軸対数目盛り
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_TICKS_LOGARITHMIC, AJAN_TRUE	'X軸対数目盛り
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_WIDTH, 0			'点をつなぐ線
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA_BORDER_WIDTH, 0
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA_BORDER_WIDTH, 1
+
+'散布データ作成（4点☓2組を作成）
+LIST DATA_1, DATA_1x, DATA_1y
+LIST DATA_2, DATA_2x, DATA_2y
+
+DATA_1x = [10.1;10.4;11.2;11.0]		'データ1　X軸データ
+DATA_1y = [1.0;2.0;2.6;3.2]			'データ1　Y軸データ
+
+DATA_2x = [30;35;38;41]				'データ2　X軸データ
+DATA_2y = [35;36;45;42]				'データ2　Y軸データ
+
+REDIM DATA_1(LDIM(DATA_1x))			'1組目のデータを2次元配列にする
+DATA_1 = DATA_1x					'X軸データ追加
+TWODIM INSERT ROW,DATA_1,-1,DATA_1y	'Y軸データ追加
+
+REDIM DATA_2(LDIM(DATA_2x))			'2組目のデータを2次元配列にする
+DATA_2 = DATA_2x					'X軸データ追加
+TWODIM INSERT ROW,DATA_2,-1,DATA_2y	'Y軸データ追加
+
+'回帰曲線データ作成（2組のデータ全体の回帰曲線を計算する）
+LIST DATA_3, DATA_3x, DATA_3y
+
+DATA_3x = DATA_1x					'x軸：DATA_1x + DATA_2x
+ONEDIM INSERT DATA_3x,-1,DATA_2x
+
+DATA_3y = DATA_1y					'y軸：DATA_1y + DATA_2y
+ONEDIM INSERT DATA_3y,-1,DATA_2y
+
+sci_a = 0							'回帰曲線の傾き
+sci_b = 0							'回帰曲線の切片
+CALL sci_pursuit(DATA_3x,DATA_3y)	'傾きsci_a と 切片sci_b を求める
+
+CONST x = 0, y = 1					'配列DATA_3の添字の可読性のため
+CONST x_start = 10, x_end = 41		'x軸のデータ範囲（決め打ちで設定）
+x_range = x_end - x_start
+REDIM DATA_3(1, x_range)
+
+sci_x = x_start
+FOR cnts = 0 TO x_range
+	lx1 = x_start + cnts
+	ly1 = sci_a * lx1 + sci_b
+
+	DATA_3(x, cnts) = lx1
+	DATA_3(y, cnts) = ly1
+NEXT cnts
+
+'データをグラフに設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA, DATA_1
+WEB_GRAPH_SET "ID_GRAPH1", 2, AJAN_DATA, DATA_2
+WEB_GRAPH_SET "ID_GRAPH1", 3, AJAN_DATA, DATA_3
+
+END
+
+'--------------------------------------------------------
+'回帰曲線計算（y=ax+b の a と b を求める）
+'　入力：data_x(n)	x軸のデータ配列
+'　入力：data_y(n)	y軸のデータ配列
+'　出力：sci_a		傾き
+'　出力：sci_b		切片
+SUB sci_pursuit(data_x AS LIST, data_y AS LIST)
+
+	LOCAL LIST devi_x	'xの偏差
+	LOCAL LIST devi_y	'yの偏差
+	REDIM devi_x(LDIM(data_x))
+	REDIM devi_y(LDIM(data_y))
+
+	'①平均
+	LOCAL avg_x = 0
+	LOCAL cnti
+	FOR cnti = 0 TO LDIM(data_x)-1
+		avg_x = avg_x + data_x(cnti)
+	NEXT cnti
+	avg_x = avg_x / LDIM(data_x)
+
+	LOCAL avg_y = 0
+	FOR cnti = 0 TO LDIM(data_y)-1
+		avg_y = avg_y + data_y(cnti)
+	NEXT cnti
+	avg_y = avg_y / LDIM(data_y)
+
+	'②偏差
+	FOR cnti = 0 TO LDIM(data_x)-1
+		devi_x(cnti) = data_x(cnti) - avg_x
+	NEXT cnti
+
+	FOR cnti = 0 TO LDIM(data_y)-1
+		devi_y(cnti) = data_y(cnti) - avg_y
+	NEXT cnti
+
+	'③分散
+	LOCAL vari_x = 0
+	FOR cnti = 0 TO LDIM(data_x)-1
+		vari_x = vari_x + (devi_x(cnti)^2)
+	NEXT cnti
+	vari_x = vari_x / LDIM(data_x)
+
+	'④共分散
+	LOCAL cova = 0
+	FOR cnti = 0 TO LDIM(data_x)-1
+		cova = cova + (devi_x(cnti) * devi_y(cnti))
+	NEXT cnti
+	cova = cova / LDIM(data_x)
+
+	'⑤傾き（結果）
+	sci_a = cova / vari_x
+
+	'⑥切片（結果）
+	sci_b = avg_y - (sci_a * avg_x)
+
+END SUB

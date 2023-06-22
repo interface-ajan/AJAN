@@ -1,0 +1,63 @@
+'===================================================================
+' Web カメラ(ブラウザ側USBカメラ) サンプルプログラム 
+'  ブラウザ側USBカメラの情報をWebブラウザに表示します。
+'  ボタンを押すと、画像を保存します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "ブラウザ側カメラ撮影"     'Webタイトル
+
+WEB_LABEL      "LABEL1", "20", "20",  "ブラウザ側カメラで撮影した画像をサーバに保存します"
+
+WEB_CAMERA     "ID_CAMERA1", "120", "20"                  'カメラ部品配置
+WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_WIDTH,  "400"
+WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_HEIGHT, "400"
+
+WEB_LABEL     "LABEL2",   "80", "450", "[保存データ]"       
+WEB_LABEL  	  "FILENAME", "230", "440", ""       	     '保存ファイル名表示ラベル
+WEB_LABEL_SET "FILENAME", AJAN_LABEL_FONT_SIZE, "12"     'ラベルのフォント大きさ     
+WEB_IMG       "ID_IMG1",  "120", "440"                   '保存データ表示領域 画像部品配置
+WEB_IMG_SET   "ID_IMG1",  AJAN_IMG_WIDTH,  "150"         '幅
+WEB_IMG_SET   "ID_IMG1",  AJAN_IMG_HEIGHT, "100"         '高さ
+
+WEB_BUTTON    "BUTTON1", "70", "350", "保存"			 '保存ボタン配置
+ON WEB        "BUTTON1", "CLICK" CALL SUB_CAMERA, "", "" 'クリック時処理を登録
+
+'ボタン押したときに 呼ばれる処理
+SUB SUB_CAMERA(ID$, PARAM1$, PARAM2$)
+	'ファイル名生成
+	FILENAME$ = "image_" + REPLACE$(TIME$, ":", "_") + ".PNG" 
+	
+	'カメラ　画像撮影、サーバにアップロード
+	WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_IMAGE_FOLDER, "data"
+	WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_GET_IMAGE, FILENAME$
+END SUB
+
+'----------------------------------------------------------
+'アップロードされた画像ファイルを受けとって保存
+'サブルーチン名：AJAN_SUB_CAMERA_UPLOAD（システム予約）
+'----------------------------------------------------------
+SUB AJAN_SUB_CAMERA_UPLOAD(ID$, PARAM1$, PARAM2$)
+
+    'クライアントからのデータをファイルに保存する
+    LOCAL DATA_STR$ = STR_BASE64_DECODE$(AJAN_WEB$("ajan_upload_file")) 'base64
+    LOCAL FILEPATH$ = AJAN_WEB$("ajan_upload_file_name")
+    STR_FWRITEALL FILEPATH$ , DATA_STR$    'ファイルをPC上に保存
+
+	'画像をブラウザにも表示
+	WEB_IMG_SET   "ID_IMG1",  AJAN_IMG_FILE,    FILEPATH$ '画像ファイル設定
+	WEB_LABEL_SET "FILENAME", AJAN_LABEL_VALUE, FILEPATH$ 'ファイル名表示    
+	
+    SHELL "chmod 777 " + FILEPATH$	  'アクセス権設定
+END SUB
+
+'ボタンイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP
+

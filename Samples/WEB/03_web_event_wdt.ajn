@@ -1,0 +1,40 @@
+'====================================================================
+' Web イベント入力サンプルプログラム 
+'  SuperCDに搭載しているウォッチドッグタイマの周期でイベント処理を行います。(SuperCD用)
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+INCLUDE "SML001.AJN"
+
+EVT_CNT = 1
+
+WEB_LABEL "ID_INFO", "20", "20", "ウォッチドッグタイマイベントで画面表示 (SuperCD用)"
+WEB_LABEL "ID_LABEL1", "80" , "20", " ----- "
+
+'ウォッチドッグタイマ(WDT)設定
+WDTCONFIG 1, "ACTION=EVENT"	'1秒毎にWDTイベントを起こす
+ON CM CALL MGRCALLBACK		'WDTイベント設定
+CMEVENTCONFIG "WDT=ON"		'WDT割り込み要因設定
+CM ON						'WDTイベント有効化
+WDTSTART					'WDT開始
+
+'割り込み処理
+SUB MGRCALLBACK()
+	EVT = CMEVENT
+	IF EVT = CMEVTWDS THEN
+		WEB_LABEL_SET  "ID_LABEL1", AJAN_LABEL_VALUE, "WDT周期満了割り込み検出! "+str$(EVT_CNT)
+		EVT_CNT = EVT_CNT + 1
+	END IF
+END SUB
+
+'イベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		'ネットワーク切断時
+		WDTSTOP					'WDT終了
+		CM OFF					'WDTイベント無効化
+		END						'終了する
+	END IF
+LOOP

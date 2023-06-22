@@ -1,0 +1,19 @@
+'===================================================================
+' Web リンク表示サンプルプログラム 
+'  HTMLを直接指定してリンク表示、パラメータ取得を行います。
+'            Copyright 2020 Interface Corporation
+'===================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_WRITE "リンク、パラメータ取得<BR>"
+WEB_WRITE "クリックすると、urlに記載したパラメータのデータを取得できます。<BR><BR>"
+WEB_WRITE "<a href=""10_web_link.ajn?id=100"">リンク id=100</a><BR>"
+WEB_WRITE "<a href=""10_web_link.ajn?id=200"">リンク id=200</a><BR><BR>"
+
+
+'[AJANアプリ内で 使用できるデータ一覧]
+'1. Web情報： AJAN_WEB$ （グローバル変数）
+'   getパラメータ URL:〜xxx.ajn?data1=100
+'	→AJAN_WEB$("data1") に100が入る。
+WEB_WRITE "id の値：" + AJAN_WEB$("id") + "です"

@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8847"/>
+  <App ExecuteName="02_web_img" Type="WebPage"/>
+  <FileGroup>
+    <file path="02_web_img.ajn"/>
+  </FileGroup>
+</Ajan>

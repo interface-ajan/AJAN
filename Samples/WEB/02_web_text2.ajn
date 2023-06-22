@@ -1,0 +1,94 @@
+'====================================================================
+' Web テキスト入力サンプルプログラム 
+'  テキストボックスに自動的に候補リストを表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "テキストボックス(候補表示)"
+WEB_LABEL     "", "20", "20",   "テキストボックスに入力候補を表示します。"
+
+
+'1. 候補リストが固定の例
+WEB_LABEL    "", "100", "20", "1. 候補リストが固定の場合：事前に候補データを取得"
+
+DIM DATA_LIST1$(4)    'リストデータ
+DATA_LIST1$ = ["東京", "大阪", "名古屋", "広島", "大分"] 
+
+WEB_TEXT     "TEXT_LIST1", "130",  "40"                       'テキストボックス配置
+WEB_TEXT_SET "TEXT_LIST1", AJAN_TEXT_SUGGEST_SET, DATA_LIST1$ 'サジェストデータ(候補リスト)を設定
+WEB_LABEL  "", "130", "250", " ※上下キーか　候補文字入力で候補リストが出ます"
+
+
+'2. 候補リストを都度動的にAJANから取得する例
+WEB_LABEL     "", "200", "20", "2. 候補リストを都度AJANから取得して表示"
+WEB_LABEL     "LABEL2", "230", "40", "(DB等、検索対象データが多い場合には、必要なデータのみ取得できるため\nこちらの方が適しています)"
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_FONT_SIZE, "14"
+
+WEB_LABEL     "LABEL3", "290", "20", "   文字入力で都度AJANから最新の候補リストを取得します。"
+
+WEB_TEXT   "TEXT_LIST2", "330",  "40"                                  'テキストボックス配置
+ON WEB     "TEXT_LIST2", "CHANGE_POLLING" CALL SUB_INPUT_TEXT,  "", "" 'テキストキー入力時処理登録
+WEB_LABEL  "", "330", "250", " 例：""広島"""
+
+
+'検索対象データ生成
+'ファイルから市町村一覧データ読み込み、二次元配列DATA_LIST_SEARCH$に格納
+DIM DATA_LIST_SEARCH$(2000,1)    'リストデータ格納領域
+F% = FREEFILE() 
+OPEN "data/smp_address.csv" FOR INPUT AS #F%
+LINE_TEMP$ = ""
+LINE_CNT = 0
+DIM LINE_DIM$(1)
+DO WHILE EOF(F%) = FALSE
+    LINE INPUT #F%, LINE_TEMP$               '1行読み取り
+	LINE_DIM$ = SPLIT$(LINE_TEMP$, ",")
+	TWODIM INSERT ROW, DATA_LIST_SEARCH$, LINE_CNT, LINE_DIM$  '1行分配列に追加
+	LINE_CNT = LINE_CNT + 1
+LOOP
+CLOSE #F%
+
+
+'テキストボックスの内容変更時
+SUB SUB_INPUT_TEXT(ID$, PARAM1$, PARAM2$)
+	LOCAL LIST DISP_SELECT_LIST$
+
+	'入力文字取得
+	SEARCH$ = AJAN_WEB_FORM$("TEXT_LIST2")  
+
+	CONST DISP_LISTY_NUM = 15 'リスト表示件上限
+	LOCAL COUNT = 0
+	IF SEARCH$="" THEN
+		DATA_LIST_SEARCH$ = ""
+	ELSE
+		'検索条件に応じた候補リストを生成
+		FOR INDEX = 0 TO LINE_CNT-1
+			DATA$ = DATA_LIST_SEARCH$(INDEX, 1)
+
+			'検索文字列がデータに含まれている場合は候補リストにデータ追加
+			IF (INSTR(DATA$, SEARCH$) <> 0) THEN
+				ONEDIM INSERT DISP_SELECT_LIST$, -1, DATA$
+
+				COUNT = COUNT + 1
+				IF COUNT => DISP_LISTY_NUM THEN EXIT FOR '指定件数を上限とする
+			END IF
+		NEXT	
+	END IF	
+
+	'候補リストをテキストボックスのリストに設定
+	WEB_TEXT_SET "TEXT_LIST2", AJAN_TEXT_SUGGEST_SET, DISP_SELECT_LIST$
+
+	'候補リストを開く
+	WEB_TEXT_SET "TEXT_LIST2", AJAN_TEXT_SUGGEST_OPEN, DISP_SELECT_LIST$
+
+END SUB
+
+
+'画面変更処理を行うためAJANを継続動作
+DO WHILE TRUE
+    SLEEP 1
+    IF(AJAN_END_FLG = 1) THEN
+        END    'ネットワーク切断時:終了する
+    END IF
+LOOP

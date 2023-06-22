@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8847"/>
+  <App ExecuteName="03_web_event" Type="WebPage"/>
+  <FileGroup>
+    <file path="03_web_event.ajn"/>
+  </FileGroup>
+</Ajan>

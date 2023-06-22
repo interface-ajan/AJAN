@@ -1,0 +1,98 @@
+'====================================================================
+' Web 図形描画サンプルプログラム 
+'  四角形を自由な位置や装飾設定で描画できます。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "ID_LABEL_TITLE", "10", "30", "四角形を自由な位置や装飾設定で描画できます。"
+
+'シンプルな四角形
+X$ = "50" : Y$ = "70"
+WEB_LABEL "ID_LABEL10", Y$, X$, "シンプルな四角形"
+
+X1$ = "50" : Y1$ = "100" : WD$ = "100" : HT$ = "100"
+WEB_DRAW "ID_DRAW10", "RECT", X1$, Y1$, WD$, HT$
+SLEEP(1)
+
+X1$ = "90" : Y1$ = "140" : WD$ = "80" : HT$ = "80"
+WEB_DRAW "ID_DRAW11", "RECT", X1$, Y1$, WD$, HT$
+SLEEP(1)
+
+X1$ = "130" : Y1$ = "120" : WD$ = "60" : HT$ = "60"
+WEB_DRAW "ID_DRAW12", "RECT", X1$, Y1$, WD$, HT$
+SLEEP(1)
+
+'回転、線幅、線色、塗りつぶし
+X$ = "50" : Y$ = "250"
+WEB_LABEL "ID_LABEL20", Y$, X$, "回転、線幅、線色、塗りつぶし"
+
+X1$ = "70" : Y1$ = "300" : WD$ = "80" : HT$ = "80"
+WEB_DRAW "ID_DRAW20", "RECT", X1$, Y1$, WD$, HT$
+WEB_DRAW_SET "ID_DRAW20", AJAN_DRAW_ROTATE, "45"         '回転角（時計回り）
+WEB_DRAW_SET "ID_DRAW20", AJAN_DRAW_LINE_SIZE, "20"      '線の幅
+WEB_DRAW_SET "ID_DRAW20", AJAN_DRAW_LINE_COLOR, "PURPLE" '線の色
+WEB_DRAW_SET "ID_DRAW20", AJAN_DRAW_FILL_COLOR, "YELLOW" '塗りつぶし色
+SLEEP(1)
+
+'透明度、重なり順
+X$ = "50" : Y$ = "430"
+WEB_LABEL "ID_LABEL30", Y$, X$, "透明度、重なり順"
+
+X1$ = "50" : Y1$ = "460" : WD$ = "100" : HT$ = "100"
+WEB_DRAW "ID_DRAW30", "RECT", X1$, Y1$, WD$, HT$
+WEB_DRAW_SET "ID_DRAW30", AJAN_DRAW_LINE_SIZE, "20"      '線の幅
+WEB_DRAW_SET "ID_DRAW30", AJAN_DRAW_LINE_COLOR, "GREEN"  '線の色
+WEB_DRAW_SET "ID_DRAW30", AJAN_DRAW_FILL_COLOR, "AQUA"   '塗りつぶし色
+WEB_DRAW_SET "ID_DRAW30", AJAN_DRAW_OPACITY, "1.0"       '透明度(0.0〜1.0)
+WEB_DRAW_SET "ID_DRAW30", AJAN_WEB_ZINDEX, "3"           '重なり順（大：手前）
+SLEEP(1)
+
+X1$ = "100" : Y1$ = "510" : WD$ = "100" : HT$ = "100"
+WEB_DRAW "ID_DRAW40", "RECT", X1$, Y1$, WD$, HT$
+WEB_DRAW_SET "ID_DRAW40", AJAN_DRAW_LINE_SIZE, "20"      '線の幅
+WEB_DRAW_SET "ID_DRAW40", AJAN_DRAW_LINE_COLOR, "OLIVE"  '線の色
+WEB_DRAW_SET "ID_DRAW40", AJAN_DRAW_FILL_COLOR, "LIME"   '塗りつぶし色
+WEB_DRAW_SET "ID_DRAW40", AJAN_DRAW_OPACITY, "0.8"       '透明度(0.0〜1.0)
+WEB_DRAW_SET "ID_DRAW40", AJAN_WEB_ZINDEX, "2"           '重なり順（大：手前）
+SLEEP(1)
+
+WEB_DRAW_SET "ID_DRAW30", AJAN_WEB_ZINDEX, "1"           '重なり順（大：手前）
+SLEEP(1)
+
+'座標変更、幅、高さ変更
+X$ = "400" : Y$ = "70"
+WEB_LABEL "ID_LABEL50", Y$, X$, "座標変更、幅、高さ変更"
+
+X1$ = "400" : Y1$ = "100" : WD$ = "100" : HT$ = "100"
+WEB_DRAW "ID_DRAW50", "RECT", X1$, Y1$, WD$, HT$
+SLEEP(1)
+
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_POS_X1, "450"        '描画座標 X1
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_POS_Y1, "180"        '描画座標 Y1
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_WIDTH,  "60"        '横幅
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_HEIGHT, "60"        '高さ
+SLEEP(1)
+
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_POS_X1, "380"        '描画座標 X1
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_POS_Y1, "240"        '描画座標 Y1
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_WIDTH,  "120"        '横幅
+WEB_DRAW_SET "ID_DRAW50", AJAN_DRAW_HEIGHT, "120"        '高さ
+
+END
+
+'オプション設定例（ID、パラメータを、使用先に合わせて変更してください。）
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_POS_X1, "300"        '描画座標 X1
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_POS_Y1, "100"        '描画座標 Y1
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_WIDTH,  "200"        '横幅
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_HEIGHT, "150"        '高さ
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_ROTATE, "90"         '回転角（時計回り）
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_LINE_SIZE, "5"       '線の幅
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_LINE_COLOR, "RED"    '線の色
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_FILL_COLOR, "BLUE"   '塗りつぶし色
+'WEB_DRAW_SET "ID_DRAW1", AJAN_DRAW_OPACITY, "0.7"       '透明度(0.0〜1.0)
+'WEB_DRAW_SET "ID_DRAW1", AJAN_WEB_VISIBLE, AJAN_TRUE    '表示／非表示
+'WEB_DRAW_SET "ID_DRAW1", AJAN_WEB_ZINDEX, "1"           '重なり順（大：手前）
+'WEB_DRAW_SET "ID_DRAW1", AJAN_WEB_TOOLTIP, "LINE"       '吹き出し
+'WEB_DRAW_SET "ID_DRAW1", AJAN_WEB_REMOVE, ""            '削除

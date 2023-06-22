@@ -1,0 +1,28 @@
+'====================================================================
+' Web データグリッドサンプルプログラム 
+'  エッジDBからデータ取得してデータグリッドに表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "データグリッド表示" 'Webタイトル
+WEB_LABEL   "LABEL1",  "20", "30", "エッジDBからデータ取得してデータグリッドに表示"
+
+'エッジDBからデータ取得
+LIST DATA$
+DICT RES$
+EDGE_HOST$        = "172.17.101.110"
+EDGE_TABLE_NAME$  = "出荷伝票サンプル"
+RES$ = ES_DATA_READ(DATA$,"host:" + EDGE_HOST$ + ";列出力:on;table:" + EDGE_TABLE_NAME$ + ";limit:1000")
+IF (RES$("ERR") <> "0") THEN
+	'エラー時
+	WEB_MSG_BOX (RES$("ERM"))
+	END
+END IF
+	
+'データグリッド表示
+WEB_GRID     "ID_GRID1", "80",  "20"                            'データグリッド配置
+WEB_GRID_SET "ID_GRID1", AJAN_GRID_FILTER_ENABLE, "", AJAN_TRUE '検索ボックス表示
+WEB_GRID_SET "ID_GRID1", AJAN_GRID_DATA, AJAN_TRUE, DATA$       'データ設定(先頭行を列名にする)
+

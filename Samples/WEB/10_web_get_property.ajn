@@ -1,0 +1,144 @@
+'====================================================================
+' 表示しているWEB部品の 全ID、各部品情報、画面情報を取得する。
+'  ラベルやランプなどを表示して、情報を取得、ファイルに保存します。
+'            Copyright 2022 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+DIM COLOR_LIST$(7)
+COLOR_LIST$=["RED","GREEN","BLUE","YELLOW","PURPLE","CYAN","GOLD","SILVER"]
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "WEB_GET_PROPERTY$ サンプル"
+WEB_LABEL "LABEL1", "10", "20", "表示中のWEB部品情報、画面情報を下部のテキストエリアに表示します。"
+
+'=============================================================
+' WEB部品を並べる
+
+' ランプ(丸型)
+WEB_LAMP     "SW_A_"+STR$(I), "50", "20"
+WEB_LAMP_SET "SW_A_"+STR$(I), AJAN_LAMP_FIGURE,	"CIRCLE"
+WEB_LAMP_SET "SW_A_"+STR$(I), AJAN_LAMP_WIDTH,	"40"
+WEB_LAMP_SET "SW_A_"+STR$(I), AJAN_LAMP_HEIGHT, "40"
+WEB_LAMP_SET "SW_A_"+STR$(I), AJAN_LAMP_COLOR,  "RED"
+WEB_LAMP_SET "SW_A_"+STR$(I), AJAN_LAMP_VALUE,  "1"
+
+' ランプ(角型)
+WEB_LAMP     "SW_B_"+STR$(I), "120",  "20"
+WEB_LAMP_SET "SW_B_"+STR$(I), AJAN_LAMP_FIGURE,	"ROUNDRECT"
+WEB_LAMP_SET "SW_B_"+STR$(I), AJAN_LAMP_WIDTH,  "40"
+WEB_LAMP_SET "SW_B_"+STR$(I), AJAN_LAMP_HEIGHT, "30"
+WEB_LAMP_SET "SW_B_"+STR$(I), AJAN_LAMP_COLOR, 	"YELLOW"
+WEB_LAMP_SET "SW_B_"+STR$(I), AJAN_LAMP_VALUE, 	"1"
+
+' テーブル
+DIM COLUMN$(3) = ["ID","DATA1","DATA2","DATA3"]
+DIM DATA$(2, 3) = [	"1","10","11","12", _
+					"2","20","21","22", _
+					"3","30","31","32"]
+POS_TOP  = 60
+POS_LEFT = 100
+WEB_TABLE     "TABLE1", STR$(POS_TOP), STR$(POS_LEFT)
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN, COLUMN$
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_DATA,  DATA$
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN_ALIGN, "2,CENTER"
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN_ALIGN, "3,CENTER"
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN_ALIGN, "4,CENTER"
+
+' 画像表示
+WEB_IMG     "ID_IMG1", "35", "300"
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_FILE,  "static/iota_center_talk.gif"
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_WIDTH, "70"
+
+' テキストボックス
+WEB_TEXT     "TEXT1", "60", "400"
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_VALUE,    "12345"
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_WIDTH,    "150"
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_COLOR,    "BLUE"
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_DISABLED, "FALSE"
+
+' ボタン
+WEB_BUTTON  "BUTTON1", "60", "570", "ボタン"
+
+' スライダー
+WEB_TEXT     "TEXT2", "110", "400"
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_TYPE,   "range"
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_WIDTH,	"130"
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_MIN,    "0"
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_MAX,    "100"
+
+' テキストエリア（結果出力領域）
+WEB_TEXTAREA     "TEXTAREA1", "180", "20"
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_WIDTH,	"600"
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_HEIGHT,	"400"
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_FONT_SIZE,	"12"
+
+
+'===================================================================
+' WEB_GET_PROPERTY$を使用した情報取得（結果をテキストエリアに表示する）
+
+LIST IDLIST$											' 全部品のIDを格納する配列（文字列）
+OBJECT J_OBJ@ AS JSON									' PARSEしたデータ格納用のJSONオブジェクト
+OBJECT J_DATA@ AS JSON									' 抽出したデータ格納用のJSONオブジェクト
+LIST JKEY$												' JSONのキー一覧配列（文字列）
+INFO$ = ""												' 結果表示用文字列
+
+'---------------------------------------------
+' 全部品のIDを取得する
+ALLID$ = WEB_GET_PROPERTY$("@ALLID")					' 全部品のIDを取得する（カンマ区切りの文字列）
+INFO$ = INFO$ + "■全部品のID\n"
+INFO$ = INFO$ + ALLID$									' 結果を表示用文字列に入れる
+INFO$ = INFO$ + "\n\n"
+
+'---------------------------------------------
+' 部品情報を取得する
+INFO$ = INFO$ + "■部品情報\n"
+IDLIST$ = SPLIT$(ALLID$, ",")							' カンマ区切りのIDをバラして配列に格納する
+
+FOR PCNT = 0 TO LDIM(IDLIST$) - 1
+	JSP$ = WEB_GET_PROPERTY$(IDLIST$(PCNT))				' 指定したIDの部品情報をJSON文字列で取得する
+	PDATA$ = "ID[" + IDLIST$(PCNT) + "]  "
+
+	' 部品情報のJSON文字列のデータ抽出処理（キー一覧とデータを抽出する）
+	J_OBJ@ = JSON_PARSE@(JSP$)							' JSON文字列をJSONオブジェクトに変換する
+	JKEY$ = J_OBJ@.OBJECT_KEYS$()						' JSONオブジェクトからキーの配列を抽出する
+
+	' エラーチェック後に、部品情報を文字列化する
+	J_DATA@ = J_OBJ@.OBJECT_GET@("RESULT")
+	IF J_DATA@.GET_CSTR$() <> "0" THEN
+		PDATA$ = PDATA$ + "ERROR: " + J_DATA@.GET_CSTR$()
+	ELSE
+		FOR CNT = 0 TO LDIM(JKEY$)-1
+			J_DATA@ = J_OBJ@.OBJECT_GET@(JKEY$(CNT))	' JSONオブジェクトから指定キーのデータ(JSONオブジェクト)を抽出する
+			J_DATA_STR$ = J_DATA@.GET_CSTR$()			' データをJSONオブジェクトから文字列に変換する
+			IF JKEY$(CNT) <> "RESULT" THEN
+				PDATA$ = PDATA$ + JKEY$(CNT) + ":" + J_DATA_STR$ + " , "
+			END IF
+		NEXT CNT
+
+		IF LEN(PDATA$) > 0 THEN
+			PDATA$ = MID$(PDATA$, 1, LEN(PDATA$)-3)		' 末尾のカンマ(" , ")を取る
+		END IF
+	END IF
+	INFO$ = INFO$ + PDATA$ + "\n"						' 結果を表示用文字列に入れる
+
+NEXT PCNT
+INFO$ = INFO$ + "\n"
+
+'---------------------------------------------
+' 画面情報を取得する
+screenInfo$ = WEB_GET_PROPERTY$("@SCREEN")				' 画面情報を取得する
+INFO$ = INFO$ + "■画面情報\n"
+
+' 画面情報のJSON文字列のデータ抽出処理（キー一覧とデータを抽出する）
+J_OBJ@ = JSON_PARSE@(screenInfo$)						' JSON文字列をJSONオブジェクトに変換する
+JKEY$ = J_OBJ@.OBJECT_KEYS$()							' JSONオブジェクトからキーの配列を抽出する
+FOR CNT = 0 TO LDIM(JKEY$)-1
+	J_DATA@ = J_OBJ@.OBJECT_GET@(JKEY$(CNT))			' JSONオブジェクトから指定キーのデータ(JSONオブジェクト)を抽出する
+	J_DATA_STR$ = J_DATA@.GET_CSTR$()					' データをJSONオブジェクトから文字列に変換する
+	INFO$ = INFO$ + JKEY$(CNT) + ":" + J_DATA_STR$ + "\n"	' 結果を表示用文字列に入れる
+NEXT CNT
+
+'---------------------------------------------
+' 結果をテキストエリアに表示する
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_VALUE, INFO$

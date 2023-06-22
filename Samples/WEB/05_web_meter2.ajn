@@ -1,0 +1,73 @@
+'===================================================================
+' Web メータサンプルプログラム 
+'  アナログメータを表示して動かします。
+'  メータの各種オプションを設定しています。
+'            Copyright 2020 Interface Corporation
+'===================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL     "MEMO", "40",  "40" , "メータの各種オプション設定"
+
+'メータの目盛りラベル
+DIM TICK$(20)
+FOR I=0 TO 19
+    LABEL$ = STR$(I)  'ラベルデータ
+    TICK$(I) = LABEL$
+NEXT
+
+WEB_METER     "METER1", "100", "30"                             'メータ配置
+
+WEB_METER_SET "METER1", AJAN_METER_TICK_MAJOR_LIST,  TICK$      '目盛りラベル(配列)
+
+WEB_METER_SET "METER1", AJAN_METER_MIN,               "0"       '設定値範囲最小値設定
+WEB_METER_SET "METER1", AJAN_METER_MAX,               "20"      '設定値範囲最大値設定
+
+WEB_METER_SET "METER1", AJAN_METER_WIDTH,             "400"     '幅
+WEB_METER_SET "METER1", AJAN_METER_HEIGHT,            "400"     '高さ
+
+WEB_METER_SET "METER1", AJAN_METER_ANIMATION_DELAY,   "200"     'アニメーション速度
+WEB_METER_SET "METER1", AJAN_METER_BACKGROUND_COLOR,  "white"   '背景色
+
+WEB_METER_SET "METER1", AJAN_METER_TICK_MINER_NUM,    "10"      'サブ目盛り(目盛り内の刻み数)
+
+WEB_METER_SET "METER1", AJAN_METER_TICK_FONT_SIZE,    "21"      '目盛りラベルフォントサイズ
+WEB_METER_SET "METER1", AJAN_METER_TICK_FONT_COLOR,   "#000000" '目盛りラベルフォント色
+WEB_METER_SET "METER1", AJAN_METER_TICK_MAJOR_COLOR,  "#FF0000" '目盛り色
+WEB_METER_SET "METER1", AJAN_METER_TICK_MINER_COLOR,  "#000000" '目盛り色(サブ目盛り)
+
+WEB_METER_SET "METER1", AJAN_METER_TICK_ANGLE_START,  "180"     '目盛り 開始角度(0度から時計回り)
+WEB_METER_SET "METER1", AJAN_METER_TICK_ANGLE_END,    "360"     '目盛り 最大角度(開始角度から時計回り)
+
+WEB_METER_SET "METER1", AJAN_METER_UNIT,              "mV"      '単位
+WEB_METER_SET "METER1", AJAN_METER_UNIT_FONT_SIZE,    "40"      '単位フォントサイズ
+WEB_METER_SET "METER1", AJAN_METER_UNIT_FONT_COLOR,   "#ef2929" '単位フォント色
+
+'WEB_METER_SET "METER1", AJAN_METER_NEEDLE_TYPE,       "ARROW"  '針の形状 "ARROW"/"LINE"
+
+WEB_METER_SET "METER1", AJAN_METER_BORDER_WIDTH,      "4"       '外枠の幅
+WEB_METER_SET "METER1", AJAN_METER_BORDER_COLOR,      "gray" '外枠の色
+
+WEB_METER_SET "METER1", AJAN_METER_HIGHLIGHT,  "5,8,#d1ffc6"   '強調色（メータの一部に色をつける付加)
+
+WEB_METER_SET "METER1", AJAN_METER_HIGHLIGHT,  "8,13,#ffdead"  '強調色（メータの一部に色をつける付加)
+
+WEB_METER_SET "METER1", AJAN_METER_HIGHLIGHT,  ""   '強調色（メータの一部に色をつける付加)
+
+WEB_METER_SET "METER1", AJAN_METER_HIGHLIGHT,  "13,20,#ff7878" '強調色（メータの一部に色をつける付加)
+
+
+
+
+'データ設定
+VALUE = 11
+WEB_METER_SET "METER1", AJAN_METER_DATA,             STR$(VALUE)  '値設定
+
+'一定時間後に動かす
+SLEEP(2)
+VALUE = 4
+WEB_METER_SET "METER1", AJAN_METER_DATA,             STR$(VALUE)  '値設定
+
+SLEEP(2)
+VALUE = 18
+WEB_METER_SET "METER1", AJAN_METER_DATA,             STR$(VALUE)  '値設定

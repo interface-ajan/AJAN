@@ -1,0 +1,36 @@
+'====================================================================
+' Web 動画再生サンプルプログラム 
+'  動画ファイルを再生します。
+'            Copyright 2021 Interface Corporation
+'　注意事項：
+'　　ご使用のWebブラウザによっては、音声を出す設定ではプログラムから
+'　　再生制御ができない場合があります（Webブラウザの制限です）。
+'　　画面上のコントローラから操作することで、音声付きの再生ができます。
+'　　また、フルスクリーン表示も、画面上のコントローラでのみ可能です。
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "LABEL1", "16", "50", "動画を再生します。"
+
+WEB_VIDEO     "VIDEO1", "50", "50"							'動画部品設置
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_WIDTH, "640"				'動画の横幅
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_BORDER_WIDTH, "5"		'枠線の幅
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_BORDER_STYLE, "SOLID"	'枠線の形状
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_BORDER_COLOR, "NAVY"		'枠線の色
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_SRC, "static/web_video_mujin.mp4"	'動画ファイル
+'WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_AUTOPLAY, AJAN_TRUE		'自動再生設定
+'WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_LOOP, AJAN_TRUE			'再生ループ
+'WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_MUTE, AJAN_FALSE		'消音設定（注意事項参照）
+'WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_VOLUME, "0.5"			'音声ボリューム設定（0〜1）
+'WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_PLAYRATE, "2"			'再生速度設定（1が標準）
+
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_PLAY, ""					'再生
+SLEEP(21.5)
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_CONTROLS, AJAN_TRUE		'コントローラ表示
+WEB_VIDEO_SET "VIDEO1", AJAN_VIDEO_PAUSE, ""				'停止
+
+WEB_LABEL "LABEL2", "420", "60", "↑再生ボタンを押してください。"
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_COLOR, "RED"
+SLEEP(10)
+WEB_LABEL_SET "LABEL2", AJAN_WEB_VISIBLE, AJAN_FALSE

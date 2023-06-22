@@ -1,0 +1,42 @@
+'====================================================================
+' ダイアログボックス　サンプルプログラム 
+'  タイピングゲーム
+'            Copyright 2021 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "LABEL1", "20", "10", "これから表示する英単語を、1問3秒以内にタイプしてください。"
+SLEEP(2)
+WEB_LABEL "LABEL2", "40", "10", "よーい"
+SLEEP(2)
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_VALUE,  "スタート！"
+
+score_ok = 0
+score_ng = 0
+score_timeout = 0
+DIM question$(9) = ["Interface", "made","in", "JAPAN","high", "quality","long-term", "supply","polite", "support"]
+
+FOR cnt = 0 TO 9
+	answer$ = ""
+	result = WEB_DIALOG(AJAN_DIALOG_PROMPT, STR$(cnt+1)+"問目："+question$(cnt), 3)
+	answer$ = AJAN_WEB_DIALOG_STR$
+	IF result = AJAN_WEB_OK THEN
+		IF AJAN_WEB_DIALOG_STR$ = question$(cnt) THEN
+			score_ok = score_ok + 1
+		ELSE
+			score_ng = score_ng + 1
+		END IF
+	ELSEIF result = AJAN_WEB_CANCEL THEN
+		score_ng = score_ng + 1
+	ELSE
+		score_timeout = score_timeout + 1
+		answer$ = "タイムアウト"
+	END IF
+
+	WEB_LABEL "LABEL3", STR$(20*cnt+100), "10", STR$(cnt+1) + "問：" + answer$
+NEXT cnt
+
+WEB_LABEL "LABEL4", "340", "10", "タイプＯＫ　：" + STR$(score_ok) + "問"
+WEB_LABEL "LABEL5", "360", "10", "タイプＮＧ　：" + STR$(score_ng) + "問"
+WEB_LABEL "LABEL6", "380", "10", "タイムアウト：" + STR$(score_timeout) + "問"

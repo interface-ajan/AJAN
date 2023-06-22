@@ -1,0 +1,29 @@
+'====================================================================
+' Web グラフサンプルプログラム 
+'  円グラフを表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "円グラフ"   'Webタイトル
+
+WEB_LABEL     "MEMO", "30", "60" , "円グラフ"
+
+DIM LABEL$(3) = ["AJAN","ソフトPLC","ETherCAT","CS"]
+DIM DATA(3)   = [900,600,500,400]
+
+'円グラフ配置
+WEB_GRAPH     "ID_GRAPH1", "100", "50"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE,   "PIE"
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE,  "製品の割合"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT, "350"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH,  "350"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BACKGROUND_COLOR,  "赤,#FFCCFF,YELLOW,空"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_LABEL_DISP,  AJAN_TRUE
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_LABEL_TYPE,  "BOTH"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_LABEL_COLOR, "#000000"
+
+'円グラフにデータ設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA,        DATA

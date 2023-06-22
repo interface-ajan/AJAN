@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8847"/>
+  <App ExecuteName="00_module_demo" Type="WebPage"/>
+  <FileGroup>
+    <file path="00_module_demo.ajn"/>
+  </FileGroup>
+</Ajan>

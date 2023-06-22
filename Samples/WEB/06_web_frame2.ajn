@@ -1,0 +1,40 @@
+'====================================================================
+' Web フレームサンプルプログラム 
+'  ボタンで選択したローカルのWebページを、フレームに表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+INCLUDE "WEB.AJN"
+
+'サンプルWebページ
+URL1$ = "data/web_frame_page.htm"
+URL2$ = "data/web_frame_page2.htm"
+
+'ボタン配置、イベント設定
+WEB_BUTTON 		"B1", "40", "20",	 "ページ1"
+WEB_BUTTON 		"B2", "80", "20",	 "ページ2"
+ON WEB "B1", 	 "CLICK" CALL CLICK_BUTTON, URL1$, ""
+ON WEB "B2", 	 "CLICK" CALL CLICK_BUTTON, URL2$, ""
+
+'フレーム配置、設定
+WEB_LABEL    "", "10", "120", "ボタンで選択したWebページを、枠内に表示します。"
+WEB_FRAME     "FRAME1", "40",  "120"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_WIDTH, "400"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_HEIGHT, "200"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BACKGROUND_COLOR, "WHITE"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_WIDTH, "3"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_COLOR, "NAVY"
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_STYLE, "SOLID"
+
+'ボタンクリック時、指定のWebページをフレーム内に表示する
+SUB CLICK_BUTTON(ID$, PARAM1$, PARAM2$)
+	URL$ = PARAM1$
+	WEB_FRAME_SET "FRAME1", AJAN_FRAME_URL, URL$
+END SUB
+
+'イベント受付のため、AJAN Webアプリを起動し続けるための処理
+DO WHILE TRUE
+	SLEEP 1
+'	IF(AJAN_END_FLG = 1) THEN
+'		END
+'	END IF
+LOOP

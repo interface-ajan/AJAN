@@ -1,0 +1,79 @@
+'====================================================================
+' Web 音声再生サンプルプログラム 
+'  入力した日本語文の音声ファイルを作成します。
+'            Copyright 2021 Interface Corporation
+'　注意事項：
+'　　本サンプルプログラムでは、日本語音声合成ソフトウェア「Open JTalk」を
+'　　使用しています。ご使用の際は、別途インストールをお願い致します。
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "LABEL_TITLE", "10", "30", "入力した日本語文を音声ファイルに変換します。(Open JTalkを使用)"
+
+'枠表示
+WEB_DRAW "RECT1", "rect", "30", "40", "580", "170"
+
+'テキスト入力部 表示
+WEB_LABEL "LABEL_TEXT", "60", "50", "TEXT"
+WEB_TEXT "TEXT_TEXT", "60", "105"
+WEB_TEXT_SET "TEXT_TEXT", AJAN_TEXT_WIDTH, "200"
+WEB_TEXT_SET "TEXT_TEXT", AJAN_TEXT_HEIGHT, "24"
+WEB_BUTTON "BUTTON_TEXT", "60", "330", "SPEAK"
+WEB_BUTTON_SET "BUTTON_TEXT", AJAN_BUTTON_HEIGHT, "24"
+
+'音声再生部 表示
+WEB_AUDIO     "AUDIO1", "100", "50"							'音声再生部品設置
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_CONTROLS, AJAN_TRUE		'コントローラ表示
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_WIDTH, "500"				'コントローラの横幅
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_HEIGHT, "20"				'コントローラの高さ
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_AUTOPLAY, AJAN_FALSE		'自動再生無効
+
+'ファイル出力操作部
+WEB_LABEL "LABEL_FILE", "160", "50", "FILE"
+WEB_TEXT "TEXT_FILE", "160", "105"
+WEB_TEXT_SET "TEXT_FILE", AJAN_TEXT_WIDTH, "200"
+WEB_TEXT_SET "TEXT_FILE", AJAN_TEXT_HEIGHT, "24"
+WEB_TEXT_SET "TEXT_FILE", AJAN_TEXT_VALUE, "voice"
+WEB_BUTTON "BUTTON_FILE", "160", "360", "MAKE"
+WEB_BUTTON_SET "BUTTON_FILE", AJAN_BUTTON_HEIGHT, "24"
+WEB_LABEL "LABEL_FILE_unit", "160", "310", ".wav"
+
+'イベント設定
+ON WEB "TEXT_TEXT", "CHANGE" CALL MAKE_VOICE, "", ""
+ON WEB "BUTTON_TEXT", "CLICK" CALL MAKE_VOICE, "", ""
+ON WEB "BUTTON_FILE", "CLICK" CALL MAKE_FILE, "", ""
+
+WEB_MAIN_LOOP
+
+END
+
+'音声合成処理
+SUB MAKE_VOICE(ID$, ARG1$, ARG2$)
+	LOCAL JTALK$
+	
+	IF AJAN_WEB_FORM$("TEXT_TEXT") = "" THEN 
+		WEB_MSG_BOX "音声にする言葉を TEXT に入力してください。"
+		EXIT SUB
+	END IF
+	
+	'Open JTalk
+	JTALK$ = "echo " + AJAN_WEB_FORM$("TEXT_TEXT") + " | open_jtalk -x /var/lib/mecab/dic/open-jtalk/naist-jdic/ -m /usr/share/hts-voice/nitech-jp-atr503-m001/nitech_jp_atr503_m001.htsvoice -ow voice_temp.wav"
+	SHELL SYSTEM(JTALK$)
+
+	WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_SRC, "voice_temp.wav"	'音声ファイル
+	WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_PLAY, ""
+END SUB
+
+'音声ファイル出力
+SUB MAKE_FILE(ID$, ARG1$, ARG2$)
+	LOCAL WORK$
+
+	IF AJAN_WEB_FORM$("TEXT_FILE") = "" THEN 
+		WEB_MSG_BOX "ファイル名を入力してください。"
+		EXIT SUB
+	END IF
+	
+	WORK$ = "mv voice_temp.wav " + AJAN_WEB_FORM$("TEXT_FILE") + ".wav"
+	SHELL SYSTEM(WORK$)
+END SUB

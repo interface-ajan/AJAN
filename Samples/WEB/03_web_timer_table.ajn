@@ -1,0 +1,51 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  テーブル内のデータを周期的に更新します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "テーブル自動更新" 'Webタイトル
+
+WEB_LABEL "LABEL1", "20", "20", "タイマーで周期的にテーブルのデータを更新"
+
+DIM COLUMN$(2)
+COLUMN$(0) = "ID"
+COLUMN$(1) = "data1"
+COLUMN$(2) = "data2"
+
+DIM DATA(1, 2)
+	
+'テーブル
+WEB_TABLE     "TABLE1", "80",  "60"	 	   'テーブル配置
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN, COLUMN$  '列名
+
+'タイマ設定
+TIMER_CYCLE = 200
+ON TIMER(TIMER_CYCLE) CALL SUB_TIMER  'タイマ設定
+TIMER ON		
+
+'タイマー実行時に呼ばれるサブルーチン
+SUB SUB_TIMER
+	DATA(0,0) = 1
+	DATA(0,1) = ROUND(RND() * 1000,0)
+	DATA(0,2) = ROUND(RND() * 1000,0)
+
+	DATA(1,0) = 2
+	DATA(1,1) = ROUND(RND() * 1000,0)
+	DATA(1,2) = ROUND(RND() * 1000,0)
+
+	'テーブルデータ更新
+	WEB_TABLE_SET "TABLE1", AJAN_TABLE_DATA,  DATA
+END SUB
+
+
+'常駐サービスプログラムとして動きつづける
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP
+	

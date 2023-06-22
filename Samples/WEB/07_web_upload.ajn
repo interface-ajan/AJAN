@@ -1,0 +1,46 @@
+'====================================================================
+' Web ファイルアップロード サンプルプログラム 
+'  Webブラウザ上で選択したファイルをAJANに送り、ファイル保存します。
+'            Copyright 2021 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "L_MSG", "10","10", "［選択］ボタンを押して、アップロードするファイルを選択してください。"
+
+' ファイル選択ボタンを設置
+WEB_UPLOAD "UL1", "50", "50"
+WEB_UPLOAD_SET "UL1", AJAN_UPLOAD_BUTTON_TEXT, "選択"
+WEB_UPLOAD_SET "UL1", AJAN_UPLOAD_FONT_SIZE, "20"
+
+WEB_LABEL "L_NAME", "100","50", "FILE : -"
+WEB_LABEL "L_SIZE", "120","50", "SIZE : -"
+WEB_LABEL "L_TYPE", "140","50", "TYPE : -"
+
+WEB_MAIN_LOOP	' 操作または終了を待つループ
+
+' ファイル選択後の処理
+SUB AJAN_SUB_UPLOAD(ID$, PARAM1$, PARAM2$)
+	FILE_NAME$ = AJAN_WEB$("ajan_upload_file_name")
+	FILE_SIZE$ = AJAN_WEB$("ajan_upload_file_size")
+	FILE_TYPE$ = AJAN_WEB$("ajan_upload_file_type")
+	FILE_DATA$ = AJAN_WEB$("ajan_upload_file")
+
+	WEB_LABEL_SET "L_NAME", AJAN_LABEL_VALUE, "FILE : " + FILE_NAME$
+	WEB_LABEL_SET "L_SIZE", AJAN_LABEL_VALUE, "SIZE : " + FILE_SIZE$
+	WEB_LABEL_SET "L_TYPE", AJAN_LABEL_VALUE, "TYPE : " + FILE_TYPE$
+
+	' ファイルとして保存するか問い合わせる
+	RESULT = WEB_DIALOG(AJAN_DIALOG_CONFIRM, "ファイルとして保存しますか？")
+	IF RESULT = AJAN_WEB_OK THEN
+		'BASE64エンコードされた文字列をデコードする
+		FILE_DATA$ = STR_BASE64_DECODE$(FILE_DATA$)
+
+		' ファイル書き込み
+		STR_FWRITEALL FILE_NAME$, FILE_DATA$
+	ELSE
+		WEB_LABEL_SET "L_NAME", AJAN_LABEL_VALUE, "FILE : -"
+		WEB_LABEL_SET "L_SIZE", AJAN_LABEL_VALUE, "SIZE : -"
+		WEB_LABEL_SET "L_TYPE", AJAN_LABEL_VALUE, "TYPE : -"
+	END IF
+END SUB

@@ -1,0 +1,88 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  グラフのデータを周期的に更新します。
+'  開始/終了ボタン、動作ランプを使用しています。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "グラフ自動更新" 'Webタイトル
+
+WEB_LABEL      "LABEL1", "10", "20", "開始ボタンでタイマー起動し、周期的にグラフを更新します。"
+WEB_LABEL_SET  "LABEL1", AJAN_LABEL_FONT_SIZE, "16" 
+WEB_LABEL      "LABEL2", "40", "20", "タイマ起動中はランプ点灯します。"
+WEB_LABEL_SET  "LABEL2", AJAN_LABEL_FONT_SIZE, "16" 
+
+WEB_BUTTON     "BUTTON1", "10", "500", "開始"       '開始ボタン配置
+WEB_BUTTON     "BUTTON2", "10", "580", "停止"       '停止ボタン配置
+'
+WEB_LAMP       "LAMP1",  "10",  "670"               '更新状態ランプ配置
+WEB_LAMP_SET   "LAMP1",  AJAN_LAMP_COLOR, "GREEN"   'ランプ色設定：緑
+WEB_LAMP_SET   "LAMP1",  AJAN_LAMP_VALUE, "0"       'ランプ点灯設定：OFF
+
+WEB_GRAPH      "ID_GRAPH1", "70", "20"              'グラフ配置
+WEB_GRAPH_SET  "ID_GRAPH1", 1, AJAN_GRAPH_TYPE, "LINE" '折れ線グラフ配置設定
+
+
+'折れ線グラフ部品設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH,            "700"      '横幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT,           "500"      '縦幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_COLOR,      "#8AE234"  'グラフ線色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_BACKGROUND_COLOR, "#333333"  'グラフ背景色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_WIDTH,      "3"        'グラフ枠線太さ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_GRID_COLOR,       "#CCCCCC"  '軸線色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_GRID_WIDTH,       "0.7"      '軸線太さ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME,              "温度"     '凡例内容
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME_COLOR,        "#CCCCCC"  '凡例内容文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE,            "温度推移"  'タイトル
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE_SIZE,       "20"        'タイトル文字色フォントサイズ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE_COLOR,      "#CCCCCC"   'タイトル文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TICKS_COLOR,      "#CCCCCC"   '軸目盛文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_SCALE_LABEL_COLOR,"#CCCCCC"   '軸ラベル文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_MAX,            "50"        'Y軸最大値
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_MIN,            "0"         'Y軸最大小値
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_X_LABEL,          "時刻"      'X軸ラベル
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_LABEL_LEFT,     "℃"        'Y軸ラベル
+
+'グラフ初期データセット
+LABEL$   = " 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19"
+DATA$    = "  , , , , , , , , , , , , , , , , , , , "
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA, DATA$
+
+'ボタン押したときの動作設定
+ON WEB "BUTTON1", "CLICK" CALL SUB_BUTTON_START, "", ""
+ON WEB "BUTTON2", "CLICK" CALL SUB_BUTTON_STOP , "", ""
+
+TIMER_CYCLE = 500	'タイマ周期
+
+'開始ボタンクリック時に呼ばれるサブルーチン
+SUB SUB_BUTTON_START(ID$, PARAM1$, PARAM2$)
+	ON TIMER(TIMER_CYCLE) CALL DISP_DATA 	        'タイマ設定
+	TIMER ON						 		        'タイマ開始
+    WEB_LAMP_SET  "LAMP1",   AJAN_LAMP_VALUE,  "1"  'ランプ点灯設定：ON
+END SUB
+
+
+'停止ボタンクリック時に呼ばれるサブルーチン
+SUB SUB_BUTTON_STOP(ID$, PARAM1$, PARAM2$)
+	TIMER OFF								        'タイマ開始
+    WEB_LAMP_SET  "LAMP1",   AJAN_LAMP_VALUE,  "0"  'ランプ点灯設定：OFF
+END SUB
+
+
+'タイマー実行時に呼ばれるサブルーチン
+SUB DISP_DATA
+	'ブラウザ上のグラフにデータ追加
+	ADD_DATA$  = STR$(ROUND(RND() * 20,0)) 
+	WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_ADD_LAST, ADD_DATA$
+END SUB
+
+'タイマイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

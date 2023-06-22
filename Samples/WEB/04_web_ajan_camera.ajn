@@ -1,0 +1,84 @@
+'===================================================================
+' Web カメラ(AJAN側カメラ) サンプルプログラム 
+'  AJAN側カメラで取得された情報をWebブラウザに表示します。
+'            Copyright 2021 Interface Corporation
+'====================================================================
+'
+'[プログラム説明] 
+' AJAN側カメラの情報を本プログラムでWeb表示するためには、
+' 以下のプログラムを実行する必要があります。
+'
+'1. AJAN側 カメラ画像取得プログラム (AJAN組込アプリ)
+'   詳しくは AJANのCameraチュートリアルをご参照ください。
+'   
+'2. カメラ画像表示プログラム (本プログラム：AJAN Webアプリ)
+'   AJAN側カメラ画像取得プログラムにより、メモリ上に出力(更新)される画像を
+'   周期的にWebブラウザに表示(更新)します。
+'------------------------------------------------------
+INCLUDE "WEB.AJN"
+WEB_LABEL "", "20", "20", "AJAN側PCのカメラ撮影"
+
+'カメラから取得した画像ファイルの場所
+CAMERA_DATA_PATH$ = "/dev/shm/image.jpg" 
+
+IMG_INDEX = 0
+IMG_TOP   = 60
+MOTION$   = ""
+
+'画像表示部品配置
+WEB_IMG     "ID_VIDEO1", "60", "20"
+
+WEB_BUTTON  "BUTTON_SNAP", "20", "680", "シャッター"
+ON WEB      "BUTTON_SNAP", "CLICK" CALL SUB_SNAP, "", ""
+
+'常駐サービスプログラムとして動きつづける
+REFRESH_WAIT = 0.5 'Web画面　画像データ更新頻度(s) 
+
+DO WHILE TRUE
+	'カメラ撮影データを取得して、data URL スキームに変換
+	IF FILEEXISTS(CAMERA_DATA_PATH$) = TRUE THEN
+
+		READ_FILE$ = STR_FREADALL$(CAMERA_DATA_PATH$)
+		IF (LEN(READ_FILE$) > 0) THEN
+			CAMERA_IMAGE$ = "data:image/jpeg;base64," + STR_BASE64_ENCODE$(READ_FILE$) '
+
+			'カメラ撮影データをブラウザに表示
+			WEB_IMG_SET "ID_VIDEO1", AJAN_IMG_FILE, CAMERA_IMAGE$
+		END IF
+	END IF
+
+    SLEEP REFRESH_WAIT '一定時間待つ
+    IF(AJAN_END_FLG = 1) THEN
+        END    'ネットワーク切断時:終了する
+    END IF
+LOOP
+
+
+'シャッター撮影 ボタン処理
+SUB SUB_SNAP(ID$, PARAM1$, PARAM2$)
+	'ファイルを保存
+	COPY_FILE_NAME$ = "data/" + "ajan_camera_snap_" + REPLACE$(TIME$, ":", "_") + ".jpg" 
+    SHELL "cp " + CAMERA_DATA_PATH$ + " " + COPY_FILE_NAME$
+    IF SHELL CODE <> 0 THEN
+	    WEB_MSG_BOX "録画エラー"
+    END IF
+
+	'画像をブラウザに表示
+    ID_IMG$ = "ID_IMG_" + STR$(IMG_INDEX)
+	WEB_IMG     ID_IMG$, STR$(IMG_TOP),   "680"           '画像表示部品
+	WEB_IMG_SET ID_IMG$, AJAN_IMG_WIDTH,  "120"           '幅
+	WEB_IMG_SET ID_IMG$, AJAN_IMG_HEIGHT, "90"            '高さ
+	WEB_IMG_SET ID_IMG$, AJAN_IMG_FILE,   COPY_FILE_NAME$ '画像ファイル
+	ON WEB      ID_IMG$, "CLICK" CALL SUB_SNAP_CLICK, COPY_FILE_NAME$, ""
+
+	IMG_INDEX = IMG_INDEX + 1
+	IMG_TOP   = IMG_TOP   + 110
+END SUB
+
+    
+'録画画像クリック処理
+SUB SUB_SNAP_CLICK(ID$, PARAM1$, PARAM2$)
+	'別ウィンドウで開く
+	WEB_WRITE "<script>window.open(""" + PARAM1$ + """, ""保存データ"", ""width=600,height=500"")</script>"
+END SUB
+

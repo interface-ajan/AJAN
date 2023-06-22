@@ -1,0 +1,78 @@
+'====================================================================
+' Web グラフサンプルプログラム 
+'  濃淡図を表示します。
+'            Copyright 2021 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+LIST DATA_N		'濃淡図データ
+DATA_NUM = 100	'一辺のデータ数（100 * 100 = 10000データ）
+COLOR_PATTERN$ = "blue_green_red"	'データ強度カラーパターン
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "濃淡図"		'Webタイトル
+WEB_LABEL     "", "30", "60" , "濃淡図"
+
+'濃淡図配置
+WEB_GRAPH     "ID_GRAPH1", "100", "50"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE, "shade"
+
+'各種設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH, "500"		'濃淡図 横幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT, "500"		'濃淡図 縦幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_POINT_STYLE, "rect"	'点の形
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_POINT_RADIUS, "0"	'点の半径（自動）
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_COLOR_PATTERN, COLOR_PATTERN$
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_MAX, "100"	'データ範囲の最大値
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_MIN, "0"		'データ範囲の最小値
+
+'データ作成
+CALL MAKE_DATA_RANDOM
+
+'取得したデータをグラフに設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA, DATA_N
+
+'表示更新ボタン設定
+WEB_BUTTON "B1", "60", "60","表示更新"
+ON WEB "B1", "CLICK" CALL CLICK_REFRESH, "", ""
+
+'色変更ボタン設定
+WEB_BUTTON "B2", "60", "170","色変更"
+ON WEB "B2", "CLICK" CALL CLICK_COLOR, "", ""
+
+'カラーパターン設定表示
+WEB_LABEL "L2", "65", "240", COLOR_PATTERN$
+
+WEB_MAIN_LOOP
+
+'データ作成（乱数発生0〜100未満）
+SUB MAKE_DATA_RANDOM
+	RANDOMIZE VAL(MID$(TIME$,7,2))
+	REDIM DATA_N(DATA_NUM-1, DATA_NUM-1)
+
+	FOR cnty = 0 TO DATA_NUM-1
+		FOR cntx = 0 TO DATA_NUM-1
+			DATA_N(cnty,cntx) = RND(1) * 100
+		NEXT cntx
+	NEXT cnty
+END SUB
+
+' ボタンイベント処理（表示更新）
+SUB CLICK_REFRESH(ID$, PARAM1$, PARAM2$)
+	CALL MAKE_DATA_RANDOM
+	WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_SETONLY, DATA_N
+	WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_REFRESH, ""
+END SUB
+
+' ボタンイベント処理（色変更）
+SUB CLICK_COLOR(ID$, PARAM1$, PARAM2$)
+	IF COLOR_PATTERN$ = "blue_green_red" THEN
+		COLOR_PATTERN$ = "gray"				'グレースケール
+	ELSE
+		COLOR_PATTERN$ = "blue_green_red"	'青−緑−赤
+	END IF
+
+	WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_COLOR_PATTERN, COLOR_PATTERN$	'カラーパターン設定
+
+	WEB_LABEL_SET "L2", AJAN_LABEL_VALUE, COLOR_PATTERN$	'カラーパターン設定表示
+END SUB

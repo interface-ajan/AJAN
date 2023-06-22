@@ -1,0 +1,57 @@
+'====================================================================
+' Web データグリッドサンプルプログラム 
+'  エッジDBからデータ取得してデータグリッドに表示します。
+'  エッジDBのIPやテーブル名を画面上で指定できます。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "データグリッド表示" 'Webタイトル
+WEB_LABEL   "LABEL1",  "20", "30", "エッジDBからデータ取得してデータグリッドに表示"
+
+'データ格納領域
+LIST DATA$
+DICT RES$
+
+'ラベル/テキストボックス
+WEB_LABEL    "ID_INFO1",      "70",  "30", "エッジDBのIP"
+WEB_TEXT     "ID_EDGE_HOST",  "70",  "190" 
+WEB_TEXT_SET "ID_EDGE_HOST", AJAN_TEXT_VALUE, "172.17.101.110"
+
+WEB_LABEL    "ID_INFO1",      "110", "30", "テーブル名"
+WEB_TEXT     "ID_EDGE_TABLE", "110", "190" 
+WEB_TEXT_SET "ID_EDGE_TABLE", AJAN_TEXT_VALUE, "出荷伝票サンプル"
+
+'データグリッド
+WEB_GRID     "ID_GRID1", "160",  "20"                            'データグリッド配置
+WEB_GRID_SET "ID_GRID1", AJAN_GRID_FILTER_ENABLE, "", AJAN_TRUE '検索ボックス表示
+
+'ボタン
+WEB_BUTTON   "ID_BUTTON_DISP",  "60", "410", "表示"
+ON WEB       "ID_BUTTON_DISP", "CLICK" CALL SUB_DISP, "", ""
+
+'ボタンが押されたときに実行する処理
+SUB SUB_DISP(ID$, PARAM1$, PARAM2$)
+	'テキストボックスからIP、テーブル名取得
+	EDGE_HOST$        = AJAN_WEB_FORM$("ID_EDGE_HOST")
+	EDGE_TABLE_NAME$  = AJAN_WEB_FORM$("ID_EDGE_TABLE")
+
+	'エッジDBからデータ取得
+	RES$ = ES_DATA_READ(DATA$,"host:" + EDGE_HOST$ + ";列出力:on;table:" + EDGE_TABLE_NAME$ + ";limit:100")
+	IF (RES$("ERR") <> "0") THEN
+		'エラー時
+		WEB_MSG_BOX (RES$("ERM"))
+	ELSE
+		'データグリッドにデータ設定
+		WEB_GRID_SET "ID_GRID1", AJAN_GRID_DATA, AJAN_TRUE, DATA$ 'データ設定(先頭行を列名にする)
+	END IF
+END SUB
+
+'常駐サービスプログラムとして動きつづける
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

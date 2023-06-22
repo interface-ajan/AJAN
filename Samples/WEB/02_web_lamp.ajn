@@ -1,0 +1,39 @@
+'====================================================================
+' Web ランプサンプルプログラム 
+'  色や形状を変更した各種ランプを表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_LABEL    "", "20", "20", "ランプを表示します。"
+
+WEB_LABEL    "", "70", "40", "丸型"
+WEB_LAMP     "LAMP1", "100", "40"                   'ランプ配置
+WEB_LAMP_SET "LAMP1", AJAN_LAMP_COLOR, "GREEN"      '色
+
+WEB_LABEL    "", "70", "140", "四角"
+WEB_LAMP     "LAMP2", "100", "140"                  'ランプ配置
+WEB_LAMP_SET "LAMP2", AJAN_LAMP_COLOR,  "BLUE"      '色
+WEB_LAMP_SET "LAMP2", AJAN_LAMP_FIGURE, "ROUNDRECT" '角丸型指定
+
+WEB_LABEL    "", "200", "70", "文字追加"
+WEB_LAMP     "LAMP3", "240", "40"                    'ランプ配置
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_COLOR,      "RED"     'ランプ色
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_TEXT,       "停止中"  '文字表示
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_TEXT_COLOR, "BLACK"   '文字色
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_TEXT_SIZE,  "38"      '文字サイズ
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_WIDTH,      "160"     'ランプ高さ
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_HEIGHT,     "160"     'ランプ幅
+
+'順番にランプ点灯
+SLEEP(1)
+WEB_LAMP_SET "LAMP1", AJAN_LAMP_VALUE,      "1"
+
+SLEEP(1)
+WEB_LAMP_SET "LAMP2", AJAN_LAMP_VALUE,      "1"
+
+SLEEP(1)
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_VALUE,      "1"
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_TEXT,       "動作中"  '文字表示
+WEB_LAMP_SET "LAMP3", AJAN_LAMP_TEXT_COLOR, "WHITE"   '文字色
+

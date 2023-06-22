@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Ajan version="1.01">
+  <AJANVER ver="Ver10926"/>
+  <App ExecuteName="09_web_diagram" ExecutePath="" Type="WebPage"/>
+  <FileGroup>
+    <file path="09_web_diagram.ajn"/>
+  </FileGroup>
+</Ajan>

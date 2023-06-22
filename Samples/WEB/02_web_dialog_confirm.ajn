@@ -1,0 +1,22 @@
+'====================================================================
+' ダイアログボックス　サンプルプログラム 
+'  OK/Cancelを選択するダイアログボックスの例です。5秒でタイムアウトします。
+'            Copyright 2021 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+'ダイアログ入力（文字列入力）
+'	戻値                    ：AJAN_WEB_OK / AJAN_WEB_CANCEL / AJAN_WEB_TIMEOUT
+'	グローバル変数
+'	　AJAN_WEB_DIALOG_BTN   : 押されたボタン（AJAN_WEB_OK / AJAN_WEB_CANCEL）
+'	　AJAN_WEB_DIALOG_STR$  : 入力された文字列
+result = WEB_DIALOG(AJAN_DIALOG_CONFIRM, "よろしいですか？", 5)
+
+IF result = AJAN_WEB_OK THEN
+	WEB_LABEL "LABEL1", "30", "10", "ありがとうございます。"
+ELSEIF result = AJAN_WEB_TIMEOUT THEN
+	WEB_LABEL "LABEL1", "30", "10", "入力待ちタイムアウトです。"
+ELSE
+	WEB_LABEL "LABEL1", "30", "10", "入力をキャンセルされました。"
+END IF

@@ -1,0 +1,27 @@
+'====================================================================
+' Web データグリッドサンプルプログラム 
+'  シンプルなデータグリッドを表示します。
+'            Copyright 2020,2022 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "データグリッド表示"			'Webタイトル
+
+WEB_LABEL   "LABEL1",  "20", "30", "シンプルなデータグリッド"
+WEB_LABEL   "LABEL2",  "50", "30", "二次元配列を表示"
+
+'表示データ生成
+DATA_NUM = 10000
+LIST DATA$
+REDIM DATA$(DATA_NUM-1 ,2)
+FOR INDEX = 0 TO DATA_NUM-1
+    DATA$(INDEX,0) = STR$(INDEX+1)
+    DATA$(INDEX,1) = "製品-" + STR$(INDEX+1)
+    DATA$(INDEX,2) = str$(ROUND(RND() * 1000000,0))
+NEXT	
+
+'データグリッド表示
+WEB_GRID     "GRID1", "100",  "20"                     		'データグリッド配置
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH, "", "AUTO"	'列幅：自動
+WEB_GRID_SET "GRID1", AJAN_GRID_DATA, AJAN_FALSE, DATA$ 	'データ設定 + 先頭行を列名にしない

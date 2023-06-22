@@ -1,0 +1,61 @@
+'====================================================================
+' Web ラベルサンプルプログラム 
+'  等幅フォントを使用して、カウンタを表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL     "LABELa", "30",   "80" , "カウンタ表示例（等幅フォント）"
+
+'カウンタ1
+'　カウンタには、等幅フォントが便利です。（"monospace"や、"mono"が名前に付いたフォントは等幅です。）
+WEB_LABEL     "LABELa", "70",   "80" , "monospace"
+WEB_LABEL     "LABEL1", "90",   "80" , "000"
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_WIDTH,            "150"     '幅
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_HEIGHT,           "60"      '高さ
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_COLOR,            "#11DDAA" '文字色
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_FONT_SIZE,        "50"      '文字サイズ
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_BACKGROUND_COLOR, "#000000" '背景色
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_ALIGN,            "LEFT"    '文字位置 "LEFT"/"CENTER"/"RIGHT"
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_BORDER_COLOR,     "#33FF55" '枠線の色
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_BORDER_WIDTH,     "10"      '枠線の幅
+WEB_LABEL_SET "LABEL1", AJAN_LABEL_FONT_TYPE,        "monospace" 'フォント指定
+
+'カウンタ2
+'WEB_LABEL     "LABELb", "200",   "80" , "Liberation Mono"
+WEB_LABEL     "LABELb", "200",   "80" , "Liberation Mono"
+WEB_LABEL     "LABEL2", "220",   "80" , "000"
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_WIDTH,            "150"     '幅
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_HEIGHT,           "60"      '高さ
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_COLOR,            "#00AAFF" '文字色
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_FONT_SIZE,        "50"      '文字サイズ
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_BACKGROUND_COLOR, "#000000" '背景色
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_ALIGN,            "CENTER"  '文字位置 "LEFT"/"CENTER"/"RIGHT"
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_BORDER_COLOR,     "#55EEFF" '枠線の色
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_BORDER_WIDTH,     "5"       '枠線の幅
+WEB_LABEL_SET "LABEL2", AJAN_LABEL_FONT_TYPE,        "Liberation Mono" 'フォント指定
+
+'カウンタ3
+WEB_LABEL     "LABELc", "330",   "80" , "Noto Mono"
+WEB_LABEL     "LABEL3", "350",   "80" , "000"
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_WIDTH,            "150"     '幅
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_HEIGHT,           "60"      '高さ
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_COLOR,            "#FFAA11" '文字色
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_FONT_SIZE,        "50"      '文字サイズ
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_BACKGROUND_COLOR, "#000000" '背景色
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_ALIGN,            "RIGHT"   '文字位置 "LEFT"/"CENTER"/"RIGHT"
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_BORDER_COLOR,     "#EEDD11" '枠線の色
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_BORDER_WIDTH,     "2"       '枠線の幅
+WEB_LABEL_SET "LABEL3", AJAN_LABEL_FONT_TYPE,        "Noto Mono"   'フォント指定
+
+'カウントアップ表示
+FOR CNTI = 0 TO 100
+	digicnt1$ = "00"+STR$(CNTI)
+	digicnt2$ = "00"+STR$(CNTI*2)
+	digicnt3$ = "00"+STR$(CNTI*3)
+	WEB_LABEL_SET "LABEL1", AJAN_LABEL_VALUE,  MID$(digicnt1$, LEN(digicnt1$)-2, 3)
+	WEB_LABEL_SET "LABEL2", AJAN_LABEL_VALUE,  MID$(digicnt2$, LEN(digicnt2$)-2, 3)
+	WEB_LABEL_SET "LABEL3", AJAN_LABEL_VALUE,  MID$(digicnt3$, LEN(digicnt3$)-2, 3)
+	SLEEP(0.05)
+NEXT CNTI

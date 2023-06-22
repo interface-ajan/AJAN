@@ -1,0 +1,31 @@
+'====================================================================
+' Web イベント入力サンプルプログラム 
+'  ボタンを押すと、ブザーを鳴らして画面に時刻を表示します。(SuperCD用)
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL   "LABEL1", "20", "30", "ボタンを押したらブザーを鳴らして"
+WEB_LABEL   "LABEL2", "70", "30", "テキストボックスを更新します。　(SuperCD用)"
+WEB_BUTTON  "BUTTON1", "130",   "30", "時刻表示"
+WEB_TEXT    "TEXT1",   "130",   "200"
+
+ON WEB "BUTTON1", "CLICK" CALL SUB_BUTTON, "DATA1", "" 'ボタンクリック時処理を登録
+
+'ボタン押したときに 呼ばれる処理
+SUB SUB_BUTTON(ID$, PARAM1$, PARAM2$)
+    BUZZERCONTROL "CONTROL=ON"    'ブザー
+    SLEEP 0.5
+    BUZZERCONTROL "CONTROL=OFF"
+    
+    WEB_TEXT_SET "TEXT1", AJAN_TEXT_VALUE, "時刻" + TIME$ 'テキストボックス更新
+END SUB
+
+'ボタンイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

@@ -1,0 +1,92 @@
+'====================================================================
+' Web データグリッドサンプルプログラム 
+'  ダブルクリックした地点のデータを取得します。
+'            Copyright 2021,2022 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "データグリッド表示" 'Webタイトル
+
+COLUMN$ = "地点,センサ1,センサ2,センサ3" '列名
+
+'選択中の行番号
+ROW = -1
+
+'表示データ生成
+'DIM DATA$(9, 3)
+LIST DATA$
+REDIM DATA$(9,3)
+LIST NEW_DATA$
+
+FOR I = 0 TO 9 STEP 1
+	DATA$(I, 0) = "地点" + CHR$(ASC("A") + I)
+	DATA$(I, 1) = STR$(ROUND(RND * 1000, 0))
+	DATA$(I, 2) = STR$(ROUND(RND * 1000, 0))
+	DATA$(I, 3) = STR$(ROUND(RND * 1000, 0))
+NEXT
+
+WEB_LABEL "", "20", "30", "ダブルクリックした地点のデータを取得/表示します。"
+WEB_LABEL "", "50", "30", "データは3秒間隔で更新されます。"
+
+WEB_LABEL "PLACE",   "100", "450", "地点: "
+WEB_LABEL "SENSOR1", "130", "450", "センサ1: "
+WEB_LABEL "SENSOR2", "160", "450", "センサ2: "
+WEB_LABEL "SENSOR3", "190", "450", "センサ3: "
+
+WEB_GRID     "GRID1", "100",  "20"									'データグリッド配置
+WEB_GRID_SET "GRID1", AJAN_GRID_WIDTH,  "", "380"					'グリッド幅
+WEB_GRID_SET "GRID1", AJAN_GRID_HEIGHT, "", "300"					'グリッド高さ
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH, "", "AUTO"			'列幅：自動
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN, "", COLUMN$					'列名 (カンマ区切り指定)
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "2", "NUMBER"	' 2〜4列:数値フォーマット
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "3", "NUMBER"
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "4", "NUMBER"
+WEB_GRID_SET "GRID1", AJAN_GRID_DATA, AJAN_FALSE, DATA$				'データ設定 + 先頭行を列名にしない
+
+'ダブルクリックしたときの処理
+ON WEB "GRID1", "DBLCLICK" CALL SUB_DISPLAY, "", ""
+
+'3秒ごとにデータを更新
+ON TIMER(3000) CALL UPDATE_DATA
+TIMER ON
+
+'行データ表示処理（ダブルクリックイベント処理）
+SUB SUB_DISPLAY(ID$, PARAM1$, PARAM2$)
+
+	' 表示データ取得（ソートしている場合、ソート後のデータが取得されます）
+	NEW_DATA$ = AJAN_WEB_FORM$("GRID1")
+	ROW = VAL(AJAN_WEB_FORM$("GRID1.ROW"))
+
+	' 取得データ（1つの文字列）を二次元配列に変換
+	NEW_DATA$ = REPLACE$(NEW_DATA$, CHR$(10), ",")	' 改行文字を","に置換え
+	NEW_DATA$ = REPLACE$(NEW_DATA$, """", "")		' ダブルクオーテーションを削除
+	NEW_DATA$ = SPLIT$(NEW_DATA$, ",")				' 一旦一次元配列に変換
+	ONEDIM REMOVE NEW_DATA$,0,4						' 先頭のタイトル行を削除
+	REDIM PRESERVE NEW_DATA$(9,3)					' 二次元配列に変換
+	DATA$ = NEW_DATA$								' 元データにフィードバック
+
+	WEB_LABEL_SET "PLACE",   AJAN_LABEL_VALUE, "地点: " + NEW_DATA$(ROW, 0)
+	WEB_LABEL_SET "SENSOR1", AJAN_LABEL_VALUE, "センサ1: " + NEW_DATA$(ROW, 1)
+	WEB_LABEL_SET "SENSOR2", AJAN_LABEL_VALUE, "センサ2: " + NEW_DATA$(ROW, 2)
+	WEB_LABEL_SET "SENSOR3", AJAN_LABEL_VALUE, "センサ3: " + NEW_DATA$(ROW, 3)
+END SUB
+
+'データ更新処理（タイマイベント処理）
+SUB UPDATE_DATA
+	FOR I = 0 TO 9 STEP 1
+		DATA$(I, 1) = STR$(ROUND(RND * 1000, 0))
+		DATA$(I, 2) = STR$(ROUND(RND * 1000, 0))
+		DATA$(I, 3) = STR$(ROUND(RND * 1000, 0))
+	NEXT
+	
+	WEB_GRID_SET "GRID1", AJAN_GRID_DATA, AJAN_FALSE, DATA$
+	
+	IF ROW >= 0 THEN
+		WEB_LABEL_SET "SENSOR1", AJAN_LABEL_VALUE, "センサ1: " + DATA$(ROW, 1)
+		WEB_LABEL_SET "SENSOR2", AJAN_LABEL_VALUE, "センサ2: " + DATA$(ROW, 2)
+		WEB_LABEL_SET "SENSOR3", AJAN_LABEL_VALUE, "センサ3: " + DATA$(ROW, 3)
+	END IF
+END SUB
+
+'プログラムを終了させずに継続動作
+WEB_MAIN_LOOP

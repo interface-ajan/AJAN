@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Ajan version="1.01">
+  <AJANVER ver="Ver10926"/>
+  <App ExecuteName="10_web_get_property" ExecutePath="" Type="WebPage"/>
+  <FileGroup>
+    <file path="10_web_get_property.ajn"/>
+  </FileGroup>
+</Ajan>

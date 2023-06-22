@@ -1,0 +1,44 @@
+'====================================================================
+' Web グラフサンプルプログラム 
+'  折れ線グラフを表示します。
+'  ファイルからデータを読み出してグラフ描画します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "折れ線グラフ ファイルから読み取り" 'Webタイトル
+
+WEB_LABEL     "MEMO", "30", "60" , "折れ線グラフ"
+
+'折れ線グラフ配置
+WEB_GRAPH     "ID_GRAPH1", "40", "40"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE, "LINE"
+
+'ファイルからグラフラベル読み込み
+LIST LABEL$
+OPEN "data/graph_label.csv" FOR INPUT AS #1
+LINE_TEMP$ = ""
+LINE_CNT = 0
+DO WHILE EOF(1) = FALSE
+    LINE INPUT #1, LINE_TEMP$                  '1行読み取り
+    ONEDIM INSERT LABEL$, LINE_CNT, LINE_TEMP$ '1行分配列に追加
+    LINE_CNT = LINE_CNT + 1                    '行番号増加
+LOOP
+CLOSE #1
+
+'ファイルからグラフデータ読み込み
+LIST DATA_1
+OPEN "data/graph_data.csv" FOR INPUT AS #1
+LINE_TEMP$ = ""
+LINE_CNT = 0
+DO WHILE EOF(1) = FALSE
+    LINE INPUT #1, LINE_TEMP$                       '1行読み取り
+    ONEDIM INSERT DATA_1, LINE_CNT, VAL(LINE_TEMP$) '1行分配列に追加
+    LINE_CNT =     LINE_CNT + 1                     '行番号増加
+LOOP
+CLOSE #1
+
+'取得したデータをグラフに設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA,        DATA_1

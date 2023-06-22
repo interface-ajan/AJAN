@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8847"/>
+  <App ExecuteName="01_web_graph_bar" Type="WebPage"/>
+  <FileGroup>
+    <file path="01_web_graph_bar.ajn"/>
+  </FileGroup>
+</Ajan>

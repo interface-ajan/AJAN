@@ -1,0 +1,54 @@
+'====================================================================
+' Web テーブルサンプルプログラム 
+'  テーブルを表示します。
+'  色やサイズを指定しています。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "テーブル表示" 'Webタイトル
+
+WEB_LABEL      "LABEL_SELECT", "40", "40", "テーブルを表示"
+
+DIM COLUMN$(2)
+COLUMN$(0) = "ID"
+COLUMN$(1) = "名称"
+COLUMN$(2) = "価格"
+
+DIM DATA$(2, 2)
+DATA$(0,0) = "01"
+DATA$(0,1) = "製品-1"
+DATA$(0,2) = "￥50,000"
+
+DATA$(1,0) = "02"
+DATA$(1,1) = "製品-2"
+DATA$(1,2) = "￥75,000"
+
+DATA$(2,0) = "03"
+DATA$(2,1) = "製品-3"
+DATA$(2,2) = "￥35,000"
+	
+'テーブル
+WEB_TABLE     "TABLE1", "80",  "40"	  'テーブル配置
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_WIDTH,     "400"       '幅
+'WEB_TABLE_SET "TABLE1", AJAN_TABLE_HEIGHT,   "200"       '高さ
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN_BACKGROUND_COLOR, "#cadfff" '列名の背景色
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_DATA_BACKGROUND_COLOR,   "#ebf3ff" 'データの背景色
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN, COLUMN$        '列名
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_FONT_SIZE,  "26"       '文字サイズ
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_FONT_COLOR, "#2e3436"  '文字色
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_DATA,   DATA$          'データ
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_CELL_FONT_COLOR, "1:1,1:2,BLUE"     '文字色 行1:列1〜行1:列2を設定
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_CELL_FONT_COLOR, "2:-,2:-,RED"      '文字色 行2を設定
+'WEB_TABLE_SET "TABLE1", AJAN_TABLE_CELL_FONT_COLOR, "-:3,-:3,#00FF00" '文字色 列3を設定
+
+
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_CELL_BACKGROUND_COLOR,   "2:3,2:3,#FFE5E5" '背景色 行2:列3〜行2:列3を設定
+

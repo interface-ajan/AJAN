@@ -1,0 +1,85 @@
+'====================================================================
+' Web テキスト入力サンプルプログラム 
+'  テキストボックス、数字入力、スライダー、色選択、テキストエリア(複数行）を
+'  表示します。ボタンを押すと、入力したデータを取得できます。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "テキストボックス表示"
+WEB_LABEL     "", "20", "20",   "各種テキストボックスを表示します。"
+WEB_LABEL     "", "50", "20",   "送信ボタンを押すとAJANで入力したデータを取得できます。"
+
+'テキストボックス1
+WEB_LABEL    "", "100", "20", "テキストボックス"
+WEB_TEXT     "TEXT1", "130",  "40"     'テキストボックス配置
+WEB_TEXT_SET "TEXT1", AJAN_TEXT_PLACE_HOLDER, "入力例:xxx" '初期表示するヒント
+
+'テキストボックス2
+WEB_TEXT     "TEXT2", "170",  "40"                         'テキストボックス配置
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_WIDTH,     "160"           '幅
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_HEIGHT,    "30"            '高さ
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_FONT_SIZE, "24"            '文字サイズ
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_COLOR,     "#ff3131"       '文字色
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_VALUE,     "色付き"        'データ
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_BACKGROUND_COLOR,"#ffd7d7" '背景色
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_BORDER_COLOR,"RED"         '枠線の色
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_BORDER_WIDTH,"3"           '枠線の幅
+WEB_TEXT_SET "TEXT2", AJAN_TEXT_ALIGN,       "CENTER"      '文字位置 "LEFT"/"CENTER"/"RIGHT"
+
+'テキストボックス (数字入力形式)
+WEB_LABEL    "", "230", "20", "数字入力形式(上下ボタン、0〜100)"
+WEB_TEXT     "TEXT_NUM", "260",  "40"                       'テキストボックス配置
+WEB_TEXT_SET "TEXT_NUM", AJAN_TEXT_TYPE,    "number"        '数字形式
+WEB_TEXT_SET "TEXT_NUM", AJAN_TEXT_MIN,     "0"             'データ最小値
+WEB_TEXT_SET "TEXT_NUM", AJAN_TEXT_MAX,     "100"           'データ最大値
+WEB_TEXT_SET "TEXT_NUM", AJAN_TEXT_WIDTH,   "60"            '幅
+WEB_TEXT_SET "TEXT_NUM", AJAN_TEXT_VALUE,   "60"            'データ
+
+'テキストボックス (簡易的なスライダー形式)
+WEB_LABEL    "", "320", "20", "スライダー形式"
+WEB_TEXT     "TEXT_SLIDER", "350",  "40"                       'テキストボックス配置
+WEB_TEXT_SET "TEXT_SLIDER", AJAN_TEXT_TYPE,    "range"         'スライダー形式
+WEB_TEXT_SET "TEXT_SLIDER", AJAN_TEXT_MIN,     "0"             'データ最小値
+WEB_TEXT_SET "TEXT_SLIDER", AJAN_TEXT_MAX,     "100"           'データ最大値
+WEB_TEXT_SET "TEXT_SLIDER", AJAN_TEXT_VALUE,   "60"            'データ
+
+'テキストボックス (色選択)
+WEB_LABEL    "", "320", "280", "色選択 形式"
+WEB_TEXT     "TEXT_COLOR", "350",  "300"                      'テキストボックス配置
+WEB_TEXT_SET "TEXT_COLOR", AJAN_TEXT_TYPE,    "color"         '色選択形式
+WEB_TEXT_SET "TEXT_COLOR", AJAN_TEXT_VALUE,   "#0000FF"       '色データ設定
+
+'テキストエリア（複数行のテキストボックス)
+WEB_LABEL    "", "410", "20", "テキストエリア (複数行テキスト入力）"
+WEB_TEXTAREA     "TEXTAREA1", "440",  "40"                      'テキストエリア配置
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_COLS,  "40"         '横幅(一行の文字数)
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_ROWS,  "3"          '縦幅(行数)
+DATA$ = "複数行入力できるテキスト領域です。\n改行もできます。"
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_FONT_SIZE, "20"     '文字サイズ
+WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_VALUE, DATA$ '初期表示するヒント
+'WEB_TEXTAREA_SET "TEXTAREA1", AJAN_TEXTAREA_DISABLED, AJAN_TRUE    '無効にする
+
+'ボタン配置、ボタン押したときの動作登録
+WEB_BUTTON "BUTTON1", "550",  "90", "送信"
+ON WEB "BUTTON1", "CLICK" CALL SUB_DATA,  "", ""
+
+'ボタンが押されたときの処理：メッセージ表示
+SUB SUB_DATA(ID$, PARAM1$, PARAM2$)
+    MSG$ = "テキストボックス1の値:"            + AJAN_WEB_FORM$("TEXT1")       + "\n" + _
+           "テキストボックス2の値:"            + AJAN_WEB_FORM$("TEXT2")       + "\n" + _ 
+           "テキストボックス(数字)の値:"       + AJAN_WEB_FORM$("TEXT_NUM")    + "\n" + _ 
+           "テキストボックス(スライダー)の値:" + AJAN_WEB_FORM$("TEXT_SLIDER") + "\n" + _ 
+           "テキストボックス(色選択)の値:"     + AJAN_WEB_FORM$("TEXT_COLOR")  + "\n" + _ 
+           "テキストエリア1の値:"              + AJAN_WEB_FORM$("TEXTAREA1") 
+    WEB_MSG_BOX MSG$
+END SUB
+
+'画面変更処理を行うためAJANを継続動作
+DO WHILE TRUE
+    SLEEP 1
+    IF(AJAN_END_FLG = 1) THEN
+        END    'ネットワーク切断時:終了する
+    END IF
+LOOP

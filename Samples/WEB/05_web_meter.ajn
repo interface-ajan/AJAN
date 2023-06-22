@@ -1,0 +1,37 @@
+'===================================================================
+' Web メータサンプルプログラム 
+'  アナログメータを表示して動かします。
+'            Copyright 2020 Interface Corporation
+'===================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL     "MEMO", "40",  "40" , "シンプルなメータ"
+
+'メータの目盛りラベル
+DIM TICK$(10)
+TICK$ =  ["0","10","20","30","40","50","60","70","80","90","100"]
+
+WEB_METER     "METER1", "100", "30"                        'メータ配置
+
+WEB_METER_SET "METER1", AJAN_METER_MIN,             "0"    '設定値範囲最小値設定
+WEB_METER_SET "METER1", AJAN_METER_MAX,             "100"  '設定値範囲最大値設定
+
+WEB_METER_SET "METER1", AJAN_METER_TICK_MAJOR_LIST, TICK$  '目盛りラベル(配列)
+
+WEB_METER_SET "METER1", AJAN_METER_WIDTH,           "250"  '幅
+WEB_METER_SET "METER1", AJAN_METER_HEIGHT,          "250"  '高さ
+
+
+'データ設定
+VALUE = 80
+WEB_METER_SET "METER1", AJAN_METER_DATA,             STR$(VALUE)  '値設定
+
+'一定時間後に動かす
+SLEEP(2)
+VALUE = 20
+WEB_METER_SET "METER1", AJAN_METER_DATA,             STR$(VALUE)  '値設定
+
+SLEEP(2)
+VALUE = 90
+WEB_METER_SET "METER1", AJAN_METER_DATA,             STR$(VALUE)  '値設定

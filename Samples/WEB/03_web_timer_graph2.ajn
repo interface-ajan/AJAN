@@ -1,0 +1,132 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  グラフのデータを周期的に更新します。
+'  周期、件数、方向、波形等を画面上で設定できます。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "グラフ自動更新" 'Webタイトル
+
+'ラベル配置
+WEB_LABEL  "ID_INFO1", "10", "20", "AJANから指定した周期で1件毎にデータ取得"
+
+'周期入力領域
+WEB_LABEL    "ID_INFO3", "70",    "40", "周期"
+WEB_LABEL    "ID_INFO4", "70",    "180", "(1000〜50 [ms])"
+WEB_TEXT     "ID_CYCLE", "66",    "100"                  'テキスト配置
+WEB_TEXT_SET "ID_CYCLE", AJAN_TEXT_TYPE,  "number"       '数字形式
+WEB_TEXT_SET "ID_CYCLE", AJAN_TEXT_WIDTH, "60"           'テキスト幅
+WEB_TEXT_SET "ID_CYCLE", AJAN_TEXT_VALUE, "50"           'テキストデータ
+WEB_TEXT_SET "ID_CYCLE", AJAN_TEXT_MIN,   "10"           'データ最小値
+WEB_TEXT_SET "ID_CYCLE", AJAN_TEXT_MAX,   "1000"         'データ最大値
+
+
+'件数入力領域
+WEB_LABEL    "ID_INFO5", "130",    "40", "件数"
+WEB_TEXT     "ID_NUM",   "125",    "100"               'テキスト配置
+WEB_TEXT_SET "ID_NUM", AJAN_TEXT_WIDTH, "60"           'テキスト幅
+WEB_TEXT_SET "ID_NUM", AJAN_TEXT_TYPE,  "number"       '数字形式
+WEB_TEXT_SET "ID_NUM", AJAN_TEXT_VALUE, "20"           'テキストデータ
+WEB_TEXT_SET "ID_NUM", AJAN_TEXT_MIN,   "2"            'データ最小値
+WEB_TEXT_SET "ID_NUM", AJAN_TEXT_MAX,   "200"          'データ最大値
+
+'方向
+WEB_LABEL  "ID_INFO5", "130", "190", "方向"
+WEB_BUTTON "ID_BUTTON_DIRE_RIGHT", "120", "260", "<<"
+WEB_BUTTON "ID_BUTTON_DIRE_LEFT",  "120", "310", ">>"
+ON WEB     "ID_BUTTON_DIRE_LEFT",  "CLICK" CALL SUB_DIRECTION , "LEFT", ""
+ON WEB     "ID_BUTTON_DIRE_RIGHT", "CLICK" CALL SUB_DIRECTION , "RIGHT", ""
+
+'波形種類
+WEB_BUTTON "ID_BUTTON_WAVE_SINE",     "120", "400", "正弦波"
+WEB_BUTTON "ID_BUTTON_WAVE_TRIANGLE", "120", "490", "三角波"
+WEB_BUTTON "ID_BUTTON_WAVE_SAW",      "120", "580", "ノコギリ波(逆)"
+ON WEB     "ID_BUTTON_WAVE_SINE",     "CLICK" CALL SUB_WAVE , "SINE",     ""
+ON WEB     "ID_BUTTON_WAVE_TRIANGLE", "CLICK" CALL SUB_WAVE , "TRIANGLE", ""
+ON WEB     "ID_BUTTON_WAVE_SAW",      "CLICK" CALL SUB_WAVE , "SAW",      ""
+
+'開始/停止ボタン
+WEB_BUTTON "ID_BUTTON_START1",     "60",  "430", " 開始 "
+WEB_BUTTON "ID_BUTTON_STOP",       "60",  "510", " 停止 "
+ON WEB     "ID_BUTTON_START1",     "CLICK" CALL SUB_START, "", ""
+ON WEB     "ID_BUTTON_STOP",       "CLICK" CALL SUB_STOP , "", ""
+
+'グラフ配置
+LIST LABEL$, DATA$
+WEB_GRAPH     "ID_GRAPH1", "160", "20"
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE,            "LINE"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH,           "600"    '横幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT,          "400"    '縦幅
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BACKGROUND_COLOR, "BLUE"   'グラフ色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_COLOR,     "BLUE"   'グラフ線色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_WIDTH,     "4"      'グラフ枠線太さ
+
+'初期設定
+COUNT = 0
+ADD_DATA_TYPE = AJAN_DATA_ADD_LAST
+LIST DATA_WAVE
+DATA_WAVE = CALC_CREATE_SINWAVE(1.0, 50, 800, 2 * 800)  '正弦波    
+
+'タイマで呼ばれる処理
+SUB DISP_DATA
+    'ブラウザ上のグラフにデータ追加
+    ADD_DATA$ = str$(ROUND(DATA_WAVE(COUNT)*1000)) '追加データ取得
+    WEB_GRAPH_SET "ID_GRAPH1", 1, ADD_DATA_TYPE, ADD_DATA$ 'グラフにデータ追加
+
+    COUNT = COUNT + 1
+    IF (COUNT > 1000) THEN COUNT = 0
+END SUB
+
+'開始ボタンが押されたときに実行する処理
+SUB SUB_START(ID$, PARAM1$, PARAM2$)
+
+    DATA_NUM = VAL(AJAN_WEB_FORM$("ID_NUM"))
+    REDIM LABEL$(DATA_NUM-1) 
+    REDIM DATA$ (DATA_NUM-1)
+    WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$ 
+    WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA,        DATA$ 
+
+    TIMER_CYCLE = VAL(AJAN_WEB_FORM$("ID_CYCLE"))
+    ON TIMER(TIMER_CYCLE) CALL DISP_DATA  'タイマ設定
+    TIMER ON                              'タイマ開始
+END SUB
+
+'停止ボタンが押されたときに実行する処理
+SUB SUB_STOP(ID$, PARAM1$, PARAM2$)
+    TIMER OFF                             'タイマ停止
+END SUB
+
+'方向設定ボタンが押されたときに実行する処理
+SUB SUB_DIRECTION(ID$, PARAM1$, PARAM2$)
+    IF (PARAM1$ = "LEFT") THEN
+        ADD_DATA_TYPE = AJAN_DATA_ADD_FIRST
+    ELSE
+        ADD_DATA_TYPE = AJAN_DATA_ADD_LAST
+    END IF
+END SUB
+
+
+'波形ボタンが押されたときに実行する処理
+SUB SUB_WAVE(ID$, PARAM1$, PARAM2$)
+    IF (PARAM1$ = "SINE") THEN           '正弦波
+        DATA_WAVE = CALC_CREATE_SINWAVE(1.0, 60, 800, 2 * 800) 
+
+    ELSEIF(PARAM1$ = "TRIANGLE") THEN  '三角波
+        DATA_WAVE = CALC_CREATE_TRIANGLEWAVE(1.0, 50, 800, 2 * 800)
+
+    ELSEIF(PARAM1$ = "SAW") THEN       'ノコギリ波
+        DATA_WAVE = CALC_CREATE_SAWTOOTHWAVE(1.0, 50, 600, 2 * 800)
+    END IF
+END SUB
+
+'常駐サービスプログラムとして動きつづける
+DO WHILE TRUE
+    SLEEP 1
+    IF(AJAN_END_FLG = 1) THEN
+        END    'ネットワーク切断時:終了する
+    END IF
+LOOP
+    

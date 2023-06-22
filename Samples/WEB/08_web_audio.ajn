@@ -1,0 +1,29 @@
+'====================================================================
+' Web 音声再生サンプルプログラム 
+'  音声ファイルを再生します。
+'            Copyright 2021 Interface Corporation
+'　注意事項：
+'　　本サンプルプログラムで使用する音声ファイルは、
+'　　日本語音声合成ソフトウェア「Open JTalk」で作成しています。
+'　　別のサンプルプログラム「8_web_audio2.ajn」で、音声ファイルを
+'　　作成できます。尚、再生には「Open JTalk」のインストールは不要です。
+'
+'　　また、ご使用になるWebブラウザの自動再生ポリシーによっては、
+'　　プログラムから自動再生できない場合があります。
+'　　Webブラウザの設定変更、または、コントローラを表示して、再生ボタンを
+'　　操作してください。
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "LABEL1", "16", "50", "音声を再生します。（自動再生されない場合、再生ボタンを押してください。）"
+
+WEB_AUDIO     "AUDIO1", "50", "50"								'音声再生部品設置
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_CONTROLS, AJAN_TRUE			'コントローラ表示
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_AUTOPLAY, AJAN_TRUE			'自動再生設定
+'WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_WIDTH, "500"				'コントローラの横幅
+'WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_HEIGHT, "20"				'コントローラの高さ
+'WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_MUTE, AJAN_FALSE			'消音設定（注意事項参照）
+'WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_VOLUME, "0.2"				'音声ボリューム設定（0〜1）
+'WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_PRELOAD, "auto"				'プリロード設定
+WEB_AUDIO_SET "AUDIO1", AJAN_AUDIO_SRC, "static/web_audio_ajan.wav"	'音声ファイル

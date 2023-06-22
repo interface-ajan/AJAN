@@ -1,0 +1,52 @@
+'====================================================================
+' Web グラフサンプルプログラム 
+'  折れ線グラフを表示します。
+'  各種オプションを指定しています。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "折れ線グラフ 詳細デザイン設定" 
+
+DIM LABEL$(24)
+DIM DATA(24)
+
+WEB_LABEL     "MEMO", "20", "40" , "折れ線グラフ 各種オプション設定"
+
+'グラフラベル、データ設定
+FOR CNT = 0 TO 24
+	LABEL$(CNT) = STR$(CNT)
+	DATA(CNT)   = ROUND(RND() * 100,0) 'データはランダムな値を設定
+NEXT
+
+'折れ線グラフ部品配置
+WEB_GRAPH     "ID_GRAPH1", "80", "20"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE, "LINE"
+
+'折れ線グラフ部品設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH             ,"600"      '横幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT            ,"500"      '縦幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_COLOR       ,"LIME"     'グラフ線色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_BACKGROUND_COLOR  ,"#333333"  'グラフ背景色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BORDER_WIDTH       ,"3"        'グラフ線太さ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_GRID_COLOR        ,"#CCCCCC"  '軸線色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_GRID_WIDTH        ,"0.7"      '軸線太さ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME               ,"温度"     '凡例内容
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME_COLOR         ,"#CCCCCC"  '凡例内容文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DRAW_LINE_HORIZONTAL, "80, 2, RED"  '水平線
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE             ,"温度推移"  'タイトル
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE_SIZE        ,"30"        'タイトル文字色フォントサイズ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TITLE_COLOR       ,"#CCCCCC"   'タイトル文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TICKS_COLOR       ,"#CCCCCC"   '軸目盛文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TICKS_SIZE        ,"16"        '軸目盛サイズ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_SCALE_LABEL_COLOR ,"#CCCCCC"   '軸ラベル文字色
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_SCALE_LABEL_SIZE  ,"20"        '軸ラベルサイズ
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_MAX             ,"100"       'Y軸最大値
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_MIN             ,"0"         'Y軸最大小値
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_X_LABEL           ,"時刻"      'X軸ラベル
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_LABEL           ,"℃"        'Y軸ラベル
+
+
+'ラベル、データ設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA,        DATA

@@ -1,0 +1,43 @@
+'====================================================================
+' Web 画像サンプルプログラム 
+'  指定した画像データを表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL  "LABEL1", "30", "20", "画像を配置します。"
+
+'画像配置
+WEB_IMG     "ID_IMG1", "70", "50"                              '画像配置
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_FILE,   "static/interface.gif" '画像ファイル
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_WIDTH,  "400"                  '幅
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_HEIGHT, "100"                  '高さ
+
+
+'2つの画像を重ねて配置。重なり順も指定できます。
+WEB_LABEL  "LABEL2", "230", "20", "重なり順を自由に設定"
+
+WEB_IMG     "ID_IMG2", "250", "40"                              '画像配置
+WEB_IMG_SET "ID_IMG2", AJAN_IMG_FILE,  "static/iota_center.gif" '画像ファイル
+WEB_IMG_SET "ID_IMG2", AJAN_IMG_WIDTH,  "100"                   '幅
+WEB_IMG_SET "ID_IMG2", AJAN_WEB_ZINDEX, "300"                   '重なり順(数値が多い方が前面に表示)
+
+WEB_IMG     "ID_IMG3", "270", "90"                              '画像配置
+WEB_IMG_SET "ID_IMG3", AJAN_IMG_FILE,  "static/iota_center_suit.gif" '画像ファイル
+WEB_IMG_SET "ID_IMG3", AJAN_IMG_WIDTH,  "100"                   '幅
+WEB_IMG_SET "ID_IMG3", AJAN_WEB_ZINDEX, "200"                   '重なり順(数値が多い方が前面に表示)
+
+
+'画像を回転させて配置。
+WEB_LABEL  "LABEL3", "230", "300", "回転もできます"
+
+WEB_IMG     "ID_IMG4", "280", "270"                             '画像配置
+WEB_IMG_SET "ID_IMG4", AJAN_IMG_FILE,  "static/iota_left.gif"   '画像ファイル
+WEB_IMG_SET "ID_IMG4", AJAN_IMG_WIDTH,  "100"                   '幅
+WEB_IMG_SET "ID_IMG4", AJAN_IMG_ROTATE, "30"                    '回転(時計回りに0〜360 （度)を指定)
+
+WEB_IMG     "ID_IMG5", "280", "430"                             '画像配置
+WEB_IMG_SET "ID_IMG5", AJAN_IMG_FILE,  "static/iota_left.gif"   '画像ファイル
+WEB_IMG_SET "ID_IMG5", AJAN_IMG_WIDTH,  "100"                   '幅
+WEB_IMG_SET "ID_IMG5", AJAN_IMG_ROTATE, "310"                   '回転(時計回りに0〜360 （度)を指定)

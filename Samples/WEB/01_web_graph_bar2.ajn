@@ -1,0 +1,44 @@
+'====================================================================
+' Webグラフサンプルプログラム 
+'  棒グラフを表示します。
+'  配列でデータを設定します。グラフのバーの上に数字を表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+DIM LABEL$(9)
+DIM DATA(9)
+
+WEB_LABEL     "MEMO", "20", "40" , "棒グラフの設定変更、バーの上に数字表示"
+
+'グラフラベル、データ設定(配列にデータ格納)
+FOR CNT = 0 TO 9
+	LABEL$(CNT) = STR$(CNT)
+	DATA(CNT)   = INT(ROUND(RND() * 100,0)) 'データはランダムな値を設定
+NEXT
+
+'棒グラフ配置
+WEB_GRAPH     "ID_GRAPH1", "60", "40"
+
+'棒グラフの上に数字表示
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_LABEL_DISP, AJAN_TRUE '表示を有効
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DATA_LABEL_FONT_SIZE, "16" '表示フォントサイズ
+
+'グラフ上に線を引く
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DRAW_LINE_HORIZONTAL, "75, 4,#ff9090"  '水平線
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_DRAW_LINE_VERTICAL,   "7.0,2,#33FF00" '垂直線
+
+'サイズ設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_WIDTH   ,"400"      '横幅
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_HEIGHT  ,"500"      '縦幅
+
+'グラフ色設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_BACKGROUND_COLOR, "yellow"
+
+'凡例を非表示
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_NAME_DISPLAY, AJAN_FALSE 
+
+'グラフのラベル、データ設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA,        DATA

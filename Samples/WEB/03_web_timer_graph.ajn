@@ -1,0 +1,38 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  グラフのデータを周期的に更新します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "グラフ自動更新" 'Webタイトル
+DIM LABEL$(19), DATA$(19)
+
+'グラフ配置
+WEB_GRAPH     "ID_GRAPH1", "10", "20"
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_TYPE, "LINE"  '折れ線
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_Y_MAX ,"1000" 'Y軸最大値
+
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_GRAPH_LABEL, LABEL$ 'ラベル設定
+WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA,        DATA$  'データ設定
+
+TIMER_CYCLE = 50					    'タイマ周期	
+ON TIMER(TIMER_CYCLE) CALL DISP_DATA    'タイマ設定
+TIMER ON							    'タイマ開始
+
+'タイマで呼ばれる処理
+SUB DISP_DATA
+	ADD_DATA$ = STR$(ROUND(RND() * 1000,0))  'ランダムな値を生成
+	WEB_GRAPH_SET "ID_GRAPH1", 1, AJAN_DATA_ADD_LAST, ADD_DATA$ 'グラフにデータ追加
+END SUB
+
+'タイマイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		TIMER OFF	'タイマ停止
+		END			'ネットワーク切断時:終了する
+	END IF
+LOOP
+	

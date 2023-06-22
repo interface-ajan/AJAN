@@ -1,0 +1,74 @@
+'====================================================================
+' Web データグリッドサンプルプログラム 
+'  データグリッドに入力したデータを保存します。
+'            Copyright 2021,2022 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "データグリッド表示" 		'Webタイトル
+
+GRID_DISP_FILE_NAME$   = "data/web_grid_disp.csv"   	'グリッドに表示するデータのファイル名
+GRID_OUTPUT_FILE_NAME$ = "data/web_grid_output.csv" 	'グリッドデータを出力するファイル名
+
+'選択リストのデータ
+LIST CLASS_LIST$ = ["A", "B", "C"]
+
+'グリッドに出力するデータをCSVファイルから読み込み
+GRID_DISP_CSV$ = STR_FREADALL$(GRID_DISP_FILE_NAME$)
+
+'CSVデータを配列に変換
+LIST GRID_DISP_DATA$
+GRID_DISP_DATA$ = CSV2ARRAY$(GRID_DISP_CSV$, ",", """", FALSE)
+
+WEB_LABEL   "",  "20", "30", "CSVファイルのデータをグリッドに表示します。データは画面上で追加/更新できます。"
+WEB_LABEL   "",  "50", "30", "「データを保存」ボタンを押すと、別名でCSVファイルに保存します。"
+WEB_BUTTON  "BUTTON_UPDATE", "100", "20", "データを保存"					'保存ボタン配置
+
+WEB_LABEL "L1", "200", "600", "※右クリックで行の追加、削除ができます。"
+WEB_LABEL "L2", "240", "600", "※領域選択して、Calcやテキストファイル等と\n  コピー&ペーストできます。"
+WEB_LABEL "L3", "280", "600", "  (領域選択は shift+方向キー）"
+WEB_LABEL_SET "L1", AJAN_LABEL_FONT_SIZE, "16"
+WEB_LABEL_SET "L2", AJAN_LABEL_FONT_SIZE, "16"
+WEB_LABEL_SET "L3", AJAN_LABEL_FONT_SIZE, "16"
+
+WEB_GRID     "GRID1", "180",  "20"										'データグリッド配置
+WEB_GRID_SET "GRID1", AJAN_GRID_WIDTH, "", "550"						'グリッド幅
+WEB_GRID_SET "GRID1", AJAN_GRID_HEIGHT, "", "370"						'グリッド高さ
+WEB_GRID_SET "GRID1", AJAN_GRID_UPDATE_ENABLE, "", AJAN_TRUE			'データの更新可能
+'WEB_GRID_SET "GRID1", AJAN_GRID_UPDATE_ENABLE, "COLUMN:1", AJAN_FALSE	'1列目編集不可
+WEB_GRID_SET "GRID1", AJAN_GRID_ADD_ENABLE, "", AJAN_TRUE				'データの追加可能
+WEB_GRID_SET "GRID1", AJAN_GRID_FILTER_ENABLE, "", AJAN_TRUE			'検索ボックス表示
+WEB_GRID_SET "GRID1", AJAN_GRID_MENU_ENABLE, "", AJAN_TRUE				'右クリックでメニュー表示
+WEB_GRID_SET "GRID1", AJAN_GRID_FONT_SIZE, "", "20"						'文字サイズ
+WEB_GRID_SET "GRID1", AJAN_GRID_FONT_COLOR, "", "#002358"				'文字色
+WEB_GRID_SET "GRID1", AJAN_GRID_HEADER_FONT_COLOR, "", "WHITE"			'ヘッダ部の文字色
+WEB_GRID_SET "GRID1", AJAN_GRID_HEADER_BACKGROUND_COLOR, "", "#204a87"	'ヘッダ列の背景色
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "4", "SELECT"  		'選択リスト形式
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "4", CLASS_LIST$		'選択リストのデータ
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "5", "CHECK"			'チェックボックス形式
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_SET_FORMAT, "6", "CALENDAR"		'カレンダー形式
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_ALIGN, "4", "CENTER"				'4列目：中央寄り
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_ALIGN, "5", "CENTER"				'5列目：中央寄り
+WEB_GRID_SET "GRID1", AJAN_GRID_COLUMN_WIDTH, "", "AUTO"				'列幅：自動
+WEB_GRID_SET "GRID1", AJAN_GRID_DATA, AJAN_TRUE, GRID_DISP_DATA$		'データ設定、先頭行を列名にする
+WEB_GRID_SET "GRID1", AJAN_WEB_FOCUS, "", ""							'フォーカスを当てる
+
+'ボタン押したときの処理
+ON WEB "BUTTON_UPDATE",                  "CLICK" CALL SUB_UPDATE,        "", ""
+
+'更新処理
+LIST GRID_DATA$        'Webから取得したデータの格納領域
+SUB SUB_UPDATE(ID$, PARAM1$, PARAM2$)
+    GRID_CSV$ = AJAN_WEB_FORM$("GRID1")    'データグリッドからCSV形式のデータを取得
+    STR_FWRITEALL GRID_OUTPUT_FILE_NAME$, GRID_CSV$  '取得したデータをファイルに出力
+    WEB_MSG_BOX "CSVファイルにデータを出力しました。\n" + _
+        "ファイル名:" + GRID_OUTPUT_FILE_NAME$ + "\n\n" + LEFT$(GRID_CSV$,300) + ".." 'メッセージ表示
+   
+    '例:取得したデータを二次元配列に格納 
+    'GRID_DATA$ = CSV2ARRAY$(GRID_CSV$, ",", """", FALSE)    
+    'ROW = LDIM(GRID_DATA$, 1) 'データの行数
+    'COL = LDIM(GRID_DATA$, 2) 'データの列数
+END SUB
+
+'WEBページを閉じるまでループ
+WEB_MAIN_LOOP

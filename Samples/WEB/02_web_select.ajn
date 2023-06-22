@@ -1,0 +1,69 @@
+'====================================================================
+' Web 選択項目サンプルプログラム 
+'  セレクトボックス/ラジオボタン/チェックボックスを表示します。
+'  ボタンを押すと、選択しているデータを取得します。
+'            Copyright 2020,2022 Interface Corporation
+'====================================================================
+INCLUDE "WEB.AJN"
+
+WEB_LABEL     "LABEL1", "20", "20",   "各種選択部品の例\n送信ボタンを押すとAJANで設定データを取得できます。"
+
+DIM SELECT_DATA$(2,1)	'セレクトボックス用データ
+SELECT_DATA$ = [["sel1","選択1"],["sel2","選択2"], ["sel3","選択3"]] 
+
+DIM RADIO_DATA$(2,1)	'ラジオボタン用データ
+RADIO_DATA$ = [ ["rad1","ラジオ1"], ["rad2","ラジオ2"], ["rad3","ラジオ3"]] 
+
+'枠を表示
+WEB_DRAW "RECT1", "RECT", "15", "100", "230", "80"
+WEB_DRAW "RECT2", "RECT", "15", "195", "230", "110"
+WEB_DRAW "RECT3", "RECT", "15", "320", "230", "90"
+
+'セレクトボックス(リストボックス)
+WEB_LABEL "LABEL_SELECT", "110", "30", "セレクトボックス"
+WEB_SELECT "SELECT1", "140", "60"								'セレクトボックス 配置
+WEB_SELECT_SET "SELECT1", AJAN_SELECT_LIST, SELECT_DATA$		'選択リスト
+WEB_SELECT_SET "SELECT1", AJAN_SELECT_LIST_NUM, "1"				'表示するリストの数
+WEB_SELECT_SET "SELECT1", AJAN_SELECT_RESULT,   "1"				'選択結果の形式(選択リストの値、表示名）
+
+'ラジオボタン設定
+WEB_LABEL      "LABEL_CHECK", "200", "30", "ラジオボタン"
+WEB_RADIO       "RADIO1", "230", "40"
+WEB_RADIO_SET   "RADIO1", AJAN_RADIO_LIST, RADIO_DATA$			'選択データ
+
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_LAYOUT, "COLUMN"				'縦に並べて配置
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_VALUE, "rad2"				'選択するデータを設定
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_FRAME_HEIGHT, "50"			'ラジオ部分と文字を含んだ枠の高さ
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_FRAME_WIDTH, "200"			'ラジオ部分と文字を含んだ枠の幅
+
+'チェックボックス設定
+WEB_LABEL "LABEL_RADIO", "330", "30", "チェックボックス"
+WEB_CHECKBOX "CHECK1", "360", "40" , "チェックボックス1"
+WEB_CHECKBOX "CHECK2", "380", "40" , "チェックボックス2"
+
+WEB_CHECKBOX_SET "CHECK1", AJAN_CHECKBOX_VALUE, AJAN_TRUE		'チェックをつける
+
+WEB_CHECKBOX_SET "CHECK1", AJAN_CHECKBOX_FRAME_WIDTH, "300"		'チェック部分と文字を含んだ枠の幅
+WEB_CHECKBOX_SET "CHECK2", AJAN_CHECKBOX_FRAME_WIDTH, "300"		'チェック部分と文字を含んだ枠の幅
+
+'線を表示
+WEB_DRAW     "LINE1", "LINE", "15", "440", "500", "440"
+WEB_DRAW_SET "LINE1", AJAN_DRAW_LINE_SIZE, "2"
+
+'ボタン配置、ボタン押したときの動作登録
+WEB_BUTTON "BUTTON1", "460",  "70", "送信"
+ON WEB "BUTTON1", "CLICK" CALL SUB_DATA,  "", ""
+
+'ボタンが押されたときの処理：メッセージ表示
+SUB SUB_DATA(ID$, PARAM1$, PARAM2$)
+	LIST SELRES$ = SPLIT$(AJAN_WEB_FORM$("SELECT1"),",")
+    MSG$ = "セレクトボックスの値:" + SELRES$(0) + "\n" + _
+           "セレクトボックスの名前:" + SELRES$(1) + "\n" + _
+           "ラジオボタンの値:"     + AJAN_WEB_FORM$("RADIO1")  + "\n" + _ 
+           "チェックボックス1の値:" + AJAN_WEB_FORM$("CHECK1") + "\n" + _ 
+           "チェックボックス2の値:" + AJAN_WEB_FORM$("CHECK2") 
+    WEB_MSG_BOX MSG$
+END SUB
+
+'画面変更処理を行うためAJANを継続動作
+WEB_MAIN_LOOP

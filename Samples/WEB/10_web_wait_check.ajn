@@ -1,0 +1,95 @@
+'====================================================================
+' メインループの最小ウエイト時間を確認する
+' 　アプリに、①〜④の処理を配置して最小ウエイト時間を確認してください。
+' 　このプログラムではグリッド表示を繰り返すプログラムのウエイト時間を確認します。
+'
+' 　ウエイト時間を100msから10ms単位で短くし、処理に滞りが出たところで
+' 　10ms単位で延ばしていき、3分間連続で滞らなければOKとします。
+' 　OKになったWAIT値を目安にメインループのSLEEPコマンドを設定してください。
+'
+'            Copyright 2021 Interface Corporation
+'====================================================================
+INCLUDE "WEB.AJN"
+
+DATA_NUM = 100
+LIST DATA$
+REDIM DATA$(DATA_NUM-1 ,2)
+
+'データグリッド表示
+WEB_GRID     "ID_GRID1", "100",  "10"
+
+CALL WAIT_CHECK(10,10)	' ーーーーーーーーーー［①最小ウエイト時間確認設定］
+
+DO WHILE AJAN_END_FLG = 0
+
+	'GRID表示データ生成
+	FOR INDEX = 0 TO DATA_NUM-1
+	    DATA$(INDEX,0) = STR$(INDEX+1)
+	    DATA$(INDEX,1) = "製品-" + STR$(INDEX+1)
+	    DATA$(INDEX,2) = str$(ROUND(RND() * 1000000,0))
+	NEXT	
+
+	'GRID表示
+	WEB_GRID_SET "ID_GRID1", AJAN_GRID_DATA, AJAN_FALSE, DATA$
+
+	SLEEP(L_WAIT/1000)	' ーーーーーーーーーー［②ウエイト時間確認用SLEEP］
+LOOP
+END
+
+' ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+' ③メインループの最小ウエイト時間の確認設定
+' ウエイト時間を100msから10ms単位で短くし、処理に滞りが出たところで
+' 10ms単位で延ばしていき、3分間連続で滞らなければOKとします。
+' OKになったWAIT値を目安にメインループのSLEEPコマンドを設定してください。
+' 引数：　TOP,LEFT　　表示座標
+' ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+SUB WAIT_CHECK(TOP,LEFT)
+	L_WAIT = 100	' ウエイト時間の初期値100ms
+	L_STEP = -10	' 最初は-10msずつ小さくする
+	OK_CNT = 0		' 3回連続OKをカウント
+	IS_START$ = "START: " + DATE$ + " " + TIME$ + "\n"
+	WEB_LABEL "L_WAIT", STR$(TOP), STR$(LEFT), IS_START$ + "WAIT : " + STR$(L_WAIT/1000) + "sec Checking"
+	WEB_LABEL_SET "L_WAIT", AJAN_LABEL_BORDER_WIDTH, "2"
+	WEB_LABEL_SET "L_WAIT", AJAN_LABEL_BORDER_RADIUS, "4"
+	WEB_LABEL_SET "L_WAIT", AJAN_LABEL_BACKGROUND_COLOR, "WHITE"
+	WEB_LABEL_SET "L_WAIT", AJAN_WEB_ZINDEX, "50000"
+	WAIT_CHECK_CNT$ = WEB_CMD_EXEC_CNT$
+	ON TIMER(65*1000) CALL WAIT_CHECK_SUB
+	TIMER ON
+END SUB
+
+' ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+' ④ウエイト時間チェック用サブルーチン
+' ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+SUB WAIT_CHECK_SUB()
+	IF L_STEP < 0 THEN	' マイナス方向
+
+		IF WEB_CMD_EXEC_CNT$ <> WAIT_CHECK_CNT$ THEN	' 滞ってない場合
+			L_WAIT = L_WAIT + L_STEP
+			CNT_STR$ = "WAIT : " + STR$(L_WAIT/1000) + "sec Checking"
+
+		ELSE											' 滞っている場合
+			L_STEP = 10
+			L_WAIT = L_WAIT + L_STEP
+			CNT_STR$ = "WAIT : " + STR$(L_WAIT/1000) + "sec Checking"
+		END IF
+
+	ELSE	' プラス方向
+		IF WEB_CMD_EXEC_CNT$ = WAIT_CHECK_CNT$ THEN		' 滞っている場合
+			L_WAIT = L_WAIT + L_STEP
+			CNT_STR$ = "WAIT : " + STR$(L_WAIT/1000) + "sec Checking"
+			OK_CNT = 0
+
+		ELSE											' 滞ってない場合
+			OK_CNT = OK_CNT + 1
+			IF OK_CNT < 3 THEN
+				CNT_STR$ = "WAIT : " + STR$(L_WAIT/1000) + "sec Checking" + MID$("...",1,OK_CNT)
+			ELSE							' 3回連続滞らなければOKとする
+				CNT_STR$ = "WAIT : " + STR$(L_WAIT/1000) + "sec OK"
+			END IF
+		END IF
+	END IF
+	WEB_LABEL_SET "L_WAIT", AJAN_LABEL_VALUE, IS_START$ + CNT_STR$
+	WAIT_CHECK_CNT$ = WEB_CMD_EXEC_CNT$
+END SUB
+' ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー

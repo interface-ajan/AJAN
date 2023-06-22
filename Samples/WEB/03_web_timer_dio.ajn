@@ -1,0 +1,79 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  SuperCDの汎用入出力(デジタル入出力)を制御します。(SuperCD用)
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "SuperCD汎用入出力制御" 'Webタイトル
+
+WEB_LABEL  "LABEL1", "20", "25", "SuperCDの汎用入出力(端子台 DI/DO)制御"
+
+'ボタン配置
+WEB_LABEL  "LABEL2",  "65", "25", "デジタル出力 (汎用出力 DO1〜4制御)"
+WEB_BUTTON "BUTTON1", "100", "40",  "DO1"
+WEB_BUTTON "BUTTON2", "100", "140", "DO2"
+WEB_BUTTON "BUTTON3", "100", "240", "DO3"
+WEB_BUTTON "BUTTON4", "100", "340", "DO4"
+
+'ランプ配置
+WEB_LABEL "LABEL2", "180", "25", "デジタル入力 (汎用入力 DI1〜4を画面表示)"
+WEB_LAMP  "LED1",  "215", "40"
+WEB_LAMP  "LED2",  "215", "140"
+WEB_LAMP  "LED3",  "215", "240"
+WEB_LAMP  "LED4",  "215", "340"
+
+WEB_LAMP_SET "LED1", AJAN_LAMP_COLOR, "YELLOW"  'ランプ色指定
+WEB_LAMP_SET "LED2", AJAN_LAMP_COLOR, "SILVER"
+WEB_LAMP_SET "LED3", AJAN_LAMP_COLOR, "GREEN"
+WEB_LAMP_SET "LED4", AJAN_LAMP_COLOR, "RED"
+
+'ボタンクリック時処理を登録
+ON WEB "BUTTON1", "CLICK" CALL SUB_BUTTON, "1", ""
+ON WEB "BUTTON2", "CLICK" CALL SUB_BUTTON, "2", ""
+ON WEB "BUTTON3", "CLICK" CALL SUB_BUTTON, "3", ""
+ON WEB "BUTTON4", "CLICK" CALL SUB_BUTTON, "4", ""
+
+'タイマ設定
+TIMER_CYCLE = 100
+ON TIMER(TIMER_CYCLE) CALL SUB_TIMER  'タイマ設定
+TIMER ON							  'タイマ開始
+
+'ボタン押したときに 呼ばれる処理
+SUB SUB_BUTTON(ID$, PARAM1$, PARAM2$)
+    OUTPUTUP(VAL(PARAM1$)) = 1     'ボタンに対応した汎用出力ON
+    BUZZERCONTROL "CONTROL=ON"     'ブザー鳴らす
+    SLEEP(0.5)                     
+    BUZZERCONTROL "CONTROL=OFF"    'ブザー止める    
+    OUTPUTUP(VAL(PARAM1$)) = 0     '汎用出力OFF
+END SUB
+
+'タイマー実行時に呼ばれる処理
+SUB SUB_TIMER
+    '汎用入力値を取得して変更時のみ Web上のランプに反映
+    IF IN1 <> INPUTUP(1) THEN
+		IN1 = INPUTUP(1)
+		WEB_LAMP_SET "LED1", AJAN_LAMP_VALUE, STR$(IN1)
+	END IF	
+    IF IN2 <> INPUTUP(2) THEN
+		IN2 = INPUTUP(2)
+		WEB_LAMP_SET "LED2", AJAN_LAMP_VALUE, STR$(IN2)
+	END IF	
+    IF IN3 <> INPUTUP(3) THEN
+		IN3 = INPUTUP(3)
+		WEB_LAMP_SET "LED3", AJAN_LAMP_VALUE, STR$(IN3)
+	END IF	
+    IF IN4 <> INPUTUP(4) THEN
+		IN4 = INPUTUP(4)
+		WEB_LAMP_SET "LED4", AJAN_LAMP_VALUE, STR$(IN4)
+	END IF	
+END SUB
+
+'イベント/タイマ処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

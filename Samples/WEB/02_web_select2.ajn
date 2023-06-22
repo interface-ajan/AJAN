@@ -1,0 +1,58 @@
+'====================================================================
+' Web 選択項目サンプルプログラム 
+'  セレクトボックス/ラジオボタン/チェックボックスを表示します。
+'  選択しているデータを変更すると、イベントが発生して選択データを取得します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+WEB_LABEL "LABEL1", "20", "20", "画面変更時にAJANで処理できます"
+
+DIM SELECT_DATA$(2,1)    'セレクトボックス用データ
+SELECT_DATA$ = [["sel1","選択1"],["sel2","選択2"], ["sel3","選択3"]] 
+
+DIM RADIO_DATA$(2,1)    'ラジオボタン用データ
+RADIO_DATA$ = [ ["rad1","ラジオ1"], ["rad2","ラジオ2"], ["rad3","ラジオ3"]] 
+
+'セレクトボックス表示
+WEB_LABEL      "LABEL_SELECT", "80", "30", "セレクトボックス" '配置
+WEB_SELECT     "SELECT1", "110", "60"                    'セレクトボックス 配置
+WEB_SELECT_SET "SELECT1", AJAN_SELECT_LIST, SELECT_DATA$ '選択リスト設定
+
+'ラジオボタン表示
+WEB_LABEL     "LABEL_RADIO", "180", "30", "ラジオボタン"
+WEB_RADIO     "RADIO1", "210", "40"                   '配置
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_LIST, RADIO_DATA$  '選択データ設定
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_LAYOUT, "COLUMN"   '縦に並べて配置
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_VALUE,  "rad2"     '選択するデータを設定
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_FRAME_HEIGHT, "100"'ラジオ部分と文字を含んだ枠の高さ
+WEB_RADIO_SET "RADIO1", AJAN_RADIO_FRAME_WIDTH,  "150"'ラジオ部分と文字を含んだ枠の幅
+
+'チェックボックス設定表示
+WEB_LABEL      "LABEL_CHECK", "300", "30", "チェックボックス"
+WEB_CHECKBOX   "CHECK1", "330", "40" ,"チェックボックス1"
+WEB_CHECKBOX   "CHECK2", "350", "40" ,"チェックボックス2"
+
+WEB_CHECKBOX_SET "CHECK1", AJAN_CHECKBOX_FRAME_WIDTH,  "200"  'チェック部分と文字を含んだ枠の幅
+WEB_CHECKBOX_SET "CHECK2", AJAN_CHECKBOX_FRAME_WIDTH,  "200"  'チェック部分と文字を含んだ枠の幅
+
+'データ変更時の動作登録
+ON WEB "SELECT1", "CHANGE" CALL SUB_CHANGE,  "セレクトボックス", ""
+ON WEB "RADIO1",  "CHANGE" CALL SUB_CHANGE,  "ラジオボタン",     ""
+ON WEB "CHECK1",  "CHANGE" CALL SUB_CHANGE,  "チェックボックス", ""
+ON WEB "CHECK2",  "CHANGE" CALL SUB_CHANGE,  "チェックボックス", ""
+
+'データ変更時に呼ばれる処理
+SUB SUB_CHANGE(ID$, PARAM1$, PARAM2$) 
+    MSG$ = PARAM1$ + " " + ID$ + "が変更されました。\n"
+    MSG$ = MSG$ + "データ:" + AJAN_WEB_FORM$(ID$)
+    WEB_MSG_BOX MSG$
+END SUB
+
+'画面変更処理を行うためAJANを継続動作
+DO WHILE TRUE
+    SLEEP 1
+    IF(AJAN_END_FLG = 1) THEN
+        END    'ネットワーク切断時:終了する
+    END IF
+LOOP

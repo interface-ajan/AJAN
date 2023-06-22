@@ -1,0 +1,137 @@
+'===================================================================
+' Web カメラ(ブラウザ側USBカメラ) サンプルプログラム 
+'  カメラ撮影データからQRコード/バーコードを読み取ります。
+'            Copyright 2020 Interface Corporation
+'===================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "ブラウザ側カメラ QR/バーコード認識"  'Webタイトル
+
+WEB_LABEL     "", "20", "20", "ブラウザ側カメラで撮影した画像から QR/バーコードを認識します"
+WEB_LABEL     "", "50", "20", "QR/バーコード認識後、数秒後に再スキャンを自動開始します。"
+
+'バーコード/QRコード種類 選択リスト
+DIM SELECT_DATA$(6,1)
+SELECT_DATA$ = [["",         "-- 選択してください--"], _
+				["QR",       "[QRコード] "], _
+				["CODE39",   "[バーコード] Code39 工業用"],  _
+				["EAN",      "[バーコード] JAN/EAN(13桁) 書籍、生活用品等"], _
+				["CODABAR",  "[バーコード] Codabar/NW7 宅配便送り状、図書館等"], _
+				["I2OF5",    "[バーコード] インターリーブド2of5"], _
+				["UPC",      "[バーコード] UPC-A 12桁"],  _ 
+				["CODE128",  "[バーコード] Code128"]]
+
+
+
+'セレクトボックス(リストボックス)
+WEB_LABEL      "", "100", "20", "QR/バーコード種類"
+WEB_SELECT     "CODE_SELECT", "130", "20"                           'セレクトボックス 配置
+WEB_SELECT_SET "CODE_SELECT", AJAN_SELECT_LIST, SELECT_DATA$       '選択リスト
+ON WEB         "CODE_SELECT", "CHANGE" CALL SUB_SCAN_START, "", "" 'クリック時処理を登録
+
+WEB_LABEL  	  "", "200", "20",  "認識領域："           '説明ラベル
+WEB_LABEL  	  "SCAN_DATA", "190", "140", "-"            '読み取りデータ表示ラベル
+WEB_LABEL_SET "SCAN_DATA", AJAN_LABEL_COLOR,     "BLUE" '文字色
+WEB_LABEL_SET "SCAN_DATA", AJAN_LABEL_FONT_SIZE, "26"   'フォントサイズ
+
+'認識領域 拡大/縮小ボタン
+WEB_LABEL  	  "", "100", "380",  "認識領域(枠内でピントを合わせてください)"
+WEB_BUTTON    "ID_BUTTON_EXPAND",     "130",  "440", " 拡 大 "
+WEB_BUTTON    "ID_BUTTON_SHRINK",     "130",  "520", " 縮 小 "
+ON WEB        "ID_BUTTON_EXPAND",     "CLICK" CALL SUB_ZOOM, "", ""
+ON WEB        "ID_BUTTON_SHRINK",     "CLICK" CALL SUB_ZOOM, "", ""
+
+WEB_LABEL  	  "INFO", "460", "20", "※ネットワーク経由の場合はhttps/サーバ証明書の設定が必要" 
+WEB_LABEL_SET "INFO", AJAN_LABEL_FONT_SIZE, "14"
+
+WEB_CAMERA    "ID_CAMERA1", "240", "20"  'カメラ部品配置
+
+
+'スキャン開始時
+SUB SUB_SCAN_START(ID$, PARAM1$, PARAM2$)
+
+	'QR/バーコード認識エリア サイズ
+	QR_CHECK_AREA_HEIGHT      = 120
+	QR_CHECK_AREA_WIDTH       = 120
+	BARCODE_CHECK_AREA_HEIGHT = 90
+	BARCODE_CHECK_AREA_WIDTH  = 420
+
+	'表示領域クリア
+	WEB_LABEL_SET "SCAN_DATA", AJAN_LABEL_VALUE, "-"
+
+	'バーコード/QRコード種類取得、設定
+	CODE_TYPE$ = AJAN_WEB_FORM$("CODE_SELECT")
+
+	IF (CODE_TYPE$ = "") THEN
+		'コード種類未選択
+		EXIT SUB
+	ELSEIF (CODE_TYPE$ = "QR") THEN
+		'QRコード スキャン開始
+		WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_QR_SCAN, "START"
+	ELSE
+		'バーコード種別を設定
+		WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_BARCODE_TYPE, CODE_TYPE$
+
+		'バーコード スキャン開始
+		WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_BARCODE_SCAN, "START"
+	END IF
+END SUB
+
+'認識領域 拡大/縮小ボタン クリック時処理
+SUB SUB_ZOOM (ID$, PARAM1$, PARAM2$)
+	
+	IF (ID$ = "ID_BUTTON_EXPAND") THEN '拡大
+		QR_CHECK_AREA_HEIGHT      = QR_CHECK_AREA_HEIGHT +20
+		QR_CHECK_AREA_WIDTH       = QR_CHECK_AREA_WIDTH  +20
+		BARCODE_CHECK_AREA_HEIGHT = BARCODE_CHECK_AREA_HEIGHT +20
+		BARCODE_CHECK_AREA_WIDTH  = BARCODE_CHECK_AREA_WIDTH  +20
+	END IF
+		
+	IF (ID$ = "ID_BUTTON_SHRINK") THEN '縮小
+		QR_CHECK_AREA_HEIGHT      = QR_CHECK_AREA_HEIGHT -20
+		QR_CHECK_AREA_WIDTH       = QR_CHECK_AREA_WIDTH  -20
+		BARCODE_CHECK_AREA_HEIGHT = BARCODE_CHECK_AREA_HEIGHT -20
+		BARCODE_CHECK_AREA_WIDTH  = BARCODE_CHECK_AREA_WIDTH  -20
+	END IF
+
+	'QR認識領域 設定
+	WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_QR_CHECK_AREA_HEIGHT, STR$(QR_CHECK_AREA_HEIGHT)
+	WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_QR_CHECK_AREA_WIDTH,  STR$(QR_CHECK_AREA_WIDTH)
+
+	'バーコード認識領域 設定
+	WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_BARCODE_CHECK_AREA_HEIGHT, STR$(BARCODE_CHECK_AREA_HEIGHT)
+	WEB_CAMERA_SET "ID_CAMERA1", AJAN_CAMERA_BARCODE_CHECK_AREA_WIDTH,  STR$(BARCODE_CHECK_AREA_WIDTH)
+	
+END SUB
+
+
+'----------------------------------------------------------
+'バーコード読み取り時の処理
+'サブルーチン名：AJAN_SUB_CAMERA_CODE_SCAN（システム予約）
+'----------------------------------------------------------
+SUB AJAN_SUB_CAMERA_CODE_SCAN(ID$, PARAM1$, PARAM2$)
+	BARCODE_STRING$ = AJAN_WEB$("ajan_camera_code_data") 'コード取得
+	WEB_LABEL_SET "SCAN_DATA", AJAN_LABEL_VALUE, BARCODE_STRING$ 'コードの値表示
+	
+	'※インターリーブド2of5 は構成上　桁落ちが発生しやすい特性があるため
+	'  誤認識防止のため 取得データの桁数チェックを行うことを推奨。
+	
+    'BUZZERCONTROL "CONTROL=ON"  'ブザーを鳴らす(SuperCDの場合)
+    'SLEEP 0.3
+    'BUZZERCONTROL "CONTROL=OFF"
+    
+    'データ認識後、一定時間後に再スキャン開始
+    SLEEP 3
+    CALL SUB_SCAN_START(ID$, "", "")
+	    
+END SUB
+
+'ボタンイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP
+

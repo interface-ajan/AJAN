@@ -1,0 +1,18 @@
+'====================================================================
+' Web ページ設定サンプルプログラム 
+'  Webページのタイトルや背景を設定します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL  "LABEL1", "40", "20", "Webページのタイトルや背景を設定できます。"
+
+'Webタイトル
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "かんたんAJAN"                  
+
+'ページ背景画像設定
+WEB_PAGE_SET  AJAN_PAGE_BACKGROUND_IMG_FILE, "static/back.jpg" 
+
+'ページ背景色
+WEB_PAGE_SET  AJAN_PAGE_BACKGROUND_COLOR, "black"

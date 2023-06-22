@@ -1,0 +1,137 @@
+'====================================================================
+' Web ランプサンプルプログラム 
+'  多彩な色でランプを表示できます。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+'------------------------------------------------------
+' かんたんAJAN サンプルプログラム
+' 思い通りの色でランプを表示できます
+'------------------------------------------------------
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "LABEL_TITLE", "0", "10", "多彩な色でランプを表示できます"
+
+'ランプ表示　1列目（丸型、標準色）
+LAMPCNT=1			'ランプID番号カウンタ初期値
+LOCX=20 : LOCY=40	'ランプ表示位置（1つ表示するごとに縦位置をずらします）
+CALL PUTLAMP("灰",     "CIRCLE")	'サブルーチンでランプ表示（色、形状を指定）
+CALL PUTLAMP("銀",     "CIRCLE")
+CALL PUTLAMP("白",     "CIRCLE")
+CALL PUTLAMP("青",     "CIRCLE")
+CALL PUTLAMP("紺",     "CIRCLE")
+CALL PUTLAMP("青緑",   "CIRCLE")
+CALL PUTLAMP("黒",     "CIRCLE")
+CALL PUTLAMP("緑",     "CIRCLE")
+
+'ランプ表示　2列目（丸型、標準色）
+LOCX=190 : LOCY=40
+CALL PUTLAMP("空",     "CIRCLE")
+CALL PUTLAMP("黄",     "CIRCLE")
+CALL PUTLAMP("赤",     "CIRCLE")
+CALL PUTLAMP("ピンク", "CIRCLE")
+CALL PUTLAMP("濃黄",   "CIRCLE")
+CALL PUTLAMP("紫",     "CIRCLE")
+CALL PUTLAMP("茶",     "CIRCLE")
+CALL PUTLAMP("薄緑",   "CIRCLE")
+
+'ランプ表示　3列目（角型、標準色）
+LOCX=350 : LOCY=40
+CALL PUTLAMP("灰",     "ROUNDRECT")
+CALL PUTLAMP("銀",     "ROUNDRECT")
+CALL PUTLAMP("白",     "ROUNDRECT")
+CALL PUTLAMP("青",     "ROUNDRECT")
+CALL PUTLAMP("紺",     "ROUNDRECT")
+CALL PUTLAMP("青緑",   "ROUNDRECT")
+CALL PUTLAMP("黒",     "ROUNDRECT")
+CALL PUTLAMP("緑",     "ROUNDRECT")
+
+'ランプ表示　4列目（角型、標準色）
+LOCX= 510 : LOCY=40
+CALL PUTLAMP("空",     "ROUNDRECT")
+CALL PUTLAMP("黄",     "ROUNDRECT")
+CALL PUTLAMP("赤",     "ROUNDRECT")
+CALL PUTLAMP("ピンク", "ROUNDRECT")
+CALL PUTLAMP("濃黄",   "ROUNDRECT")
+CALL PUTLAMP("紫",     "ROUNDRECT")
+CALL PUTLAMP("茶",     "ROUNDRECT")
+CALL PUTLAMP("薄緑",   "ROUNDRECT")
+
+'ランプ表示　5列目（丸型、カラーコード）
+LOCX=670 : LOCY=40
+CALL PUTLAMP("#405060", "CIRCLE")
+CALL PUTLAMP("#778899", "CIRCLE")
+CALL PUTLAMP("#b0c4de", "CIRCLE")
+CALL PUTLAMP("#ffffe0", "CIRCLE")
+CALL PUTLAMP("#deb887", "CIRCLE")
+CALL PUTLAMP("#fa8072", "CIRCLE")
+CALL PUTLAMP("#ffb6c1", "CIRCLE")
+CALL PUTLAMP("#dc143c", "CIRCLE")
+
+'ランプ表示　6列目（丸型、カラーコード）
+LOCX=830 : LOCY=40
+CALL PUTLAMP("#c71585", "CIRCLE")
+CALL PUTLAMP("#006400", "CIRCLE")
+CALL PUTLAMP("#6b8e23", "CIRCLE")
+CALL PUTLAMP("#20b2aa", "CIRCLE")
+CALL PUTLAMP("#87cefa", "CIRCLE")
+CALL PUTLAMP("#191970", "CIRCLE")
+CALL PUTLAMP("#ff8c00", "CIRCLE")
+CALL PUTLAMP("#ffd700", "CIRCLE")
+
+'ランプ表示　7列目（角型、カラーコード）
+LOCX=990 : LOCY=40
+CALL PUTLAMP("#607080", "ROUNDRECT")
+CALL PUTLAMP("#778899", "ROUNDRECT")
+CALL PUTLAMP("#b0c4de", "ROUNDRECT")
+CALL PUTLAMP("#ffffe0", "ROUNDRECT")
+CALL PUTLAMP("#deb887", "ROUNDRECT")
+CALL PUTLAMP("#fa8072", "ROUNDRECT")
+CALL PUTLAMP("#ffb6c1", "ROUNDRECT")
+CALL PUTLAMP("#dc143c", "ROUNDRECT")
+
+'ランプ表示　8列目（角型、カラーコード）
+LOCX=1150 : LOCY=40
+CALL PUTLAMP("#c71585", "ROUNDRECT")
+CALL PUTLAMP("#006400", "ROUNDRECT")
+CALL PUTLAMP("#6b8e23", "ROUNDRECT")
+CALL PUTLAMP("#20b2aa", "ROUNDRECT")
+CALL PUTLAMP("#87cefa", "ROUNDRECT")
+CALL PUTLAMP("#191970", "ROUNDRECT")
+CALL PUTLAMP("#ff8c00", "ROUNDRECT")
+CALL PUTLAMP("#ffd700", "ROUNDRECT")
+
+'ランプ点滅処理
+DO WHILE TRUE
+	FOR CNT=1 TO LAMPCNT-1
+		WEB_LAMP_SET "LAMP"+STR$(CNT), AJAN_LAMP_VALUE, "1"	'ランプ点灯
+	NEXT CNT
+
+	SLEEP(2)
+
+	FOR CNT=1 TO LAMPCNT-1
+		WEB_LAMP_SET "LAMP"+STR$(CNT), AJAN_LAMP_VALUE, "0"	'ランプ消灯
+	NEXT CNT
+
+	SLEEP(2)
+	
+	IF(AJAN_END_FLG = 1) THEN
+        END	'ネットワーク切断時に終了
+    END IF
+LOOP
+
+'ランプ表示サブルーチン
+' 引数１：ランプ色
+' 引数２：ランプ形状
+SUB PUTLAMP(LAMPCOL$, FIG$)
+	WEB_LABEL "LABEL"+STR$(LAMPCNT), STR$(LOCY), STR$(LOCX+90), LAMPCOL$ '色名表示
+	
+	WEB_LAMP     "LAMP"+STR$(LAMPCNT), STR$(LOCY), STR$(LOCX)		'ランプ配置
+	WEB_LAMP_SET "LAMP"+STR$(LAMPCNT), AJAN_LAMP_FIGURE, FIG$		'ランプ形状
+	WEB_LAMP_SET "LAMP"+STR$(LAMPCNT), AJAN_LAMP_COLOR,  LAMPCOL$	'ランプ色
+	WEB_LAMP_SET "LAMP"+STR$(LAMPCNT), AJAN_LAMP_WIDTH,  "90"		'ランプ高さ
+	WEB_LAMP_SET "LAMP"+STR$(LAMPCNT), AJAN_LAMP_HEIGHT, "90"		'ランプ幅
+
+	LAMPCNT = LAMPCNT +1
+	LOCY = LOCY +100
+END SUB
+	

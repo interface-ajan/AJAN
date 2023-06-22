@@ -1,0 +1,49 @@
+'====================================================================
+' Web 画像サンプルプログラム 
+'  画像データを動かして表示します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL  "LABEL1", "30", "20", "画像を動かします"
+
+'画像回転(AJANのタイマを使用して画像を回転)
+WEB_IMG     "ID_IMG1", "100", "100"                       '画像配置
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_FILE,  "static/iota_right.gif" '画像ファイル
+WEB_IMG_SET "ID_IMG1", AJAN_IMG_WIDTH, "200"             '幅
+
+WEB_BUTTON "BUTTON1",  "100", "300",  "回転/停止"	'ボタン
+ON WEB "BUTTON1", "CLICK" CALL SUB_IMG1, "", ""
+
+TIMER_FLG = 0 'タイマ動作フラグ
+DEG = 0       '回転角度
+
+'開始ボタンクリック時処理
+SUB SUB_IMG1(ID$, PARAM1$, PARAM2$)
+	IF TIMER_FLG = 0 THEN
+		'タイマ停止時：タイマ起動させる
+		ON TIMER(50) CALL SUB_TIMER  'タイマ設定
+		TIMER ON
+		TIMER_FLG = 1
+	ELSE
+		'タイマ動作時：タイマ起動停止させる
+		TIMER OFF
+		TIMER_FLG = 0
+	END IF
+END SUB
+
+'タイマー実行時に呼ばれる処理内で画像を回転
+SUB SUB_TIMER
+	DEG = DEG + 30 '回転角度追加
+	IF DEG >= 360 THEN DEG = 0
+	WEB_IMG_SET "ID_IMG1", AJAN_IMG_ROTATE, STR$(DEG) '回転(時計回りに0〜360 （度)を指定)
+END SUB
+
+'タイマイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

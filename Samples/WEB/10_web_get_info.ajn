@@ -1,0 +1,132 @@
+'===================================================================
+' Web クライアントデータ取得サンプルプログラム 
+'  Webの各種情報を取得して画面に表示します。
+'            Copyright 2020 Interface Corporation
+'===================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL "", "", "", "Webの各種情報を取得できます"
+WEB_WRITE "<BR>"
+
+DIM COL$(1) 'テーブル表示項目
+COL$ = ["項目", "取得した値"]
+
+DIM DATA$(4, 1)
+I=0
+
+'1. Webアクセス情報 -------------------------------
+WEB_LABEL  "", "", "", "1. Webアクセス情報"
+
+DATA$(I,0) = "URL"
+DATA$(I,1) = AJAN_WEB_CLIENT$("URL")
+I = I + 1
+
+DATA$(I,0) = "HTTP メソッド"
+DATA$(I,1) = AJAN_WEB_CLIENT$("METHOD")
+I = I + 1
+
+DATA$(I,0) = "ユーザエージェント (ブラウザを示す情報)"
+DATA$(I,1) = AJAN_WEB_CLIENT$("USER_AGENT")
+I = I + 1
+
+DATA$(I,0) = "HTTPリファラ(ページのリンク元)"
+DATA$(I,1) = AJAN_WEB_CLIENT$("REFERER")
+I = I + 1
+
+DATA$(I,0) = "クライアントのIP"
+DATA$(I,1) = AJAN_WEB_CLIENT$("CLIENT_IP")
+I = I + 1
+
+
+	
+'テーブルに表示
+WEB_TABLE     "TABLE1", "",  ""	           'テーブル配置
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_COLUMN, COL$    '列名
+WEB_TABLE_SET "TABLE1", AJAN_TABLE_DATA,   DATA$   'データ
+
+WEB_WRITE "<BR>"
+
+'2. クライアント(ブラウザ)情報 ---------------------
+WEB_LABEL  "", "", "", "2. クライアント(ブラウザ)情報"
+
+'クライアント情報を収集
+WEB_PAGE_SET  AJAN_PAGE_GET_CLIENT_DATA, "" 
+
+'クライアント情報取得待ち
+TIMEOUT = 60
+FOR COUNT = 0 TO TIMEOUT
+	IF (AJAN_WEB_CLIENT$("GET_TIME") <> "") THEN
+		CALL DISP_CLIENT_DATA() '取得データ表示
+		EXIT FOR
+	END IF
+	SLEEP 0.1
+NEXT
+
+IF (COUNT >= TIMEOUT) THEN 
+	WEB_MSG_BOX("クライアント情報取得 タイムアウト")
+END IF
+
+'----------------------------------------------------------
+'クライアント情報表示サブルーチン
+'----------------------------------------------------------
+SUB DISP_CLIENT_DATA()
+
+	DIM DATA_CLI$(9, 1)
+	I=0
+
+	DATA_CLI$(I,0) = "取得時刻"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("GET_TIME")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "画面幅"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("SCREEN_WIDTH")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "画面高さ"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("SCREEN_HEIGHT")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "モニタの利用可能領域幅"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("SCREEN_AVAIL_WIDTH")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "モニタの利用可能領域高さ"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("SCREEN_AVAIL_HEIGHT")
+	I = I + 1
+
+
+	DATA_CLI$(I,0) = "ウィンドウビュー幅"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("WINDOW_INNER_WIDTH")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "ウィンドウビュー幅高さ"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("WINDOW_INNER_HEIGHT")
+	I = I + 1
+	
+	DATA_CLI$(I,0) = "ウィンドウ幅"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("WINDOW_OUTER_WIDTH")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "ウィンドウ高"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("WINDOW_OUTER_HEIGHT")
+	I = I + 1
+
+	DATA_CLI$(I,0) = "画面向き"
+	DATA_CLI$(I,1) = AJAN_WEB_CLIENT$("WINDOW_ORIENTATION")
+	I = I + 1
+
+	'テーブルに表示
+	WEB_TABLE     "TABLE_CLI", "", ""	                 'テーブル配置
+	WEB_TABLE_SET "TABLE_CLI", AJAN_TABLE_COLUMN, COL$      '列名
+	WEB_TABLE_SET "TABLE_CLI", AJAN_TABLE_DATA,   DATA_CLI$ 'データ
+END SUB
+
+
+'常駐サービスプログラムとして動きつづける
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP

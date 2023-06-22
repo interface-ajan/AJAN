@@ -1,0 +1,62 @@
+'====================================================================
+' Web 図形サンプルプログラム 
+' 図形を表示して動かします。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_LABEL  "LABEL1", "30", "20", "図形を動かします"
+
+'四角
+WEB_DRAW     "RECT1", "RECT", "20", "100", "100", "60"
+WEB_DRAW_SET "RECT1", AJAN_DRAW_FILL_COLOR, "#FF0000"
+
+'円
+C_POS_X1 = 60
+C_POS_Y1 = 250
+WEB_DRAW     "CIRCLE1", "CIRCLE", STR$(C_POS_X1), STR$(C_POS_Y1), "30", "30"
+WEB_DRAW_SET "CIRCLE1", AJAN_DRAW_FILL_COLOR, "#A2FF8B"
+
+'ボタン
+WEB_BUTTON "BUTTON1",  "28", "200",  "動作/停止"    
+ON WEB "BUTTON1", "CLICK" CALL SUB_IMG1, "", ""
+
+TIMER_FLG = 0 'タイマ動作フラグ
+DEG = 0       '回転角度
+
+'開始ボタンクリック時処理
+SUB SUB_IMG1(ID$, PARAM1$, PARAM2$)
+    IF TIMER_FLG = 0 THEN
+        'タイマ停止時：タイマ起動させる
+        ON TIMER(80) CALL SUB_TIMER  'タイマ設定
+        TIMER ON
+        TIMER_FLG = 1
+    ELSE
+        'タイマ動作時：タイマ起動停止させる
+        TIMER OFF
+        TIMER_FLG = 0
+    END IF
+END SUB
+
+'タイマー実行時に呼ばれる処理内で図形を動かす
+SUB SUB_TIMER
+    DEG = DEG + 30 '回転角度追加
+    IF DEG >= 360 THEN DEG = 0
+    WEB_DRAW_SET "RECT1",   AJAN_DRAW_ROTATE, STR$(DEG) '回転(時計回りに0〜360 （度)を指定)
+
+    WEB_DRAW_SET "CIRCLE1",  AJAN_DRAW_POS_X1, STR$(C_POS_X1) 'Xを設定
+    C_POS_X1 = C_POS_X1 + 15
+    IF C_POS_X1 > 600 THEN
+        C_POS_X1 = 0
+    END IF
+END SUB
+
+'タイマイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+    SLEEP 1
+    IF(AJAN_END_FLG = 1) THEN
+        END    'ネットワーク切断時:終了する
+    END IF
+LOOP
+

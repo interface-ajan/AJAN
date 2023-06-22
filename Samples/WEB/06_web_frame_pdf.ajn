@@ -1,0 +1,25 @@
+'====================================================================
+' Web フレームサンプルプログラム 
+'  フレームに、PDFを表示します。
+'
+'	PDF表示のパラメータは、ブラウザに依存します。
+'	必要に応じて AJAN_FRAME_URL の設定に付加してください。
+'	区切り記号は、最初は"#"、以降は"&"。
+'	例："data/web_frame_pdf.pdf#page=2&zoom=50"
+'
+'            Copyright 2021 Interface Corporation
+'====================================================================
+INCLUDE "WEB.AJN"
+
+WEB_FRAME     "FRAME1", "10",  "10"							'フレーム配置
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_WIDTH, "850"				'フレームの横幅
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_HEIGHT, "600"			'フレームの高さ
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_WIDTH, "1"		'フレームの枠の幅
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_BORDER_COLOR, "BLACK"	'フレームの枠の色
+
+'フレームにPDFを表示
+WEB_FRAME_SET "FRAME1", AJAN_FRAME_URL, "data/web_frame_pdf.pdf"
+
+'PDFのパラメータ
+'WEB_FRAME_SET "FRAME1", AJAN_FRAME_PDF_PAGE, "2"	'表示するページを指定
+'WEB_FRAME_SET "FRAME1", AJAN_FRAME_PDF_ZOOM, "50"	'表示倍率をパーセント値で指定

@@ -1,0 +1,46 @@
+'====================================================================
+' Web タイマサンプルプログラム 
+'  タイマにより一定周期で画面の表示を更新します。
+'            Copyright 2020 Interface Corporation
+'====================================================================
+
+INCLUDE "WEB.AJN"
+
+WEB_PAGE_SET  AJAN_PAGE_TITLE, "周期的な動作" 'Webタイトル
+
+WEB_LABEL "LABEL1", "20", "40", "タイマーで周期的にAJANの時刻を表示します。"
+
+WEB_BUTTON "BUTTON1",  "100", "40",  "開始"	'開始ボタン
+WEB_BUTTON "BUTTON2",  "100", "120", "停止"	'停止ボタン
+WEB_TEXT   "TEXT1",    "100", "220"         'テキストボックス配置
+
+'ボタンクリック時処理を登録
+ON WEB "BUTTON1", "CLICK" CALL SUB_BUTTON_START, "", ""
+ON WEB "BUTTON2", "CLICK" CALL SUB_BUTTON_STOP,  "", ""
+
+'開始ボタンクリック時処理
+SUB SUB_BUTTON_START(ID$, PARAM1$, PARAM2$)
+	ON TIMER(500) CALL SUB_TIMER      'タイマ設定
+	TIMER ON						  'タイマ開始
+	WEB_LABEL_SET "LABEL1",  AJAN_LABEL_VALUE, "タイマー開始"
+END SUB
+
+'停止ボタンクリック時処理
+SUB SUB_BUTTON_STOP(ID$, PARAM1$, PARAM2$)
+	TIMER OFF						  'タイマ停止
+	WEB_LABEL_SET "LABEL1",  AJAN_LABEL_VALUE, "タイマー停止"
+END SUB
+
+'タイマー実行時処理
+SUB SUB_TIMER
+	'AJAN側の時刻、汎用入力値をWebに表示
+	WEB_TEXT_SET "TEXT1", AJAN_TEXT_VALUE, "時刻:" + TIME$
+END SUB
+
+'タイマイベント処理を行うためAJANを継続動作
+DO WHILE TRUE
+	SLEEP 1
+	IF(AJAN_END_FLG = 1) THEN
+		END	'ネットワーク切断時:終了する
+	END IF
+LOOP
