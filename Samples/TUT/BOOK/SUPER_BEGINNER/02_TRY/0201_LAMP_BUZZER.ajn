@@ -1,0 +1,115 @@
+' ================================================================================
+' 警報ランプとブザー制御 サンプルプログラム  
+'  書籍「IoT言語AJAN(R)超入門」向けのサンプルプログラムです。詳しくは書籍をご参照ください。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+'---------警報ランプを制御するプログラム--------------------------------------------------
+CLS					'画面をクリアします
+FOR NUM = 0 TO 0	'繰り返す回数を指定します
+	CMLED 1			'警報ランプを点灯します
+	SLEEP 3			'休止します
+	CMLED 0			'警報ランプを消灯します
+	SLEEP 1			'休止します
+NEXT NUM			'FORに戻ります
+END
+
+
+'変更後--------
+CLS					'画面をクリアします
+FOR NUM = 0 TO 7	'繰り返す回数を指定します
+	CMLED 0.5		'警報ランプを点灯します
+	SLEEP 0.5		'休止します
+	CMLED 0			'警報ランプを消灯します
+	SLEEP 0.5		'休止します
+NEXT NUM			'FORに戻ります
+END
+
+
+'---------ブザーを制御するプログラム------------------------------------------------
+CLS					'画面をクリアします
+NUM = 0				'変数(NUM)を初期値0にします
+DO WHILE NUM < 5	'変数(NUM)が5未満の時ループを繰り返します
+	NUM = NUM + 1	'繰り返し回数をカウントします
+	CMBUZZER 1		'ブザーを鳴らします
+	SLEEP 0.5		'休止します
+	CMBUZZER 0		'ブザーを止めます
+	SLEEP 2			'休止します
+	NUM = 99		'変数(NUM)に99を代入します
+LOOP
+END
+
+
+'変更後--------
+CLS					'画面をクリアします
+NUM = 0				'変数(NUM)を初期値0にします
+DO WHILE NUM < 5	'変数(NUM)が5未満の時ループを繰り返します
+	NUM = NUM + 1	'繰り返し回数をカウントします
+	CMBUZZER 1		'ブザーを鳴らします
+	SLEEP 0.5		'休止します
+	CMBUZZER 0		'ブザーを止めます
+	SLEEP 2			'休止します
+LOOP
+END
+
+
+'---------番号を入力してブザーと警報ランプを制御するプログラム-----------------------------------
+CLS							'画面をクリアします
+MENU_NUM = 0				'変数(MENU_NUM)を初期値0にします
+DO WHILE MENU_NUM <> 99		'変数(MENU_NUM)が99以外の時ループを繰り返します
+	CLS
+	PRINT "-----------"		'コンソールに説明を表示します
+	PRINT "1 : ブザーON "
+	PRINT "2 : ブザーOFF"
+	PRINT "3 : 警報ランプON "
+	PRINT "4 : 警報ランプOFF"
+	PRINT "99: 終了"
+	PRINT "-----------"	
+	INPUT "番号を入力してください。"; MENU_NUM		'番号を入力します
+	IF MENU_NUM = 1 THEN		'MENU_NUM = 1の時
+		CMBUZZER 1				'ブザーを鳴らします
+	ELSEIF MENU_NUM = 2 THEN	'MENU_NUM = 2の時
+		CMBUZZER 0				'ブザーを止めます
+	ELSEIF MENU_NUM = 3	THEN	'MENU_NUM = 3の時
+								'警報ランプを点灯します
+	ELSEIF MENU_NUM = 4	THEN	'MENU_NUM = 4の時
+								'警報ランプを消灯します
+	ELSEIF MENU_NUM = 99 THEN	'MENU_NUM = 99の時
+		CMBUZZER 0				'ブザーを止めます
+		CMLED 0					'警報ランプを消灯します
+	END IF
+LOOP
+END
+
+
+'変更後--------
+CLS								'画面をクリアします
+MENU_NUM = 0					'変数(MENU_NUM)を初期値0にします
+DO WHILE MENU_NUM <> 99			'変数(MENU_NUM)が99以外の時ループを繰り返します
+	CLS
+	PRINT "-----------"			'コンソールに説明を表示します
+	PRINT "1 : ブザーON"
+	PRINT "2 : ブザーOFF"
+	PRINT "3 : 警報ランプ ON"
+	PRINT "4 : 警報ランプ OFF"
+	PRINT "99: 終了"
+	PRINT "-----------"
+	INPUT "番号を入力してください。"; MENU_NUM	'番号を入力します
+	
+	IF MENU_NUM = 1 THEN		'MENU_NUM = 1の時
+		CMBUZZER 1				'ブザーを鳴らします
+	ELSEIF MENU_NUM = 2 THEN	'MENU_NUM = 2の時
+		CMBUZZER 0				'ブザーを止めます		
+	ELSEIF MENU_NUM = 3	THEN	'MENU_NUM = 3の時
+		CMLED 1					'警報ランプを点灯します
+	ELSEIF MENU_NUM = 4 THEN	'MENU_NUM = 4の時
+		CMLED 0					'警報ランプを消灯します
+	ELSEIF MENU_NUM = 99 THEN	'MENU_NUM = 99の時
+		CMBUZZER 0				'ブザーを止めます
+		CMLED 0					'警報ランプを消灯します
+	END IF
+LOOP
+END	
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

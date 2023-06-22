@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8385"/>
+  <App ExecuteName="0302_LIST" Type="PageGenerator"/>
+  <FileGroup>
+    <file path="0302_LISTStartup.ajn"/>
+    <file path="0302_LIST.ajn">
+      <DependentUpon>0302_LISTStartup.ajn</DependentUpon>
+    </file>
+    <file path="0302_LISTForm.ajn">
+      <DependentUpon>0302_LISTStartup.ajn</DependentUpon>
+    </file>
+  </FileGroup>
+</Ajan>

@@ -1,0 +1,96 @@
+' ================================================================================
+' Azure IoT Hubからの、メッセージ受信プログラム
+'  Azure IoT Hubから、メッセージを受信するサンプルプログラムです。
+'  内部でPython言語連携を用いて、Azure SDKを呼び出して、メッセージを受信します。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+s$ = '''
+# Azure IoT Hubに対して、メッセージ受信する為の Pythonモジュールコード
+import sys
+import os
+from six.moves import input
+import threading
+from azure.iot.device import IoTHubDeviceClient
+import queue
+
+device_client = None
+
+g_queue = queue.Queue()	# 受信キュー
+
+# define behavior for receiving a message
+def message_handler(message):
+	global g_queue
+	print(""the data in the message received was "")
+	print(message.data)
+	print(""custom properties are"")
+	print(message.custom_properties)
+	# 受信メッセージのデータ部を、受信キューに追加します
+	g_queue.put(message.data)
+
+def open(id):
+	# IoT Hubに対する通信路を開きます。idは、プライマリ接続文字列を指定します
+	global device_client
+	#conn_str = os.getenv(""IOTHUB_DEVICE_CONNECTION_STRING"")
+	conn_str = id
+	assert len(conn_str) > 0, ""接続文字列が空です""
+	# The client object is used to interact with your Azure IoT hub.
+	device_client = IoTHubDeviceClient.create_from_connection_string(conn_str)
+	
+	# Connect the client.
+	device_client.connect()
+	
+	# set the message handler on the client
+	device_client.on_message_received = message_handler
+	return 0
+
+def recvsize():
+	# 受信キューのサイズを得ます
+	global g_queue
+	return g_queue.qsize()
+
+def recvdata():
+	# 受信キューから1個取り出します
+	global g_queue
+	if g_queue.empty():
+		return """"
+	else:
+		it = g_queue.get()
+		return it
+
+def close():
+	# IoT Hubに対する、通信路を閉じます。
+	global device_client
+	device_client.disconnect()
+	return 0
+'''
+
+' Azure IoT Hubにアクセスする、Pythonモジュールコードを読み込みます
+id = PYOBJ CREATE CODE(s$)
+PRINT "pyobj create:"; id
+
+PRINT "Azure IoT Hubへの通信路を開きます"
+conn_id$ = ENVIRON$("IOTHUB_DEVICE_CONNECTION_STRING")
+? PYOBJ CALL FUNCTION(id, "open", conn_id$)
+
+PRINT "メッセージ受信を、10秒間 待機します"
+ST = CLOCK
+DO WHILE (CLOCK - ST) < 10.0
+	' 受信キューのサイズを得ます
+	SZ = PYOBJ CALL FUNCTION(id, "recvsize")
+	? SZ
+	' 受信キューが空じゃないなら、受信データを取り出して表示します
+	IF SZ > 0 THEN
+		PRINT PYOBJ CALL FUNCTION(id, "recvdata")
+	END IF
+	SLEEP 0.5
+LOOP
+
+PRINT "Azure IoT Hubの通信路を閉じます"
+? PYOBJ CALL FUNCTION(id, "close")
+
+' Python連携を閉じます
+PYOBJ CLOSE id
+
+END
+

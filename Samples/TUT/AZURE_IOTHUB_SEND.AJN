@@ -1,0 +1,65 @@
+' ================================================================================
+' Azure IoT Hubに対して、メッセージ送信プログラム
+'  Azure IoT Hubに対して、メッセージを送信するサンプルプログラムです。
+'  内部でPython言語連携を用いて、Azure SDKを呼び出して、メッセージを送信します。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+
+s$ = '''
+# Azure IoT Hubに対して、メッセージ送信する為の Pythonモジュールコード
+import sys
+import os
+import time
+import uuid
+from azure.iot.device import IoTHubDeviceClient, Message
+
+device_client = None
+
+def open(id):
+	# IoT Hubに対する通信路を開きます。idは、プライマリ接続文字列を指定します
+	global device_client
+	#conn_str = os.getenv(""IOTHUB_DEVICE_CONNECTION_STRING"")
+	conn_str = id
+	assert len(conn_str) > 0, ""接続文字列が空です""
+	# The client object is used to interact with your Azure IoT hub.
+	device_client = IoTHubDeviceClient.create_from_connection_string(conn_str)
+	
+	# Connect the client.
+	device_client.connect()
+	return 0
+
+def send(i_msg):
+	# IoT Hubに対して、メッセージを送信します
+	global device_client
+	msg = Message(i_msg)
+	msg.message_id = uuid.uuid4()
+	#msg.correlation_id = ""correlation-1234""
+	msg.custom_properties[""tornado-warning""] = ""yes""
+	device_client.send_message(msg)
+	return 0
+
+def close():
+	# IoT Hubに対する、通信路を閉じます。
+	global device_client
+	device_client.disconnect()
+	return 0
+'''
+
+' Azure IoT Hubにアクセスする、Pythonモジュールコードを読み込みます
+id = PYOBJ CREATE CODE(s$)
+PRINT "pyobj create:"; id
+
+PRINT "Azure IoT Hubへの通信路を開きます"
+conn_id$ = ENVIRON$("IOTHUB_DEVICE_CONNECTION_STRING")
+? PYOBJ CALL FUNCTION(id, "open", conn_id$)
+
+PRINT "メッセージを送信します"
+? PYOBJ CALL FUNCTION(id, "send", "hello AJAN")
+
+PRINT "Azure IoT Hubの通信路を閉じます"
+? PYOBJ CALL FUNCTION(id, "close")
+
+' Python連携を閉じます
+PYOBJ CLOSE id
+
+END

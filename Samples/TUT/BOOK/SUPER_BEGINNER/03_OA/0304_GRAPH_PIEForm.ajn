@@ -1,0 +1,260 @@
+' -------------------------------------------------------------------------
+'    かんたん AJAN web フォームプログラム by Interface PageGenerator
+'
+'      filename:   0304_GRAPH_PIEForm.ajn
+'      page-title: 円グラフ表示
+'      pagesize:   800x600
+'      generator:  ver 1.24.038b
+'      generate:   2022/10/19 17:50:40
+'                                                 Powerd by Interface AJAN
+' -------------------------------------------------------------------------
+
+' ########################################################################
+'  このファイルは、Interface PageGenerator により自動作成されたものです。
+'  このファイルの編集は行なわないでください。
+'  このファイルの編集を行なった場合の動作は保証できません。
+' ########################################################################
+
+' --------------------
+' グローバル変数定義
+PageGeneratorPageResident$ = "TRUE"
+
+' --------------------
+' イベントアクションソースデータ作成
+CALL PageGeneratorEventActionSourceMaker()
+
+' --------------------
+' 一括表示開始
+WEB_BATCH_BEGIN ""
+
+' --------------------------------------------------
+'  pgMAIN ページ設定
+' --------------------------------------------------
+' web ページを構成する
+CALL CreatepgMAIN
+
+' ---------------------------------------
+' CreatepgMAIN コールバック関数
+'   SUB CreatepgMAIN
+' ---------------------------------------
+SUB CreatepgMAIN
+	LOCAL STRUCT PageGeneratorPageConfig cfg
+
+	' --------
+	' ページを作成する
+	cfg.id$ = "pgMAIN"
+	cfg.x$ = "0"
+	cfg.y$ = "0"
+	cfg.width$ = "800"
+	cfg.height$ = "600"
+	cfg.title$ = "円グラフ表示"
+	cfg.image$ = ""
+	cfg.background$ = "WHITE"
+	cfg.batch$ = "TRUE"
+	cfg.waitmessage$ = ""
+	cfg.event$ = "TRUE"
+	cfg.resident$ = "TRUE"
+	cfg.idle$ = "SLOWER"
+	CALL PageGeneratorPage("pgMAIN", cfg)
+END SUB
+
+' --------------------------------------------------
+'  lblTITLE ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblTITLE
+
+' ---------------------------------------
+' CreatelblTITLE コールバック関数
+'   SUB CreatelblTITLE
+' ---------------------------------------
+SUB CreatelblTITLE
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblTITLE"
+	cfg.x$ = "10"
+	cfg.y$ = "10"
+	cfg.width$ = "770"
+	cfg.height$ = "70"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("lblTITLE", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  grhDATA グラフ設定
+' --------------------------------------------------
+' グラフを作成する
+CALL CreategrhDATA
+
+' ---------------------------------------
+' CreategrhDATA コールバック関数
+'   SUB CreategrhDATA
+' ---------------------------------------
+SUB CreategrhDATA
+	LOCAL STRUCT PageGeneratorChartConfig cfg
+
+	' --------
+	' グラフを作成する
+	cfg.id$ = "grhDATA"
+	cfg.x$ = "10"
+	cfg.y$ = "145"
+	cfg.width$ = "400"
+	cfg.height$ = "400"
+	cfg.graphclass$ = "PIE"
+	cfg.graphtype$ = ""
+	cfg.horizontal$ = "FALSE"
+	cfg.shadecolor$ = ""
+	cfg.title$ = ""
+	cfg.titlesize$ = "0"
+	cfg.titlecolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.dataset$ = ""
+	cfg.stackgroup$ = ""
+	cfg.item$ = "A;B;C;D"
+	cfg.linetype$ = ""
+	cfg.linewidth$ = ""
+	cfg.pointsize$ = ""
+	cfg.pointstyle$ = ""
+	cfg.color$ = ""
+	cfg.x_label$ = ""
+	cfg.y_label$ = ""
+	cfg.y_label_right$ = ""
+	cfg.labelsize$ = ""
+	cfg.labelcolor$ = ""
+	cfg.x_sublabel$ = ""
+	cfg.sublabelsize$ = ""
+	cfg.sublabelcolor$ = ""
+	cfg.sublabelangle$ = ""
+	cfg.autoscale$ = ""
+	cfg.x_min$ = ""
+	cfg.x_max$ = ""
+	cfg.x_scale$ = ""
+	cfg.y_min$ = ""
+	cfg.y_max$ = ""
+	cfg.y_scale$ = ""
+	cfg.y_min_right$ = ""
+	cfg.y_max_right$ = ""
+	cfg.y_scale_right$ = ""
+	cfg.minvalue$ = ""
+	cfg.maxvalue$ = ""
+	cfg.gridwidth$ = ""
+	cfg.gridcolor$ = ""
+	cfg.legend$ = "FALSE"
+	cfg.datalabel$ = "PERCENT"
+	cfg.datalabelsize$ = "14"
+	cfg.datalabelcolor$ = "BLACK"
+	cfg.datasource$ = ""
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorChart("grhDATA", cfg, true, false)
+END SUB
+
+' --------------------------------------------------
+'  Parts3 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts3
+
+' ---------------------------------------
+' CreateParts3 コールバック関数
+'   SUB CreateParts3
+' ---------------------------------------
+SUB CreateParts3
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts3"
+	cfg.x$ = "10"
+	cfg.y$ = "85"
+	cfg.width$ = "770"
+	cfg.height$ = "26"
+	cfg.text$ = "POWERED BY AJAN®"
+	cfg.textalign$ = "RIGHT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts3", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  tblDATA テーブル設定
+' --------------------------------------------------
+' テーブルを作成する
+CALL CreatetblDATA
+
+' ---------------------------------------
+' CreatetblDATA コールバック関数
+'   SUB CreatetblDATA
+' ---------------------------------------
+SUB CreatetblDATA
+	LOCAL STRUCT PageGeneratorTableConfig cfg
+
+	' --------
+	' テーブルを作成する
+	cfg.id$ = "tblDATA"
+	cfg.x$ = "426"
+	cfg.y$ = "145"
+	cfg.width$ = "300"
+	cfg.height$ = "19"
+	cfg.column$ = "2"
+	cfg.head_background$ = "WHITE"
+	cfg.data_background$ = "WHITE"
+	cfg.fontsize$ = "14"
+	cfg.fontcolor$ = "BLACK"
+	cfg.cell_background$ = ""
+	cfg.cell_fontcolor$ = ""
+	cfg.datasource$ = ""
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorTable("tblDATA", cfg, true, false)
+END SUB
+
+' --------------------
+' 一括表示終了
+WEB_BATCH_END
+
+' -------------------------------------------------------
+' WEB ページのアイドリング
+'   ページのプロパティ 'resident' が TRUE の場合:
+'     ページが閉じられるまで，この関数内で
+'     イベント待ちを継続します。
+'   ページのプロパティ 'resident' が FALSE の場合:
+'     イベント待ちを行わず、即座に処理が返ります。
+' -------------------------------------------------------
+CALL PageGeneratorRunIdle()
+
+' ----------------------------
+' WEB ページの動作を終了する
+END
+
+' -----------------------------------------------------------------
+' イベントアクションソースデータの生成
+' -----------------------------------------------------------------
+SUB PageGeneratorEventActionSourceMaker()
+	redim PageGeneratorEventActionSource$(1, 8)
+	PageGeneratorEventActionSource$(0 to 1, 0 to 8) = [ _
+		["@act:CallSub", "@id:pgMAIN", "@event:ENTER", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:GRAPH_PIE_ENTER"], _
+		["@act:CallSub", "@id:pgMAIN", "@event:LEAVE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:GRAPH_PIE_LEAVE"] _
+	]
+END SUB
+
+

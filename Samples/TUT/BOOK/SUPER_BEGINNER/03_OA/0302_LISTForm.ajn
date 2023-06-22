@@ -1,0 +1,298 @@
+' -------------------------------------------------------------------------
+'    かんたん AJAN web フォームプログラム by Interface PageGenerator
+'
+'      filename:   0302_LISTForm.ajn
+'      page-title: 一覧表示
+'      pagesize:   800x600
+'      generator:  ver 1.24.038b
+'      generate:   2022/10/19 17:49:13
+'                                                 Powerd by Interface AJAN
+' -------------------------------------------------------------------------
+
+' ########################################################################
+'  このファイルは、Interface PageGenerator により自動作成されたものです。
+'  このファイルの編集は行なわないでください。
+'  このファイルの編集を行なった場合の動作は保証できません。
+' ########################################################################
+
+' --------------------
+' グローバル変数定義
+PageGeneratorPageResident$ = "TRUE"
+
+' --------------------
+' イベントアクションソースデータ作成
+CALL PageGeneratorEventActionSourceMaker()
+
+' --------------------
+' 一括表示開始
+WEB_BATCH_BEGIN ""
+
+' --------------------------------------------------
+'  pgMAIN ページ設定
+' --------------------------------------------------
+' web ページを構成する
+CALL CreatepgMAIN
+
+' ---------------------------------------
+' CreatepgMAIN コールバック関数
+'   SUB CreatepgMAIN
+' ---------------------------------------
+SUB CreatepgMAIN
+	LOCAL STRUCT PageGeneratorPageConfig cfg
+
+	' --------
+	' ページを作成する
+	cfg.id$ = "pgMAIN"
+	cfg.x$ = "0"
+	cfg.y$ = "0"
+	cfg.width$ = "800"
+	cfg.height$ = "600"
+	cfg.title$ = "一覧表示"
+	cfg.image$ = ""
+	cfg.background$ = "WHITE"
+	cfg.batch$ = "TRUE"
+	cfg.waitmessage$ = ""
+	cfg.event$ = "TRUE"
+	cfg.resident$ = "TRUE"
+	cfg.idle$ = "SLOWER"
+	CALL PageGeneratorPage("pgMAIN", cfg)
+END SUB
+
+' --------------------------------------------------
+'  grdDATA グリッド設定
+' --------------------------------------------------
+' グリッドを作成する
+CALL CreategrdDATA
+
+' ---------------------------------------
+' CreategrdDATA コールバック関数
+'   SUB CreategrdDATA
+' ---------------------------------------
+SUB CreategrdDATA
+	LOCAL STRUCT PageGeneratorGridConfig cfg
+
+	' --------
+	' グリッドを作成する
+	cfg.id$ = "grdDATA"
+	cfg.x$ = "10"
+	cfg.y$ = "131"
+	cfg.width$ = "770"
+	cfg.height$ = "400"
+	cfg.column$ = "9"
+	cfg.columnwidth$ = "45;80;105;95;105;105;75;45;85"
+	cfg.columnalign$ = "LEFT;RIGHT;RIGHT;LEFT;RIGHT;LEFT;RIGHT;RIGHT;RIGHT"
+	cfg.columnformat$ = "HTML;NUMBER;TEXT;TEXT;TEXT;TEXT;YEN;TEXT;YEN"
+	cfg.fontsize$ = "14"
+	cfg.fontcolor$ = "BLACK"
+	cfg.cell_background$ = ""
+	cfg.cell_fontcolor$ = ""
+	cfg.fixedcolumns$ = "0"
+	cfg.fixedrows$ = "0"
+	cfg.datasource$ = ""
+	cfg.filter$ = "FALSE"
+	cfg.update$ = "FALSE"
+	cfg.add$ = "FALSE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorGrid("grdDATA", cfg, true, false)
+END SUB
+
+' --------------------------------------------------
+'  lblTITLE ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblTITLE
+
+' ---------------------------------------
+' CreatelblTITLE コールバック関数
+'   SUB CreatelblTITLE
+' ---------------------------------------
+SUB CreatelblTITLE
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblTITLE"
+	cfg.x$ = "10"
+	cfg.y$ = "10"
+	cfg.width$ = "770"
+	cfg.height$ = "70"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("lblTITLE", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lblFOOTER ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblFOOTER
+
+' ---------------------------------------
+' CreatelblFOOTER コールバック関数
+'   SUB CreatelblFOOTER
+' ---------------------------------------
+SUB CreatelblFOOTER
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblFOOTER"
+	cfg.x$ = "10"
+	cfg.y$ = "544"
+	cfg.width$ = "770"
+	cfg.height$ = "24"
+	cfg.text$ = "POWERED BY AJAN®"
+	cfg.textalign$ = "RIGHT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "SILVER"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("lblFOOTER", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lblSUB_TITLE ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblSUB_TITLE
+
+' ---------------------------------------
+' CreatelblSUB_TITLE コールバック関数
+'   SUB CreatelblSUB_TITLE
+' ---------------------------------------
+SUB CreatelblSUB_TITLE
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblSUB_TITLE"
+	cfg.x$ = "10"
+	cfg.y$ = "86"
+	cfg.width$ = "770"
+	cfg.height$ = "38"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "SILVER"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("lblSUB_TITLE", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnNEW ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnNEW
+
+' ---------------------------------------
+' CreatebtnNEW コールバック関数
+'   SUB CreatebtnNEW
+' ---------------------------------------
+SUB CreatebtnNEW
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnNEW"
+	cfg.x$ = "15"
+	cfg.y$ = "91"
+	cfg.width$ = "100"
+	cfg.height$ = "28"
+	cfg.type$ = "NORMAL"
+	cfg.text$ = "新規"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "1"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnNEW", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lblALERT ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblALERT
+
+' ---------------------------------------
+' CreatelblALERT コールバック関数
+'   SUB CreatelblALERT
+' ---------------------------------------
+SUB CreatelblALERT
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblALERT"
+	cfg.x$ = "0"
+	cfg.y$ = "0"
+	cfg.width$ = "800"
+	cfg.height$ = "94"
+	cfg.text$ = "急ぎの出荷があります。"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "60"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "FUCHSIA"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorLabel("lblALERT", cfg, true)
+END SUB
+
+' --------------------
+' 一括表示終了
+WEB_BATCH_END
+
+' -------------------------------------------------------
+' WEB ページのアイドリング
+'   ページのプロパティ 'resident' が TRUE の場合:
+'     ページが閉じられるまで，この関数内で
+'     イベント待ちを継続します。
+'   ページのプロパティ 'resident' が FALSE の場合:
+'     イベント待ちを行わず、即座に処理が返ります。
+' -------------------------------------------------------
+CALL PageGeneratorRunIdle()
+
+' ----------------------------
+' WEB ページの動作を終了する
+END
+
+' -----------------------------------------------------------------
+' イベントアクションソースデータの生成
+' -----------------------------------------------------------------
+SUB PageGeneratorEventActionSourceMaker()
+	redim PageGeneratorEventActionSource$(2, 8)
+	PageGeneratorEventActionSource$(0 to 2, 0 to 8) = [ _
+		["@act:CallSub", "@id:pgMAIN", "@event:ENTER", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:LIST_ENTER"], _
+		["@act:CallSub", "@id:pgMAIN", "@event:LEAVE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:LIST_LEAVE"], _
+		["@act:CallSub", "@id:btnNEW", "@event:CLICK", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:btnNEW_CLICK"] _
+	]
+END SUB
+
+

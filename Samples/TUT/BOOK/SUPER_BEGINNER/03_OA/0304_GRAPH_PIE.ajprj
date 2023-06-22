@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8611"/>
+  <App ExecuteName="0304_GRAPH_PIE" Type="PageGenerator"/>
+  <FileGroup>
+    <file path="0304_GRAPH_PIEStartup.ajn"/>
+    <file path="0304_GRAPH_PIE.ajn">
+      <DependentUpon>0304_GRAPH_PIEStartup.ajn</DependentUpon>
+    </file>
+    <file path="0304_GRAPH_PIEForm.ajn">
+      <DependentUpon>0304_GRAPH_PIEStartup.ajn</DependentUpon>
+    </file>
+  </FileGroup>
+</Ajan>

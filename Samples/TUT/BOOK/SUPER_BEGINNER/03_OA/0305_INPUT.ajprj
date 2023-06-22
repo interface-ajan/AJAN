@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8385"/>
+  <App ExecuteName="0305_INPUT" Type="PageGenerator"/>
+  <FileGroup>
+    <file path="0305_INPUTStartup.ajn"/>
+    <file path="0305_INPUT.ajn">
+      <DependentUpon>0305_INPUTStartup.ajn</DependentUpon>
+    </file>
+    <file path="0305_INPUTForm.ajn">
+      <DependentUpon>0305_INPUTStartup.ajn</DependentUpon>
+    </file>
+  </FileGroup>
+</Ajan>

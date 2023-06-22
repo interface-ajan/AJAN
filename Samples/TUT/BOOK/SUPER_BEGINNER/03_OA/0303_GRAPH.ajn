@@ -1,0 +1,217 @@
+' -----------------------------------------------------------------------------
+'    かんたん AJAN web プログラム by Interface PageGenerator
+'
+'      filename:   0303_GRAPH.ajn
+'      generate:   2021/04/19 16:06:28
+'      generator:  ver 1.10.018d
+'                                                    Powerd by Interface AJAN
+' -----------------------------------------------------------------------------
+
+' #############################################################################
+'  このファイルには，イベントアクションエディタで定義したアクションで使用する
+'  グローバル変数の作成(初期化)やサブルーチンを記述します。
+'  このファイルを編集した場合は、PageGenerator による web ページの生成が必要です。
+' #############################################################################
+
+' #######################################################
+' グローバル変数を定義する場合は，ここで作成(初期化)します。
+' #######################################################
+
+G_NUM = COMMON FREEFILE()		'オープンするときのグローバル共有変数用番号を取得します
+G_GRAPH_TYPE$ = ""				'グラフタイプ
+
+LIST IGM_BK_0303_GRAPH_DATA$	'グラフ用データ
+
+G_BFR_TITLE$ = ""				'画面タイトル（前回の値）
+G_BFR_TITLE_COLOR$ = ""			'画面タイトル文字色（前回の値）
+G_BFR_TITLE_BGCOLOR$ = ""		'画面タイトル背景色（前回の値）
+G_BFR_GRAPH_TYPE$ = ""			'グラフタイプ(BAR:棒グラフ,DIRECT:折れ線グラフ,CURVE:曲線グラフ)（前回の値）
+G_BFR_GRAPH_LEGEND$ = ""		'グラフ凡例の表示/非表示(TRUE:表示,FALSE:非表示)（前回の値）
+G_BFR_GRAPH_Y_MAX$ = ""			'グラフY軸の最大値（前回の値）
+G_BFR_GRAPH_COLOR$ = ""			'グラフの色（前回の値）
+G_BFR_GRAPH_FONT_SIZE$ = ""		'グラフのフォントサイズ（前回の値）
+G_BFR_TABLE_FONT_SIZE$ = ""		'テーブルのフォントサイズ（前回の値）
+G_BFR_GRAPH_DATA$ = ""			'グラフ用データ（前回の値）
+G_BFR_TOTAL_AMOUNT$ = ""		'合計金額（前回の値）
+G_BFR_DAILY_AVG_AMOUNT$ = ""	'日平均金額（前回の値）
+
+
+' #######################################################
+' サブルーチンを記述する場合は，ここに記述します。
+' #######################################################
+
+
+
+
+'===============================================================================
+' sub module   :GRAPH_ENTER
+' explanation   :(1)画面表示完了時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB GRAPH_ENTER(id$, event$, msg$)
+	
+	COMMON OPEN "127.0.0.1" AS #G_NUM							'グローバル共有を開きます
+	
+	WEB_TABLE_SET "tblDATA", AJAN_TABLE_COLUMN_ALIGN, "1,RIGHT"	'表の1列目を右寄せにします
+	WEB_TABLE_SET "tblDATA", AJAN_TABLE_COLUMN_ALIGN, "2,RIGHT"	'表の2列目を右寄せにします
+	
+	CALL SET_WEB_PARTS_REFRESH									'Web部品にデータをセットします。
+
+	ON TIMER(1000) CALL SET_WEB_PARTS_REFRESH					'グローバル共有変数を定期的(1秒おき)にチェックします
+	TIMER ON
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :GRAPH_LEAVE
+' explanation   :(1)画面を閉じる時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB GRAPH_LEAVE(id$, event$, msg$)
+
+	COMMON CLOSE #G_NUM		'グローバル共有を閉じます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_WEB_PARTS_REFRESH
+' explanation   :(1)前回の値を違っていたら、Web部品にデータをセットします。
+' input         :(1)
+' output        :(1)
+'===============================================================================
+
+SUB SET_WEB_PARTS_REFRESH()
+    LOCAL L_GRAPH_TYPE$									'グラフタイプ
+    LOCAL L_LINE_TENSION$								'折れ線の曲がり具合(曲線化)
+	LOCAL L_LGD_VISIBLE									'グラフ凡例の表示/非表示
+	LOCAL LIST L_TABLE_DATA$							'表用データ
+	LOCAL L_CK_GRAPH_DATA$								'チェック用グラフデータ
+	LOCAL L_GRAPH_UPD_FLG$								'グラフ更新フラグ（T：更新する、F：更新しない）
+
+	'グローバル共有変数を読み出します
+	COMMON INPUT #G_NUM, IGM_BK_0303_TITLE$				'画面タイトル
+	COMMON INPUT #G_NUM, IGM_BK_0303_TITLE_COLOR$		'画面タイトル文字色
+	COMMON INPUT #G_NUM, IGM_BK_0303_TITLE_BGCOLOR$		'画面タイトル背景色
+	COMMON INPUT #G_NUM, IGM_BK_0303_GRAPH_TYPE$		'グラフタイプ
+	COMMON INPUT #G_NUM, IGM_BK_0303_GRAPH_LEGEND$		'グラフ凡例の表示/非表示(TRUE:表示,FALSE:非表示)
+	COMMON INPUT #G_NUM, IGM_BK_0303_GRAPH_Y_MAX$		'グラフY軸の最大値
+	COMMON INPUT #G_NUM, IGM_BK_0303_GRAPH_COLOR$		'グラフの色
+	COMMON INPUT #G_NUM, IGM_BK_0303_GRAPH_FONT_SIZE$	'グラフのフォントサイズ
+	COMMON INPUT #G_NUM, IGM_BK_0303_TABLE_FONT_SIZE$	'テーブルのフォントサイズ
+	COMMON INPUT #G_NUM, IGM_BK_0303_GRAPH_DATA$		'グラフ用データ
+	COMMON INPUT #G_NUM, IGM_BK_0303_TOTAL_AMOUNT$		'合計金額
+	COMMON INPUT #G_NUM, IGM_BK_0303_DAILY_AVG_AMOUNT$	'日平均金額
+
+	L_GRAPH_UPD_FLG$ = "F"																	'グラフ更新フラグを初期化します
+
+	IF G_BFR_TITLE$ <> IGM_BK_0303_TITLE$ THEN												'前回の値と違っていたら処理します
+		WEB_PAGE_SET AJAN_PAGE_TITLE, IGM_BK_0303_TITLE$									'画面タイトルの値をセットします
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_VALUE, IGM_BK_0303_TITLE$						'画面タイトルの値をセットします
+		G_BFR_TITLE$ = IGM_BK_0303_TITLE$													'今回の値を保持します
+	END IF
+
+	IF G_BFR_TITLE_COLOR$ <> IGM_BK_0303_TITLE_COLOR$ THEN									'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_COLOR, IGM_BK_0303_TITLE_COLOR$				'画面タイトル文字色の値をセットします
+		G_BFR_TITLE_COLOR$ = IGM_BK_0303_TITLE_COLOR$										'今回の値を保持します
+	END IF
+
+	IF G_BFR_TITLE_BGCOLOR$ <> IGM_BK_0303_TITLE_BGCOLOR$ THEN								'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_BACKGROUND_COLOR, IGM_BK_0303_TITLE_BGCOLOR$	'画面タイトル背景色の値をセットします
+		G_BFR_TITLE_BGCOLOR$ = IGM_BK_0303_TITLE_BGCOLOR$									'今回の値を保持します
+	END IF
+
+	IF G_BFR_GRAPH_TYPE$ <> IGM_BK_0303_GRAPH_TYPE$ THEN									'グラフタイプが変わったら処理します
+		WEB_RADIO_SET "radGRAPH_TYPE", AJAN_RADIO_VALUE, IGM_BK_0303_GRAPH_TYPE$			'ラジオボタンの値をセットします。
+
+		SELECT CASE UCASE$(IGM_BK_0303_GRAPH_TYPE$)											'グラフタイプの値に応じて設定を変えます
+		CASE "DIRECT":	L_GRAPH_TYPE$ = "LINE":						L_LINE_TENSION$ = "0.0"	'折れ線グラフ
+		CASE "CURVE":	L_GRAPH_TYPE$ = "LINE":						L_LINE_TENSION$ = "0.4"	'曲線グラフ
+		CASE ELSE:		L_GRAPH_TYPE$ = IGM_BK_0303_GRAPH_TYPE$:	L_LINE_TENSION$ = "0.0"	'その他
+		END SELECT
+		
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_TYPE, L_GRAPH_TYPE$							'グラフタイプの値をセットします
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA_LINE_TENSION, L_LINE_TENSION$					'曲がり具合の値をセットします
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_X_TICKS_ROTATE, "90"							'X軸項目の角度の値をセットします
+
+		G_BFR_GRAPH_TYPE$ = IGM_BK_0303_GRAPH_TYPE$											'グラフタイプを保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF
+	
+	IF G_BFR_GRAPH_LEGEND$ <> IGM_BK_0303_GRAPH_LEGEND$ OR L_GRAPH_UPD_FLG$ = "T" THEN		'前回の値と違っていたら処理します
+		SELECT CASE UCASE$(IGM_BK_0303_GRAPH_LEGEND$)										'グラフ凡例の表示/非表示によって処理します
+		CASE "TRUE":	L_LGD_VISIBLE = AJAN_TRUE
+		CASE ELSE:		L_LGD_VISIBLE = AJAN_FALSE
+		END SELECT
+		
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA_NAME_DISPLAY, L_LGD_VISIBLE					'グラフ凡例の表示/非表示の値をセットします
+		G_BFR_GRAPH_LEGEND$ = IGM_BK_0303_GRAPH_LEGEND$										'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF
+
+	IF G_BFR_GRAPH_Y_MAX$ <> IGM_BK_0303_GRAPH_Y_MAX$ OR L_GRAPH_UPD_FLG$ = "T" THEN		'前回の値と違っていたら処理します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_Y_MAX, IGM_BK_0303_GRAPH_Y_MAX$				'グラフY軸の最大値の値をセットします
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_Y_MAX_RIGHT, IGM_BK_0303_GRAPH_Y_MAX$		'グラフY軸の最大値の値をセットします
+		G_BFR_GRAPH_Y_MAX$ = IGM_BK_0303_GRAPH_Y_MAX$										'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF
+
+	IF G_BFR_GRAPH_COLOR$ <> IGM_BK_0303_GRAPH_COLOR$ OR L_GRAPH_UPD_FLG$ = "T" THEN		'前回の値と違っていたら処理します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA_BACKGROUND_COLOR, IGM_BK_0303_GRAPH_COLOR$	'グラフの色の値をセットします
+		G_BFR_GRAPH_COLOR$ = IGM_BK_0303_GRAPH_COLOR$										'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF
+
+	IF G_BFR_GRAPH_FONT_SIZE$ <> IGM_BK_0303_GRAPH_FONT_SIZE$ OR L_GRAPH_UPD_FLG$ = "T" THEN	'前回の値と違っていたら処理します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_TICKS_SIZE, IGM_BK_0303_GRAPH_FONT_SIZE$			'グラフのフォントサイズの値をセットします
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_SCALE_LABEL_SIZE, IGM_BK_0303_GRAPH_FONT_SIZE$	'グラフのフォントサイズの値をセットします
+		G_BFR_GRAPH_FONT_SIZE$ = IGM_BK_0303_GRAPH_FONT_SIZE$									'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF	
+
+	IF G_BFR_TABLE_FONT_SIZE$ <> IGM_BK_0303_TABLE_FONT_SIZE$ THEN							'前回の値と違っていたら処理します
+		WEB_TABLE_SET "tblDATA", AJAN_TABLE_FONT_SIZE, IGM_BK_0303_TABLE_FONT_SIZE$			'テーブルのフォントサイズの値をセットします
+		G_BFR_TABLE_FONT_SIZE$ = IGM_BK_0303_TABLE_FONT_SIZE$								'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF
+
+	L_CK_GRAPH_DATA$ = ARRAY2CSV$(IGM_BK_0303_GRAPH_DATA$)									'配列をテキスト文字列に変換します
+	IF G_BFR_GRAPH_DATA$ <> L_CK_GRAPH_DATA$ OR L_GRAPH_UPD_FLG$ = "T" THEN					'前回の値と違っていたら処理します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA_NAME, IGM_BK_0303_GRAPH_DATA$(0, 1)			'凡例の値をセットします
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_LABEL, IGM_BK_0303_GRAPH_DATA$(1 TO UBOUND(IGM_BK_0303_GRAPH_DATA$, 1), 0)	'X軸の値をセットします
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA, IGM_BK_0303_GRAPH_DATA$(1 TO UBOUND(IGM_BK_0303_GRAPH_DATA$, 1), 1)	'Y軸の値をセットします
+
+		L_TABLE_DATA$ = IGM_BK_0303_GRAPH_DATA$												'表用データにグラフ用データを代入します
+		TWODIM REMOVE ROW, L_TABLE_DATA$, 0, 1												'見出し行を削除します
+		
+		WEB_TABLE_SET "tblDATA", AJAN_TABLE_COLUMN, IGM_BK_0303_GRAPH_DATA$(0, 0 TO UBOUND(IGM_BK_0303_GRAPH_DATA$, 2))	'表の見出しの値をセットします
+		WEB_TABLE_SET "tblDATA", AJAN_TABLE_DATA, L_TABLE_DATA$								'表の値をセットします
+	
+		G_BFR_GRAPH_DATA$ = L_CK_GRAPH_DATA$												'今回の値を保持します
+	END IF
+	
+	IF G_BFR_TOTAL_AMOUNT$ <> IGM_BK_0303_TOTAL_AMOUNT$ THEN								'前回の値と違っていたら処理します
+		WEB_TEXT_SET "txtTOTAL_AMOUNT", AJAN_TEXT_VALUE, IGM_BK_0303_TOTAL_AMOUNT$			'合計金額の値をセットします
+		G_BFR_TOTAL_AMOUNT$ = IGM_BK_0303_TOTAL_AMOUNT$										'今回の値を保持します
+	END IF
+
+	IF G_BFR_DAILY_AVG_AMOUNT$ <> IGM_BK_0303_DAILY_AVG_AMOUNT$ THEN						'前回の値と違っていたら処理します
+		WEB_TEXT_SET "txtDAILY_AVG_AMOUNT", AJAN_TEXT_VALUE, IGM_BK_0303_DAILY_AVG_AMOUNT$	'日平均金額の値をセットします
+		G_BFR_DAILY_AVG_AMOUNT$ = IGM_BK_0303_DAILY_AVG_AMOUNT$								'今回の値を保持します
+	END IF
+		
+END SUB
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

@@ -1,0 +1,149 @@
+' -----------------------------------------------------------------------------
+'    かんたん AJAN web プログラム by Interface PageGenerator
+'
+'      filename:   0302_LIST.ajn
+'      generate:   2021/04/19 16:01:45
+'      generator:  ver 1.10.018d
+'                                                    Powerd by Interface AJAN
+' -----------------------------------------------------------------------------
+
+' #############################################################################
+'  このファイルには，イベントアクションエディタで定義したアクションで使用する
+'  グローバル変数の作成(初期化)やサブルーチンを記述します。
+'  このファイルを編集した場合は、PageGenerator による web ページの生成が必要です。
+' #############################################################################
+
+' #######################################################
+' グローバル変数を定義する場合は，ここで作成(初期化)します。
+' #######################################################
+
+G_NUM = COMMON FREEFILE()		'オープンするときのグローバル共有変数用番号を取得します
+
+LIST IGM_BK_0302_LIST_DATA$		'一覧表示用データ
+
+G_BFR_ALERT_VISIBLE$ = ""		'アラート表示（前回の値）
+G_BFR_TITLE$ = ""				'画面タイトル（前回の値）
+G_BFR_TITLE_COLOR$ = ""			'画面タイトル文字色（前回の値）
+G_BFR_TITLE_BGCOLOR$ = ""		'画面タイトル背景色（前回の値）
+G_BFR_LIST_DATA$ = ""			'一覧表示用データ（前回の値）
+
+
+' #######################################################
+' サブルーチンを記述する場合は，ここに記述します。
+' #######################################################
+
+
+
+
+'===============================================================================
+' sub module   :btnNEW_CLICK
+' explanation   :(1)新規ボタンをクリックした時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB btnNEW_CLICK(id$, event$, msg$)
+	WEB_MOVE_PAGE "0305_INPUT.ajn"	'入力画面へ移動します
+END SUB
+
+
+'===============================================================================
+' sub module   :LIST_ENTER
+' explanation   :(1)画面表示完了時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB LIST_ENTER(id$, event$, msg$)
+	
+	COMMON OPEN "127.0.0.1" AS #G_NUM									'グローバル共有を開きます
+	
+	WEB_GRID_SET "grdDATA", AJAN_GRID_COLUMN_FONT_SIZE, "" , "16"		'グリッドの列名の文字サイズを設定します
+	WEB_GRID_SET "grdDATA", AJAN_GRID_FONT_SIZE, "" , "16"				'グリッドの文字サイズを設定します
+	WEB_GRID_SET "grdDATA", AJAN_GRID_COLUMN_SET_FORMAT, 2, "NUMBER"	'グリッドのフォーマットを設定します
+	WEB_GRID_SET "grdDATA", AJAN_GRID_COLUMN_SET_FORMAT, 8, "NUMBER"	'グリッドのフォーマットを設定します
+
+	CALL SET_WEB_PARTS_REFRESH											'Web部品にデータをセットします。
+
+	ON TIMER(1000) CALL SET_WEB_PARTS_REFRESH							'グローバル共有変数を定期的(1秒おき)にチェックします
+	TIMER ON
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :LIST_LEAVE
+' explanation   :(1)画面を閉じる時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB LIST_LEAVE(id$, event$, msg$)
+
+	COMMON CLOSE #G_NUM		'グローバル共有を閉じます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_WEB_PARTS_REFRESH
+' explanation   :(1)前回の値を違っていたら、Web部品にデータをセットします。
+' input         :(1)
+' output        :(1)
+'===============================================================================
+
+SUB SET_WEB_PARTS_REFRESH()
+	LOCAL L_LBL_VISIBLE									'アラートの表示/非表示
+	LOCAL L_CK_LIST_DATA$								'チェック用一覧表示用データ
+	
+	'グローバル共有変数を読み出します
+	COMMON INPUT #G_NUM, IGM_BK_0302_ALERT_VISIBLE$		'アラートの表示/非表示
+	COMMON INPUT #G_NUM, IGM_BK_0302_TITLE$				'画面タイトル
+	COMMON INPUT #G_NUM, IGM_BK_0302_TITLE_COLOR$		'画面タイトル文字色
+	COMMON INPUT #G_NUM, IGM_BK_0302_TITLE_BGCOLOR$		'画面タイトル背景色
+	COMMON INPUT #G_NUM, IGM_BK_0302_LIST_DATA$			'一覧表示用データ
+
+	IF G_BFR_ALERT_VISIBLE$ <> IGM_BK_0302_ALERT_VISIBLE$ THEN						'前回の値と違っていたら処理します
+		SELECT CASE UCASE$(IGM_BK_0302_ALERT_VISIBLE$)								'アラート表示の値に応じて処理します
+		CASE "TRUE":	L_LBL_VISIBLE = AJAN_TRUE
+		CASE ELSE:		L_LBL_VISIBLE = AJAN_FALSE
+		END SELECT
+		
+		WEB_LABEL_SET "lblALERT", AJAN_WEB_VISIBLE, L_LBL_VISIBLE					'アラート表示の値をセットします
+		G_BFR_ALERT_VISIBLE$ = IGM_BK_0302_ALERT_VISIBLE$							'今回の値を保持します
+	END IF
+	
+	IF G_BFR_TITLE$ <> IGM_BK_0302_TITLE$ THEN										'前回の値と違っていたら処理します
+		WEB_PAGE_SET AJAN_PAGE_TITLE, IGM_BK_0302_TITLE$							'画面タイトルの値をセットします
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_VALUE, IGM_BK_0302_TITLE$				'画面タイトルの値をセットします
+		G_BFR_TITLE$ = IGM_BK_0302_TITLE$											'今回の値を保持します
+	END IF
+
+	IF G_BFR_TITLE_COLOR$ <> IGM_BK_0302_TITLE_COLOR$ THEN							'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_COLOR, IGM_BK_0302_TITLE_COLOR$		'画面タイトル文字色の値をセットします
+		G_BFR_TITLE_COLOR$ = IGM_BK_0302_TITLE_COLOR$								'今回の値を保持します
+	END IF
+
+	IF G_BFR_TITLE_BGCOLOR$ <> IGM_BK_0302_TITLE_BGCOLOR$ THEN								'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_BACKGROUND_COLOR, IGM_BK_0302_TITLE_BGCOLOR$	'画面タイトル背景色の値をセットします
+		G_BFR_TITLE_BGCOLOR$ = IGM_BK_0302_TITLE_BGCOLOR$									'今回の値を保持します
+	END IF
+
+	L_CK_LIST_DATA$ = ARRAY2CSV$(IGM_BK_0302_LIST_DATA$)							'配列をテキスト文字列に変換します
+	IF G_BFR_LIST_DATA$ <> L_CK_LIST_DATA$ THEN										'前回の値と違っていたら処理します
+		WEB_GRID_SET "grdDATA", AJAN_GRID_DATA, AJAN_TRUE, IGM_BK_0302_LIST_DATA$	'一覧表示用データの値をセットします
+		G_BFR_LIST_DATA$ = L_CK_LIST_DATA$											'今回の値を保持します
+	END IF
+
+END SUB
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

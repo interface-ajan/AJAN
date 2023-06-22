@@ -1,0 +1,743 @@
+' ================================================================================
+' 受注業務 サンプルプログラム 
+'  書籍「IoT言語AJAN(R)超入門」向けのサンプルプログラムです。詳しくは書籍をご参照ください。
+'  受注情報の入力、一覧表示、グラフ表示ができます。
+'  操作内容はコンソール画面に表示されるメニューで選択します。
+'　CSVファイル(ODR_DATA.csv)を本プログラム以外で編集すると正常に動作しないことがあります。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+'===============================================================================
+' 初期化
+'===============================================================================
+'---------------------------------------------------------------------------
+'グローバル共有変数の設定
+'---------------------------------------------------------------------------
+'一覧表示用
+IGM_BK_0302_TITLE$ = "一覧表示"			'画面タイトル
+IGM_BK_0302_TITLE_COLOR$ = "BLACK"		'画面タイトル文字色
+IGM_BK_0302_TITLE_BGCOLOR$ = "SILVER"	'画面タイトル背景色
+LIST IGM_BK_0302_LIST_DATA$				'一覧表示用データ
+REDIM PRESERVE IGM_BK_0302_LIST_DATA$(1, 1)
+
+'グラフ用
+IGM_BK_0303_TITLE$ = "グラフ表示"		'画面タイトル
+IGM_BK_0303_TITLE_COLOR$ = "BLACK"		'画面タイトル文字色
+IGM_BK_0303_TITLE_BGCOLOR$ = "SILVER"	'画面タイトル背景色
+IGM_BK_0303_GRAPH_TYPE$ = "BAR"			'グラフタイプ(BAR:棒グラフ,DIRECT:折れ線グラフ,CURVE:曲線グラフ)
+IGM_BK_0303_GRAPH_Y_MAX$ = "50000"		'グラフY軸の最大値
+IGM_BK_0303_GRAPH_COLOR$ = "AQUA"		'グラフの色
+IGM_BK_0303_GRAPH_FONT_SIZE$ = "11"		'グラフのフォントサイズ
+IGM_BK_0303_GRAPH_LEGEND$ = "TRUE"		'グラフ凡例の表示/非表示(TRUE:表示,FALSE:非表示)
+IGM_BK_0303_TABLE_FONT_SIZE$ = "14"		'テーブルのフォントサイズ
+LIST IGM_BK_0303_GRAPH_DATA$			'グラフ用データ
+REDIM PRESERVE IGM_BK_0303_GRAPH_DATA$(1, 1)
+IGM_BK_0303_TOTAL_AMOUNT$ = ""			'合計金額
+IGM_BK_0303_DAILY_AVG_AMOUNT$ = ""		'日平均金額
+
+'円グラフ用
+IGM_BK_0304_TITLE$ = "円グラフ表示"		'画面タイトル
+IGM_BK_0304_TITLE_COLOR$ = "BLACK"		'画面タイトル文字色
+IGM_BK_0304_TITLE_BGCOLOR$ = "SILVER"	'画面タイトル背景色
+IGM_BK_0304_GRAPH_DATALABEL_TYPE$ = "PERCENT"	'データラベルのタイプ
+										'(NONE:なし,VALUE:値表示,PERCENT:パーセント表示,BOTH:値とパーセント表示)
+IGM_BK_0304_GRAPH_COLOR$ = ""			'グラフの色
+IGM_BK_0304_GRAPH_FONT_SIZE$ = "11"		'グラフのフォントサイズ
+IGM_BK_0304_GRAPH_LEGEND$ = "FALSE"		'グラフ凡例の表示/非表示(TRUE:表示,FALSE:非表示)
+IGM_BK_0304_TABLE_FONT_SIZE$ = "14"		'テーブルのフォントサイズ
+LIST IGM_BK_0304_GRAPH_DATA$			'グラフ用データ
+REDIM PRESERVE IGM_BK_0304_GRAPH_DATA$(1, 1)
+
+'入力用
+IGM_BK_0305_TITLE$ = "入力"				'画面タイトル
+IGM_BK_0305_TITLE_COLOR$ = "BLACK"		'画面タイトル文字色
+IGM_BK_0305_TITLE_BGCOLOR$ = "SILVER"	'画面タイトル背景色
+
+IGM_BK_0305_DEF_INPUT_NUM$ = ""			'初期値(受付番号)
+IGM_BK_0305_DEF_ODR_DATE$ = ""			'初期値(受注日)
+IGM_BK_0305_DEF_SUPPLIER_NAME$ = ""		'初期値(取引先名)
+IGM_BK_0305_DEF_SHIP_DATE$ = ""			'初期値(出荷予定日)
+IGM_BK_0305_DEF_PRDC_NAME$ = ""			'初期値(商品名)
+IGM_BK_0305_DEF_UNIT_PRICE$ = ""		'初期値(単価)
+IGM_BK_0305_DEF_ODR_CNT$ = ""			'初期値(数量)
+IGM_BK_0305_DEF_ODR_AMOUNT$ = ""		'初期値(合計金額)
+
+IGM_BK_0305_INPUT_NUM$ = IGM_BK_0305_DEF_INPUT_NUM$			'受付番号
+IGM_BK_0305_ODR_DATE$ = IGM_BK_0305_DEF_ODR_DATE$			'受注日
+IGM_BK_0305_SUPPLIER_NAME$ = IGM_BK_0305_DEF_SUPPLIER_NAME$	'取引先名
+IGM_BK_0305_SHIP_DATE$ = IGM_BK_0305_DEF_SHIP_DATE$			'出荷予定日
+IGM_BK_0305_PRDC_NAME$ = IGM_BK_0305_DEF_PRDC_NAME$			'商品名
+IGM_BK_0305_UNIT_PRICE$ = IGM_BK_0305_DEF_UNIT_PRICE$		'単価
+IGM_BK_0305_ODR_CNT$ = IGM_BK_0305_DEF_ODR_CNT$				'数量
+IGM_BK_0305_ODR_AMOUNT$ = IGM_BK_0305_DEF_ODR_AMOUNT$		'合計金額
+
+IGM_BK_0305_ENTRY_FLG$ = "F"			'登録フラグ
+IGM_BK_0305_CUD_CLS$ = ""				'登録区分(C:追加,U:更新,D:削除)
+
+'その他
+IGM_BK_0302_LED$ = "0"					'警報ランプのON/OFF(1/0)
+IGM_BK_0302_BUZZ$ = "0"					'ブザーのON/OFF(1/0)
+IGM_BK_0302_SPCH_TXT$ = ""				'読み上げテキスト
+IGM_BK_0302_SPCH_TYPE$ = "F"			'読み上げタイプ
+IGM_BK_0302_SPCH_FLG$ = "F"				'読み上げフラグ
+IGM_BK_0302_ALERT_FLG$ = "T"			'アラートフラグ
+IGM_BK_0302_ALERT_VISIBLE$ = "FALSE"	'アラート表示
+
+
+'---------------------------------------------------------------------------
+'その他
+'---------------------------------------------------------------------------
+'外部プログラム実行用(プログラムの場所、URLの特定)
+G_WRK_SPC$ = "/AjanProWS/"				'ワークスペース名("/"含む)
+G_BASE_PATH$ = PATH GET DIRNAME$(GETCOMMANDLINEARGS$())	'プログラムの保存先
+G_DIR$ = MID$(G_BASE_PATH$, INSTR(G_BASE_PATH$, G_WRK_SPC$) + LEN(G_WRK_SPC$)) + "/"
+										'ファイルの場所(フォルダ名)を取得します
+										'(プログラムを他のプロジェクトにコピーしても動くようにするため)
+										'ユーザー名とワークスペース名が同じだと正常に動作しません
+G_URL_HEAD$ = "http://localhost:8080/"	'URLの先頭文字
+
+'オープンするときの番号を取得します
+G_NUM = COMMON FREEFILE()				'グローバル共有変数用
+G_CSV_NUM = FREEFILE()					'CSVファイル用
+G_SPK_NUM = FREEFILE()					'読み上げファイル用
+
+'CSVファイル情報
+G_CSV_PATH$ = G_BASE_PATH$ + "/DATA/"	'CSVファイルの保存先
+G_CSV_FILE$ = "ODR_DATA.csv"			'CSVファイルの名前
+G_CSV_HEAD$ = """受付番号"",""受注日"",""取引先名"",""出荷予定日"",""商品名"",""単価"",""数量"",""合計金額""" + CHR$(10)
+										'CSVファイルの見出し
+
+'読み上げファイル情報
+G_SPK_PATH$ = G_BASE_PATH$ + "/DATA/"	'読み上げファイルの保存先
+G_SPK_FILE$ = "SPK_DATA.txt"			'読み上げファイルの名前
+
+
+'===============================================================================
+' MAIN
+'===============================================================================
+MAIN:
+	ON ERROR CALL ERR_MSG										'エラー処理を設定します
+	ERROR ON													'エラー処理を有効にします
+	
+	COMMON OPEN "127.0.0.1" AS #G_NUM							'グローバル共有を開きます
+	
+	CALL INIT_GCOM												'グローバル共有変数を初期化します
+
+	CALL CK_GCOM												'グローバル共有変数をチェックします
+	
+	ON TIMER(1000) CALL CK_GCOM									'グローバル共有変数を定期的(1秒おき)にチェックします
+	TIMER ON
+	
+	INPUT_VAL$ = ""												'入力受付用変数を初期化します
+	MENU_NUM = 0												'メニュー入力用変数を初期化します
+
+	DO WHILE MENU_NUM <> 99										'MENU_NUMが99以外の間、繰り返します
+		CLS														'コンソールウィンドウをクリアします
+		PRINT "-----------------------------------------------------------"		'メニューを表示します
+		PRINT "メニュー"
+		PRINT "-----------------------------------------------------------"
+		PRINT " 1.受注一覧"
+		PRINT " 2.受注グラフ"
+		PRINT " 3.受注構成グラフ"
+		PRINT " 4.受注入力"
+		PRINT "99.終了"
+		PRINT "-----------------------------------------------------------"
+		INPUT "表示する画面の番号を入力してください。";INPUT_VAL$	'入力を待ちます
+		
+		MENU_NUM = VAL(INPUT_VAL$)								'入力された値を数値に変換します
+		
+		SELECT CASE MENU_NUM									'入力された値(MENU_NUM)に応じた画面を開きます
+		CASE 1													'1であれば処理します
+			SHELL OPEN G_URL_HEAD$ + G_DIR$ + "0302_LIST.ajn"	'一覧表示画面を開きます
+		CASE 2													'2であれば処理します
+			SHELL OPEN G_URL_HEAD$ + G_DIR$ + "0303_GRAPH.ajn"	'グラフ表示画面を開きます
+		CASE 3													'3であれば処理します
+			SHELL OPEN G_URL_HEAD$ + G_DIR$ + "0304_GRAPH_PIE.ajn"	'構成グラフ表示画面を開きます
+		CASE 4													'4であれば処理します
+			SHELL OPEN G_URL_HEAD$ + G_DIR$ + "0305_INPUT.ajn"	'入力画面を開きます
+		CASE 99													'99であれば処理します
+			PRINT "終了します。"									'終了メッセージを表示します
+		CASE ELSE												'それ以外であれば処理します
+																'何もしません
+		END SELECT
+		
+	LOOP
+
+	COMMON CLOSE #G_NUM											'グローバル共有を閉じます
+	
+END
+
+
+'===============================================================================
+' SUB MODULES
+'===============================================================================
+'===============================================================================
+' sub module    :CK_GCOM
+' explanation   :(1)グローバル共有変数をチェックします。
+'                (2)排他はかけていません。
+' input         :(1)なし
+' output        :(1)なし
+'===============================================================================
+
+SUB CK_GCOM()
+	LOCAL L_ENTRY_DATA$										'登録用データ
+	LOCAL L_SHIP_DATE$										'アラート用の出荷日
+
+	COMMON INPUT #G_NUM, IGM_BK_0305_ENTRY_FLG$				'受注データ更新フラグ
+
+	IF IGM_BK_0305_ENTRY_FLG$ = "T" THEN					'登録フラグが立っていたら処理します
+
+		COMMON INPUT #G_NUM, IGM_BK_0305_INPUT_NUM$			'受付番号
+		COMMON INPUT #G_NUM, IGM_BK_0305_ODR_DATE$			'受注日
+		COMMON INPUT #G_NUM, IGM_BK_0305_SUPPLIER_NAME$		'取引先名
+		COMMON INPUT #G_NUM, IGM_BK_0305_SHIP_DATE$			'出荷予定日
+		COMMON INPUT #G_NUM, IGM_BK_0305_PRDC_NAME$			'商品名
+		COMMON INPUT #G_NUM, IGM_BK_0305_UNIT_PRICE$		'単価
+		COMMON INPUT #G_NUM, IGM_BK_0305_ODR_CNT$			'数量
+		COMMON INPUT #G_NUM, IGM_BK_0305_ODR_AMOUNT$		'合計金額
+		COMMON INPUT #G_NUM, IGM_BK_0305_CUD_CLS$			'登録区分
+
+		L_SHIP_DATE$ = DATE$(CDATETIME(IGM_BK_0305_SHIP_DATE$))	'アラート用の出荷日を代入します(YYYY/MM/DD形式)
+		
+		L_ENTRY_DATA$ = ""									'登録用変数を初期化します
+		'登録用データを作成します。カンマを大文字に変換しておきます(CSVファイルとしての区切りとして処理されないようにするため)
+		L_ENTRY_DATA$ = REPLACE$(REPLACE$(IGM_BK_0305_CUD_CLS$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_INPUT_NUM$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_ODR_DATE$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_SUPPLIER_NAME$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_SHIP_DATE$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_PRDC_NAME$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_UNIT_PRICE$, ",", "，") , """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_ODR_CNT$, ",", "，"), """", "”") + "," _
+						+ REPLACE$(REPLACE$(IGM_BK_0305_ODR_AMOUNT$, ",", "，"), """", "”") 
+
+		CALL PROC_GCOM("IGM_BK_0305_ENTRY", L_ENTRY_DATA$)	'関連する処理を実行します
+	
+	ELSE
+		L_SHIP_DATE$ = ""									'アラート用の出荷日をクリアします
+	END IF
+
+	COMMON INPUT #G_NUM, IGM_BK_0302_LED$					'警報ランプの値を読み込みます
+	CALL PROC_GCOM("IGM_BK_0302_LED", IGM_BK_0302_LED$)		'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0302_BUZZ$					'ブザーの値を読み込みます
+	CALL PROC_GCOM("IGM_BK_0302_BUZZ", IGM_BK_0302_BUZZ$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0302_SPCH_FLG$						'読み上げフラグを読み込みます
+
+	IF IGM_BK_0302_SPCH_FLG$ = "T" THEN								'読み上げフラグが立っていたら処理します
+		COMMON INPUT #G_NUM, IGM_BK_0302_SPCH_TXT$					'読み上げテキスト
+		COMMON INPUT #G_NUM, IGM_BK_0302_SPCH_TYPE$					'読み上げタイプ
+		CALL PROC_GCOM("IGM_BK_0302_SPCH", IGM_BK_0302_SPCH_TXT$)	'関連する処理を実行します
+	END IF
+
+	IF L_SHIP_DATE$ = DATE$ AND IGM_BK_0305_CUD_CLS$ <> "D" THEN	'出荷が今日で削除以外であれば処理します
+		CALL PROC_GCOM("ALERT", "1")								'アラート処理をON("1")で実行します
+	ELSE															'そうでなければ処理します
+		CALL PROC_GCOM("ALERT", "0")								'アラート処理をOFF("0")で実行します
+	END IF
+
+	CALL PROC_GCOM("PROC", "")								'関連する処理を実行します
+		
+END SUB
+
+
+'===============================================================================
+' sub module    :ERR_MSG
+' explanation   :(1)エラーメッセージを表示します。
+' input         :(1)E_N		：エラーコード
+'                (2)E_M$	：エラーメッセージ
+'                (3)E_L		：エラー行
+' output        :(1)なし
+'===============================================================================
+
+SUB ERR_MSG(E_N, E_M$, E_L)
+	PRINT "エラーが発生しました。"; TIME$
+	PRINT "エラーコード:"; E_N
+	PRINT "エラーメッセージ:";E_M$
+	PRINT "エラー行:";E_L
+END SUB
+
+
+'===============================================================================
+' sub module    :INIT_GCOM
+' explanation   :(1)グローバル共有変数を初期化します。
+' input         :(1)なし
+' output        :(1)なし
+'===============================================================================
+
+SUB INIT_GCOM()
+
+	'一覧表示用
+	COMMON PRINT #G_NUM, IGM_BK_0302_TITLE$					'画面タイトル
+	COMMON PRINT #G_NUM, IGM_BK_0302_TITLE_COLOR$			'画面タイトル文字色
+	COMMON PRINT #G_NUM, IGM_BK_0302_TITLE_BGCOLOR$			'画面タイトル背景色
+	COMMON PRINT #G_NUM, IGM_BK_0302_LIST_DATA$				'一覧表示用データ
+
+	'グラフ用
+	COMMON PRINT #G_NUM, IGM_BK_0303_TITLE$					'画面タイトル
+	COMMON PRINT #G_NUM, IGM_BK_0303_TITLE_COLOR$			'画面タイトル文字色
+	COMMON PRINT #G_NUM, IGM_BK_0303_TITLE_BGCOLOR$			'画面タイトル背景色
+	COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_TYPE$			'グラフタイプ
+	COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_Y_MAX$			'グラフY軸の最大値
+	COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_COLOR$			'グラフの色
+	COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_FONT_SIZE$		'グラフのフォントサイズ
+	COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_LEGEND$			'グラフ凡例の表示/非表示
+	COMMON PRINT #G_NUM, IGM_BK_0303_TABLE_FONT_SIZE$		'テーブルのフォントサイズ
+	COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_DATA$			'グラフ用データ
+	COMMON PRINT #G_NUM, IGM_BK_0303_TOTAL_AMOUNT$			'合計金額
+	COMMON PRINT #G_NUM, IGM_BK_0303_DAILY_AVG_AMOUNT$		'日平均金額
+
+	'円グラフ用
+	COMMON PRINT #G_NUM, IGM_BK_0304_TITLE$					'画面タイトル
+	COMMON PRINT #G_NUM, IGM_BK_0304_TITLE_COLOR$			'画面タイトル文字色
+	COMMON PRINT #G_NUM, IGM_BK_0304_TITLE_BGCOLOR$			'画面タイトル背景色
+	COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_DATALABEL_TYPE$	'データラベルのタイプ
+	COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_COLOR$			'グラフの色
+	COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_FONT_SIZE$		'グラフのフォントサイズ
+	COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_LEGEND$			'グラフ凡例の表示/非表示
+	COMMON PRINT #G_NUM, IGM_BK_0304_TABLE_FONT_SIZE$		'テーブルのフォントサイズ
+	COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_DATA$			'グラフ用データ
+
+	'入力用
+	COMMON PRINT #G_NUM, IGM_BK_0305_TITLE$					'画面タイトル
+	COMMON PRINT #G_NUM, IGM_BK_0305_TITLE_COLOR$			'画面タイトル文字色
+	COMMON PRINT #G_NUM, IGM_BK_0305_TITLE_BGCOLOR$			'画面タイトル背景色
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_INPUT_NUM$			'初期値(受付番号)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_ODR_DATE$ 			'初期値(受注日)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_SUPPLIER_NAME$		'初期値(取引先名)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_SHIP_DATE$			'初期値(出荷予定日)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_PRDC_NAME$			'初期値(商品名)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_UNIT_PRICE$		'初期値(単価)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_ODR_CNT$			'初期値(数量)
+	COMMON PRINT #G_NUM, IGM_BK_0305_DEF_ODR_AMOUNT$		'初期値(合計金額)
+	COMMON PRINT #G_NUM, IGM_BK_0305_INPUT_NUM$				'受付番号
+	COMMON PRINT #G_NUM, IGM_BK_0305_ODR_DATE$				'受注日
+	COMMON PRINT #G_NUM, IGM_BK_0305_SUPPLIER_NAME$			'取引先名
+	COMMON PRINT #G_NUM, IGM_BK_0305_SHIP_DATE$				'出荷予定日
+	COMMON PRINT #G_NUM, IGM_BK_0305_PRDC_NAME$				'商品名
+	COMMON PRINT #G_NUM, IGM_BK_0305_UNIT_PRICE$			'単価
+	COMMON PRINT #G_NUM, IGM_BK_0305_ODR_CNT$				'数量
+	COMMON PRINT #G_NUM, IGM_BK_0305_ODR_AMOUNT$			'合計金額
+	COMMON PRINT #G_NUM, IGM_BK_0305_ENTRY_FLG$				'登録フラグ
+	COMMON PRINT #G_NUM, IGM_BK_0305_CUD_CLS$				'登録区分
+
+	'その他
+	COMMON PRINT #G_NUM, IGM_BK_0302_LED$					'警報ランプのON/OFF(1/0)
+	COMMON PRINT #G_NUM, IGM_BK_0302_BUZZ$					'ブザーのON/OFF(1/0)
+	COMMON PRINT #G_NUM, IGM_BK_0302_SPCH_TXT$				'読み上げテキスト
+	COMMON PRINT #G_NUM, IGM_BK_0302_SPCH_TYPE$				'読み上げタイプ
+	COMMON PRINT #G_NUM, IGM_BK_0302_SPCH_FLG$				'読み上げフラグ
+	COMMON PRINT #G_NUM, IGM_BK_0302_ALERT_FLG$				'アラートフラグ
+	COMMON PRINT #G_NUM, IGM_BK_0302_ALERT_VISIBLE$			'アラート表示
+
+END SUB
+
+
+'===============================================================================
+' sub module    :PROC_GCOM
+' explanation   :(1)グローバル共有変数毎の処理を実行します。
+' input         :(1)P_GCOM_NAME$：グローバル共有変数名
+'                (2)P_GCOM_VAL$	：グローバル共有変数の値
+' output        :(1)なし
+'===============================================================================
+
+SUB PROC_GCOM(P_GCOM_NAME$, P_GCOM_VAL$)
+	LOCAL L_CSV_TEXT$							'CSVファイルからの読み出しデータ
+	LOCAL LIST L_CSV_DATA$						'CSVファイルからの読み出しデータ(二次元配列)
+	LOCAL L_MAX_SRC_DIM							'グラフ用検索配列の最大の添字
+	LOCAL LIST L_INPUT_DATA$					'入力データ(二次元配列)
+	LOCAL L_CUD_CLS$							'登録区分
+	LOCAL L_SRC_ITEM$							'検索する文字
+	LOCAL LIST L_SRC_DIM						'グラフ用検索結果
+	LOCAL L_MSG$								'NOTIFYのメッセージ
+	LOCAL L_TOPIC_SUB$							'NOTIFYのトピック(サブ)
+	LOCAL L_TOPIC$								'NOTIFYのトピック
+	LOCAL L_DMY									'NOTIFY実行結果
+	LOCAL LIST L_INS_COL$						'一覧表示へ挿入する列
+	LOCAL L_MAX_DAYS							'グラフ用最大表示日数
+	LOCAL L_MAX_DIM								'グラフ用配列の最大の添字
+	LOCAL LIST L_0303_SORT$						'グラフ用並び替え配列変数
+	LOCAL L_SORT_DATE$							'グラフ用の検索対象日
+	LOCAL L_GRH_DIM_NUM							'グラフ用配列変数の添字
+	LOCAL L_SRC_DATE$							'検索対象日
+	LOCAL L_TOTAL_AMOUNT						'グラフ用合計金額
+	LOCAL L_0303_HEAD$(1) = ["受注日"; "受注金額"]	'グラフの見出し
+	LOCAL LIST L_AMOUNT							'集計処理用
+	LOCAL LIST L_0304_SORT$						'円グラフ用並び替え配列変数
+	LOCAL L_MAX_ITEMS							'円グラフ用商品名数
+	LOCAL L_0304_HEAD$(1) = ["商品名"; "受注金額"]	'円グラフの見出し
+	LOCAL L_KEYPOS								'並べ替え用項目の添字
+	LOCAL L_SWAP$								'入れ換え用変数
+	LOCAL L_LOOP								'繰り返し用変数
+	LOCAL L_H_LOOP								'繰り返し用変数
+	LOCAL L_I_LOOP								'繰り返し用変数
+	LOCAL L_J_LOOP								'繰り返し用変数
+	LOCAL L_K_LOOP								'繰り返し用変数
+	
+	SELECT CASE P_GCOM_NAME$									'指定されたグローバル共有変数毎の処理を実行します
+	CASE "IGM_BK_0305_ENTRY"									'CSVファイルに登録します
+		L_CSV_TEXT$ = STR_FREADALL$(G_CSV_PATH$ + G_CSV_FILE$)	'CSVファイルの中身を取り出します
+		L_CSV_DATA$ = CSV2ARRAY$(L_CSV_TEXT$, ",", """", FALSE)	'配列変数に登録します
+		L_MAX_SRC_DIM = UBOUND(L_CSV_DATA$, 1)					'受注データの添字の最大値
+
+		L_INPUT_DATA$ = CSV2ARRAY$(P_GCOM_VAL$, ",", """", FALSE)	'配列変数に登録します
+
+		L_CUD_CLS$ = L_INPUT_DATA$(0, 0)						'登録区分を代入します
+		L_SRC_ITEM$ = L_INPUT_DATA$(0, 1)						'受付番号を代入します
+
+		TWODIM REMOVE COLUMN, L_INPUT_DATA$, 0, 1				'登録区分の列を削除します
+
+		IF LDIM(L_CSV_DATA$, 1) > 1 THEN	 					'1行目（見出し）以外のデータがある場合に処理します
+			L_SRC_DIM = DIMFIND(L_CSV_DATA$, L_SRC_ITEM$, 0, [1;0], [L_MAX_SRC_DIM;0])	'指定した受付番号のデータがあるか
+																						'検索します(受付番号の列のみを検索します)
+		ELSE
+			REDIM PRESERVE L_SRC_DIM(0)							'擬似的に該当データなしとします
+		END IF
+		
+		L_MSG$ = ""												'メッセージを初期化します
+		SELECT CASE L_CUD_CLS$
+		CASE "C"												'追加
+			IF CDIM(L_SRC_DIM) > 1 THEN							'データがあればエラーとします
+				L_MSG$ = "ENTRY_ERROR"							'処理結果(送信内容)を設定します
+			ELSE												'なければ処理します
+				L_CSV_TEXT$ = ARRAY2CSV$(L_INPUT_DATA$, ",", """", FALSE)	'配列データをCSVデータに変換します
+				
+				IF INSTR(L_CSV_TEXT$, CHR$(10)) = LEN(L_CSV_TEXT$) THEN		'末尾に改行コード(CHR$(10))があれば処理します
+					L_CSV_TEXT$ = LEFT$(L_CSV_TEXT$, LEN(L_CSV_TEXT$) - 1)	'末尾の改行コードより前までの文字にします
+				END IF
+				
+				OPEN G_CSV_PATH$ + G_CSV_FILE$ FOR APPEND AS #G_CSV_NUM		'CSVファイルを追加出力モード(APPEND)で開きます
+				PRINT #G_CSV_NUM, L_CSV_TEXT$								'受け取ったデータを書き込みます
+				CLOSE #G_CSV_NUM								'CSVファイルを閉じます
+
+				L_MSG$ = "ENTRY_COMPLETE"						'処理結果(送信内容)を設定します
+			END IF
+			
+		CASE "U"												'更新
+			IF CDIM(L_SRC_DIM) > 1 THEN							'データがあれば処理します
+				FOR L_H_LOOP = 0 TO UBOUND(L_INPUT_DATA$, 2) 
+					L_CSV_DATA$(L_SRC_DIM(0, 0), L_H_LOOP) = L_INPUT_DATA$(0, L_H_LOOP)	'配列変数を上書きします
+				NEXT L_H_LOOP
+
+				L_CSV_TEXT$ = ARRAY2CSV$(L_CSV_DATA$, ",", """", FALSE)	'配列データをCSVデータに変換します
+
+				STR_FWRITEALL G_CSV_PATH$ + G_CSV_FILE$, L_CSV_TEXT$	'ファイルへ書き込みます
+		
+				L_MSG$ = "UPDATE_COMPLETE"						'処理結果(送信内容)を設定します
+			ELSE												'なければエラーとします
+				L_MSG$ = "UPDATE_ERROR"							'処理結果(送信内容)を設定します
+			END IF
+
+		CASE "D"												'削除
+			IF CDIM(L_SRC_DIM) > 1 THEN							'データがあれば処理します
+				TWODIM REMOVE ROW, L_CSV_DATA$, L_SRC_DIM(0, 0), 1	'該当行を削除します
+			
+				L_CSV_TEXT$ = ARRAY2CSV$(L_CSV_DATA$, ",", """", FALSE)	'配列データをCSVデータに変換します
+				
+				STR_FWRITEALL G_CSV_PATH$ + G_CSV_FILE$, L_CSV_TEXT$	'ファイルへ書き込みます
+		
+				L_MSG$ = "DELETE_COMPLETE"						'処理結果(送信内容)を設定します
+			ELSE												'なければエラーとします
+				L_MSG$ = "DELETE_ERROR"							'処理結果(送信内容)を設定します
+			END IF
+
+		CASE ELSE												'その他はエラーとします
+			L_MSG$ = "ELSE_ERROR"								'処理結果(送信内容)を設定します
+		END SELECT
+
+		'初期化します
+		IGM_BK_0305_INPUT_NUM$ = IGM_BK_0305_DEF_INPUT_NUM$		'受付番号
+		IGM_BK_0305_ODR_DATE$ = IGM_BK_0305_DEF_ODR_DATE$		'受注日
+		IGM_BK_0305_SUPPLIER_NAME$ = IGM_BK_0305_DEF_SUPPLIER_NAME$	'取引先名
+		IGM_BK_0305_SHIP_DATE$ = IGM_BK_0305_DEF_SHIP_DATE$		'出荷予定日
+		IGM_BK_0305_PRDC_NAME$ = IGM_BK_0305_DEF_PRDC_NAME$		'商品名
+		IGM_BK_0305_UNIT_PRICE$ = IGM_BK_0305_DEF_UNIT_PRICE$	'単価
+		IGM_BK_0305_ODR_CNT$ = IGM_BK_0305_DEF_ODR_CNT$			'数量
+		IGM_BK_0305_ODR_AMOUNT$ = IGM_BK_0305_DEF_ODR_AMOUNT$	'合計金額
+	
+		COMMON PRINT #G_NUM, IGM_BK_0305_INPUT_NUM$				'グローバル共有変数(受付番号)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_DATE$				'グローバル共有変数(受注日)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_SUPPLIER_NAME$			'グローバル共有変数(取引先名)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_SHIP_DATE$				'グローバル共有変数(出荷予定日)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_PRDC_NAME$				'グローバル共有変数(商品名)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_UNIT_PRICE$			'グローバル共有変数(単価)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_CNT$				'グローバル共有変数(数量)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_AMOUNT$			'グローバル共有変数(合計金額)を書き込みます
+		
+		IGM_BK_0305_ENTRY_FLG$ = "F"							'登録フラグをOFF("F")にします
+		COMMON PRINT #G_NUM, IGM_BK_0305_ENTRY_FLG$				'グローバル共有変数(登録フラグ)を書き込みます
+
+		L_TOPIC_SUB$ = ""										'トピック(サブ)を初期化します
+		IF L_CUD_CLS$ = "U" OR L_CUD_CLS$ = "D" THEN			'更新か削除であれば処理します
+			L_TOPIC_SUB$ = "?INPUT_NUM=" + L_SRC_ITEM$			'トピック（サブ）に受付番号を結合します
+		END IF
+
+		L_TOPIC$ = "/" + G_DIR$ + "0305_INPUT.ajn" + L_TOPIC_SUB$	'トピックを設定します
+		L_DMY = COMMON NOTIFY(G_NUM, L_TOPIC$, L_MSG$)			'NOTIFYを送信します
+	
+	CASE "IGM_BK_0302_LED"										'警報ランプ
+		IF P_GCOM_VAL$ = "1" THEN								'警報ランプの値がON("1")であれば処理します
+			FOR L_LOOP = 1 TO 2									'以降の処理を2回繰り返します
+				CMLED 1											'警報ランプを点灯します
+				SLEEP 0.2										'0.2秒休止します
+				CMLED 0											'警報ランプを消灯します
+				SLEEP 0.2										'0.2秒休止します
+			NEXT L_LOOP											'ここまでを繰り返します
+		ELSE													'それ以外であれば処理します
+			CMLED 0												'警報ランプを消灯します
+		END IF
+
+	CASE "IGM_BK_0302_BUZZ"										'ブザー
+		IF P_GCOM_VAL$ = "1" THEN								'ブザーの値がON("1")であれば処理します
+			FOR L_LOOP = 1 TO 2									'以降の処理を2回繰り返します
+				CMBUZZER 1										'ブザーを鳴らします
+				SLEEP 0.2										'0.2秒休止します
+				CMBUZZER 0										'ブザーを止めます
+				SLEEP 0.2										'0.2秒休止します
+			NEXT L_LOOP											'ここまでを繰り返します
+		ELSE													'それ以外であれば処理します
+			CMBUZZER 0											'ブザーを止めます
+		END IF
+
+	CASE "IGM_BK_0302_SPCH"										'読み上げ
+		IF P_GCOM_VAL$  <> "" THEN								'読み上げるデータがあれば(空でなければ)処理します
+			OPEN G_SPK_PATH$ + G_SPK_FILE$ FOR OUTPUT AS #G_SPK_NUM	'読み上げファイルを新規作成モード(OUTPUT)で開きます
+			PRINT #G_SPK_NUM, P_GCOM_VAL$						'受け取ったデータを書き込みます
+			CLOSE #G_SPK_NUM									'読み上げファイルを閉じます
+
+			SHELL "speech " + G_SPK_PATH$ + G_SPK_FILE$ + " " + IGM_BK_0302_SPCH_TYPE$ + " N"	'読み上げコマンド(Linuxコマンド)を実行します
+		END IF
+		
+		IGM_BK_0302_SPCH_FLG$ = "F"								'読み上げフラグをOFF("F")にします
+		COMMON PRINT #G_NUM, IGM_BK_0302_SPCH_FLG$				'グローバル共有変数(読み上げフラグ)を書き込みます
+		
+	CASE "ALERT"
+		IF P_GCOM_VAL$ = "1" THEN								'アラートがON("1")であれば処理します
+			IGM_BK_0302_LED$ = "1"								'警報ランプをON("1")に設定します
+			IGM_BK_0302_BUZZ$ = "1"								'ブザーをON("1")に設定します
+			IGM_BK_0302_ALERT_VISIBLE$ = "TRUE"					'アラートを表示("TRUE")に設定します
+
+			IGM_BK_0302_SPCH_TXT$ = "急ぎの出荷があります。"		'読み上げテキストを代入します
+			COMMON PRINT #G_NUM, IGM_BK_0302_SPCH_TXT$			'グローバル共有変数(読み上げテキスト)を書き込みます
+		
+			IGM_BK_0302_SPCH_FLG$ = "T"							'読み上げフラグをON("T")にします
+			COMMON PRINT #G_NUM, IGM_BK_0302_SPCH_FLG$			'グローバル共有変数(読み上げフラグ)を書き込みます
+		ELSE													'それ以外であれば処理します
+			IGM_BK_0302_LED$ = "0"								'警報ランプをOFF("0")に設定します
+			IGM_BK_0302_BUZZ$ = "0"								'ブザーをOFF("0")に設定します
+			IGM_BK_0302_ALERT_VISIBLE$ = "FALSE"				'アラートを非表示("FALSE")に設定します
+		END IF
+	
+		COMMON PRINT #G_NUM, IGM_BK_0302_LED$					'グローバル共有変数(警報ランプ)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0302_BUZZ$					'グローバル共有変数(ブザー)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0302_ALERT_VISIBLE$			'グローバル共有変数(アラート表示)を書き込みます
+		
+	CASE "PROC"													'関連処理を実行します
+		'-----------------------------------------------------------------------
+		'CSVファイルがない場合の処理です（CSVファイルを新規作成します）
+		'-----------------------------------------------------------------------
+		IF FILEEXISTS(G_CSV_PATH$ + G_CSV_FILE$) = FALSE THEN	'CSVファイルがない場合に処理します
+			OPEN G_CSV_PATH$ + G_CSV_FILE$ FOR OUTPUT AS #G_CSV_NUM	'CSVファイルを新規作成モード(OUTPUT)で開きます
+			CLOSE #G_CSV_NUM									'CSVファイルを閉じます
+		END IF
+		
+		'-----------------------------------------------------------------------
+		'CSVファイルのデータを取り出します
+		'-----------------------------------------------------------------------
+		L_CSV_TEXT$ = STR_FREADALL$(G_CSV_PATH$ + G_CSV_FILE$)	'CSVファイルの中身を取り出します
+		L_CSV_DATA$ = CSV2ARRAY$(L_CSV_TEXT$, ",", """", FALSE)	'配列変数に登録します
+
+		'-----------------------------------------------------------------------
+		'※CSVファイルにデータがない場合の処理です（初期化し、以降の処理をスキップします）
+		'-----------------------------------------------------------------------
+		IF L_CSV_DATA$ = "" THEN								'データがない場合に処理します
+			STR_FWRITEALL G_CSV_PATH$ + G_CSV_FILE$, G_CSV_HEAD$'見出しを書き込みます
+		END IF
+		
+		IF LDIM(L_CSV_DATA$, 1) <= 1 THEN	 					'1行目（見出し）以外のデータがない場合に処理します
+			REDIM PRESERVE IGM_BK_0302_LIST_DATA$(1, 1)			'一覧表示用データを初期化します
+			IGM_BK_0302_LIST_DATA$(1, 0) = "":	IGM_BK_0302_LIST_DATA$(1, 1) = ""
+			COMMON PRINT #G_NUM, IGM_BK_0302_LIST_DATA$			'グローバル共有変数(一覧表示用データ)を書き込みます
+			REDIM PRESERVE IGM_BK_0303_GRAPH_DATA$(1, 1)		'グラフ用データを初期化します
+			IGM_BK_0303_GRAPH_DATA$(1, 0) = "":	IGM_BK_0303_GRAPH_DATA$(1, 1) = ""
+			COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_DATA$		'グローバル共有変数(グラフ用データ)を書き込みます
+			IGM_BK_0303_TOTAL_AMOUNT$ = ""						'合計金額を初期化します
+			COMMON PRINT #G_NUM, IGM_BK_0303_TOTAL_AMOUNT$		'グローバル共有変数(合計金額)を書き込みます
+			IGM_BK_0303_DAILY_AVG_AMOUNT$ = ""					'日平均金額を初期化します
+			COMMON PRINT #G_NUM, IGM_BK_0303_DAILY_AVG_AMOUNT$	'グローバル共有変数(平均金額)を書き込みます
+			REDIM PRESERVE IGM_BK_0304_GRAPH_DATA$(1, 1)		'グラフ用データを初期化します
+			IGM_BK_0304_GRAPH_DATA$(1, 0) = "":	IGM_BK_0304_GRAPH_DATA$(1, 1) = ""
+			COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_DATA$		'グローバル共有変数(グラフ用データ)を書き込みます
+			
+			EXIT SUB											'サブルーチンを抜けます
+		END IF
+		
+		'-----------------------------------------------------------------------
+		'CSVファイルのデータを加工し、グローバル共有変数(一覧表示用データ)へ登録(更新)します
+		'-----------------------------------------------------------------------
+		L_MAX_SRC_DIM = UBOUND(L_CSV_DATA$, 1)					'受注データの添字の最大値
+
+		REDIM PRESERVE L_INS_COL$(L_MAX_SRC_DIM)				'挿入列用の配列変数を宣言します
+
+		L_INS_COL$(0) = "#"										'挿入する列の見出しを代入します
+		FOR L_LOOP = 1 TO L_MAX_SRC_DIM							'データ件数分繰り返します(見出しを読み飛ばすため1から開始)
+			L_INS_COL$(L_LOOP) = "<A HREF='0305_INPUT.ajn?INPUT_NUM=" + L_CSV_DATA$(L_LOOP, 0) + "'>編集</A>"	'列の値(編集画面へのリンク)を作成します
+		NEXT L_LOOP
+
+		IGM_BK_0302_LIST_DATA$ = L_CSV_DATA$					'グローバル共有変数に代入します
+
+		TWODIM INSERT COLUMN, IGM_BK_0302_LIST_DATA$, 0, L_INS_COL$	'列を挿入します
+		
+		COMMON PRINT #G_NUM, IGM_BK_0302_LIST_DATA$				'グローバル共有変数(一覧表示用データ)を書き込みます
+
+		'-----------------------------------------------------------------------
+		'CSVファイルのデータを集計し、結果をグローバル共有変数(グラフ用データ)へ登録(更新)します
+		'-----------------------------------------------------------------------
+		L_MAX_DAYS = 10											'最大表示日数
+		L_MAX_DIM = L_MAX_SRC_DIM - 1							'並び替え用配列の添字(見出しデータ分を-1します)
+
+		REDIM PRESERVE L_0303_SORT$(L_MAX_DIM)					'並び替え用の配列変数を宣言します
+
+		FOR L_LOOP = 1 TO L_MAX_SRC_DIM							'データ件数分繰り返します(見出しを読み飛ばすため1から開始)
+			L_SORT_DATE$ = ""									'検索対象日を初期化します
+			IF ISDATETIME(L_CSV_DATA$(L_LOOP, 1), 1) = TRUE THEN		'日付であれば処理します
+				L_SORT_DATE$ = DATE$(CDATETIME(L_CSV_DATA$(L_LOOP, 1)))	'受注日を日時形式(YYYY/MM/DD)に変換します
+			END IF
+			
+			L_0303_SORT$(L_LOOP - 1) = L_SORT_DATE$				'並び替え用の配列変数へ受注日を代入します
+		NEXT L_LOOP
+		
+		L_0303_SORT$ = ONEDIM SORT$(L_0303_SORT$, 1)			'降順に並び替えます
+
+		IF L_MAX_DIM < L_MAX_DAYS THEN							'データ件数より最大表示日数が大きい場合に処理します
+			L_MAX_DAYS = L_MAX_DIM								'最大表示日数をデータ件数とします
+		END IF
+
+		REDIM PRESERVE IGM_BK_0303_GRAPH_DATA$(L_MAX_DAYS, 1)	'グローバル共有変数(グラフ用データ)を初期化します
+
+		L_GRH_DIM_NUM = 0										'グラフ用配列変数の添字を初期化します
+		L_SRC_DATE$ = ""										'検索対象日を初期化します
+		FOR L_LOOP = 0 TO L_MAX_DIM								'データ件数分処理します
+			L_TOTAL_AMOUNT = 0									'合計金額をリセット(0に)します
+			IF L_0303_SORT$(L_LOOP) <> L_SRC_DATE$ AND L_0303_SORT$(L_LOOP) <> "" THEN		'新たな日付の場合に処理します
+				L_SRC_DATE$ = L_0303_SORT$(L_LOOP)											'検索用キーワード(受注日)を代入します
+				L_SRC_DIM = DIMFIND(L_CSV_DATA$, L_SRC_DATE$, 0, [1;1], [L_MAX_SRC_DIM;1])	'指定した受注日のデータがあるか
+																							'検索します(受注日の列のみを検索します)
+				IF CDIM(L_SRC_DIM) > 1 THEN													'データが見つかれば処理します
+					FOR L_J_LOOP = 0 TO UBOUND(L_SRC_DIM, 1)								'見つかったデータ件数分処理します
+						L_TOTAL_AMOUNT = L_TOTAL_AMOUNT + VAL(L_CSV_DATA$(L_SRC_DIM(L_J_LOOP, 0), 7))	'受注金額を足します
+					NEXT L_J_LOOP
+				END IF
+			
+				IGM_BK_0303_GRAPH_DATA$(L_MAX_DAYS - L_GRH_DIM_NUM, 0) = L_SRC_DATE$			'受注日をグローバル共有変数へ代入します
+				IGM_BK_0303_GRAPH_DATA$(L_MAX_DAYS - L_GRH_DIM_NUM, 1) = STR$(L_TOTAL_AMOUNT)	'日別の合計金額をグローバル共有変数へ代入します
+
+				L_GRH_DIM_NUM = L_GRH_DIM_NUM + 1												'グラフ用配列変数の添字を+1します
+			END IF
+			
+			IF L_GRH_DIM_NUM >= L_MAX_DAYS THEN					'処理件数が表示日数に達した場合に処理します
+				EXIT FOR										'繰り返し処理(FOR)を止めます
+			END IF
+		NEXT L_LOOP												'繰り返します
+
+		IF L_MAX_DAYS >= L_GRH_DIM_NUM THEN													'配列が埋まっていなければ処理します
+			TWODIM REMOVE ROW, IGM_BK_0303_GRAPH_DATA$, 0, L_MAX_DAYS - L_GRH_DIM_NUM +1	'空の配列(行)を削除します
+		END IF
+
+		TWODIM INSERT ROW, IGM_BK_0303_GRAPH_DATA$, 0, L_0303_HEAD$	'見出しを追加します
+		
+		COMMON PRINT #G_NUM, IGM_BK_0303_GRAPH_DATA$			'グローバル共有変数(グラフ用データ)を書き込みます
+	
+		'-----------------------------------------------------------------------
+		'集計用の変数を作成します
+		'-----------------------------------------------------------------------
+		REDIM PRESERVE L_AMOUNT(UBOUND(IGM_BK_0303_GRAPH_DATA$, 1) - 1)	'集計処理用の配列変数を初期化します
+		
+		FOR L_I_LOOP = 1 TO UBOUND(IGM_BK_0303_GRAPH_DATA$, 1)					'グラフ用データの行数分繰り返します
+			L_AMOUNT(L_I_LOOP -1) = VAL(IGM_BK_0303_GRAPH_DATA$(L_I_LOOP, 1))	'集計処理用変数へ日別の合計金額を代入します
+		NEXT L_I_LOOP
+
+		IGM_BK_0303_TOTAL_AMOUNT$ = STR$(DIMSUM(L_AMOUNT))				'合計金額を代入します
+		COMMON PRINT #G_NUM, IGM_BK_0303_TOTAL_AMOUNT$					'グローバル共有変数(合計金額)を書き込みます
+
+		IGM_BK_0303_DAILY_AVG_AMOUNT$ = STR$(ROUND(DIMAVG(L_AMOUNT)))	'平均金額を代入します
+		COMMON PRINT #G_NUM, IGM_BK_0303_DAILY_AVG_AMOUNT$				'グローバル共有変数(平均金額)を書き込みます
+
+		'-----------------------------------------------------------------------
+		'CSVファイルのデータを集計し、結果をグローバル共有変数(円グラフ用データ)へ登録(更新)します
+		'-----------------------------------------------------------------------
+
+		REDIM PRESERVE L_0304_SORT$(L_MAX_DIM)					'並び替え用の配列変数を宣言します
+
+		FOR L_LOOP = 1 TO L_MAX_SRC_DIM							'データ件数分繰り返します(見出しを読み飛ばすため1から開始)
+			L_0304_SORT$(L_LOOP - 1) = L_CSV_DATA$(L_LOOP, 4)	'並び替え用の配列変数へ商品名を代入します
+		NEXT L_LOOP
+		
+		L_0304_SORT$ = ONEDIM SORT$(L_0304_SORT$, 0)			'昇順に並び替えます
+
+		L_MAX_ITEMS = L_MAX_DIM									'最大表示商品名数をデータ件数とします
+
+		REDIM PRESERVE IGM_BK_0304_GRAPH_DATA$(L_MAX_ITEMS, 1)	'グローバル共有変数(配列)を初期化します
+
+		L_GRH_DIM_NUM = 0										'グラフ用配列変数の添字を初期化します
+		L_SRC_ITEM$ = ""										'検索対象日を初期化します
+		FOR L_LOOP = 0 TO L_MAX_DIM								'データ件数分処理します
+			L_TOTAL_AMOUNT = 0									'合計金額をリセット(0に)します
+			IF L_0304_SORT$(L_LOOP) <> L_SRC_ITEM$ _
+				OR (L_LOOP = 0 AND L_0304_SORT$(L_LOOP) = L_SRC_ITEM$) THEN	'新たな商品名の場合に処理します
+
+				L_SRC_ITEM$ = L_0304_SORT$(L_LOOP)							'検索用キーワード(商品名)を代入します
+				L_SRC_DIM = DIMFIND(L_CSV_DATA$, L_SRC_ITEM$, 0, [1;4], [L_MAX_SRC_DIM;4])	'指定した商品名のデータがあるか
+																							'検索します(商品名の列のみを検索します)
+
+				IF CDIM(L_SRC_DIM) > 1 THEN						'データがあれば処理します
+					FOR L_J_LOOP = 0 TO UBOUND(L_SRC_DIM, 1)	'見つかったデータ件数分処理します
+						L_TOTAL_AMOUNT = L_TOTAL_AMOUNT + VAL(L_CSV_DATA$(L_SRC_DIM(L_J_LOOP, 0), 7))	'受注金額を足します
+					NEXT L_J_LOOP
+				END IF
+			
+				IGM_BK_0304_GRAPH_DATA$(L_GRH_DIM_NUM, 0) = L_SRC_ITEM$				'商品名をグローバル共有変数へ代入します
+				IGM_BK_0304_GRAPH_DATA$(L_GRH_DIM_NUM, 1) = STR$(L_TOTAL_AMOUNT)	'受注金額(合計金額)をグローバル共有変数へ代入します
+
+				L_GRH_DIM_NUM = L_GRH_DIM_NUM + 1				'グラフ用配列変数の添字を+1します
+			END IF
+			
+		NEXT L_LOOP												'繰り返します
+
+		IF L_MAX_ITEMS >= L_GRH_DIM_NUM THEN								'配列が埋まっていなければ処理します
+			TWODIM REMOVE ROW, IGM_BK_0304_GRAPH_DATA$, L_GRH_DIM_NUM, -1	'空の配列(行)を削除します
+		END IF
+
+		TWODIM INSERT ROW, IGM_BK_0304_GRAPH_DATA$, 0, L_0304_HEAD$			'見出しを追加します
+		
+		IF UBOUND(IGM_BK_0304_GRAPH_DATA$, 1) > 1 THEN						'データが2行以上ある場合に処理します。
+			'-----------------------------------------------------------------------
+			'円グラフ用データを受注金額の高い順に並び替えます(バブルソート)
+			'-----------------------------------------------------------------------
+			L_KEYPOS = 1													'並べ替え用項目の添字を指定します(1は受注金額)
+			L_SWAP$ = ""													'入れ換え用変数を初期化します
+			FOR L_I_LOOP = 1 TO UBOUND(IGM_BK_0304_GRAPH_DATA$, 1)			'データの行数分繰り返します
+																			'(0は見出しが入るため、1から始めています)
+				FOR L_J_LOOP = 1 TO UBOUND(IGM_BK_0304_GRAPH_DATA$, 1) - 1	'データの行数分(最後の一行を除く)繰り返します
+																			'(1行先の行を見て処理するためです)
+					IF VAL(IGM_BK_0304_GRAPH_DATA$(L_J_LOOP, L_KEYPOS)) < VAL(IGM_BK_0304_GRAPH_DATA$(L_J_LOOP + 1, L_KEYPOS)) THEN	'1行先の受注金額と比較し、小さければ処理します
+						FOR L_K_LOOP = LBOUND(IGM_BK_0304_GRAPH_DATA$, 2) TO UBOUND(IGM_BK_0304_GRAPH_DATA$, 2)	'列の数だけ繰り返します
+							L_SWAP$ = IGM_BK_0304_GRAPH_DATA$(L_J_LOOP, L_K_LOOP)								'今の行の値を保持します
+							IGM_BK_0304_GRAPH_DATA$(L_J_LOOP, L_K_LOOP) = IGM_BK_0304_GRAPH_DATA$(L_J_LOOP + 1, L_K_LOOP)	'今の行へ1行先の値を代入します
+							IGM_BK_0304_GRAPH_DATA$(L_J_LOOP + 1, L_K_LOOP) = L_SWAP$							'保持していた今の行の値を1行先の行へ代入します
+						NEXT L_K_LOOP
+					END IF
+				NEXT L_J_LOOP
+			NEXT L_I_LOOP
+		END IF
+
+		COMMON PRINT #G_NUM, IGM_BK_0304_GRAPH_DATA$						'グローバル共有変数(グラフ用データ)を書き込みます
+	END SELECT
+	
+END SUB
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

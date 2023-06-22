@@ -1,0 +1,3505 @@
+' -------------------------------------------------------------------------
+'    かんたん AJAN web フォームプログラム by Interface PageGenerator
+'
+'      filename:   0102_SUPERCDForm.ajn
+'      page-title: SuperCD®操作
+'      pagesize:   1400x900
+'      generator:  ver 1.24.038b
+'      generate:   2022/10/19 17:44:15
+'                                                 Powerd by Interface AJAN
+' -------------------------------------------------------------------------
+
+' ########################################################################
+'  このファイルは、Interface PageGenerator により自動作成されたものです。
+'  このファイルの編集は行なわないでください。
+'  このファイルの編集を行なった場合の動作は保証できません。
+' ########################################################################
+
+' --------------------
+' グローバル変数定義
+PageGeneratorPageResident$ = "TRUE"
+
+' --------------------
+' イベントアクションソースデータ作成
+CALL PageGeneratorEventActionSourceMaker()
+
+' --------------------
+' 一括表示開始
+WEB_BATCH_BEGIN ""
+
+' --------------------------------------------------
+'  pgMAIN ページ設定
+' --------------------------------------------------
+' web ページを構成する
+CALL CreatepgMAIN
+
+' ---------------------------------------
+' CreatepgMAIN コールバック関数
+'   SUB CreatepgMAIN
+' ---------------------------------------
+SUB CreatepgMAIN
+	LOCAL STRUCT PageGeneratorPageConfig cfg
+
+	' --------
+	' ページを作成する
+	cfg.id$ = "pgMAIN"
+	cfg.x$ = "0"
+	cfg.y$ = "0"
+	cfg.width$ = "1400"
+	cfg.height$ = "900"
+	cfg.title$ = "SuperCD®操作"
+	cfg.image$ = ""
+	cfg.background$ = "WHITE"
+	cfg.batch$ = "TRUE"
+	cfg.waitmessage$ = ""
+	cfg.event$ = "TRUE"
+	cfg.resident$ = "TRUE"
+	cfg.idle$ = "SLOWER"
+	CALL PageGeneratorPage("pgMAIN", cfg)
+END SUB
+
+' --------------------------------------------------
+'  Parts104 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts104
+
+' ---------------------------------------
+' CreateParts104 コールバック関数
+'   SUB CreateParts104
+' ---------------------------------------
+SUB CreateParts104
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts104"
+	cfg.x$ = "10"
+	cfg.y$ = "330"
+	cfg.width$ = "220"
+	cfg.height$ = "450"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "SILVER"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts104", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts102 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts102
+
+' ---------------------------------------
+' CreateParts102 コールバック関数
+'   SUB CreateParts102
+' ---------------------------------------
+SUB CreateParts102
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts102"
+	cfg.x$ = "243"
+	cfg.y$ = "330"
+	cfg.width$ = "537"
+	cfg.height$ = "450"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "SILVER"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts102", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts103 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts103
+
+' ---------------------------------------
+' CreateParts103 コールバック関数
+'   SUB CreateParts103
+' ---------------------------------------
+SUB CreateParts103
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts103"
+	cfg.x$ = "243"
+	cfg.y$ = "93"
+	cfg.width$ = "537"
+	cfg.height$ = "224"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "SILVER"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts103", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lblTITLE ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblTITLE
+
+' ---------------------------------------
+' CreatelblTITLE コールバック関数
+'   SUB CreatelblTITLE
+' ---------------------------------------
+SUB CreatelblTITLE
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblTITLE"
+	cfg.x$ = "10"
+	cfg.y$ = "10"
+	cfg.width$ = "770"
+	cfg.height$ = "70"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("lblTITLE", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lblFOOTER ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreatelblFOOTER
+
+' ---------------------------------------
+' CreatelblFOOTER コールバック関数
+'   SUB CreatelblFOOTER
+' ---------------------------------------
+SUB CreatelblFOOTER
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "lblFOOTER"
+	cfg.x$ = "10"
+	cfg.y$ = "793"
+	cfg.width$ = "770"
+	cfg.height$ = "24"
+	cfg.text$ = "POWERED BY AJAN®"
+	cfg.textalign$ = "RIGHT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "SILVER"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("lblFOOTER", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts37 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts37
+
+' ---------------------------------------
+' CreateParts37 コールバック関数
+'   SUB CreateParts37
+' ---------------------------------------
+SUB CreateParts37
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts37"
+	cfg.x$ = "64"
+	cfg.y$ = "140"
+	cfg.width$ = "166"
+	cfg.height$ = "121"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts37", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts38 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts38
+
+' ---------------------------------------
+' CreateParts38 コールバック関数
+'   SUB CreateParts38
+' ---------------------------------------
+SUB CreateParts38
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts38"
+	cfg.x$ = "10"
+	cfg.y$ = "140"
+	cfg.width$ = "50"
+	cfg.height$ = "121"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "NAVY"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts38", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts39 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts39
+
+' ---------------------------------------
+' CreateParts39 コールバック関数
+'   SUB CreateParts39
+' ---------------------------------------
+SUB CreateParts39
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts39"
+	cfg.x$ = "64"
+	cfg.y$ = "264"
+	cfg.width$ = "166"
+	cfg.height$ = "53"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "NAVY"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts39", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts40 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts40
+
+' ---------------------------------------
+' CreateParts40 コールバック関数
+'   SUB CreateParts40
+' ---------------------------------------
+SUB CreateParts40
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts40"
+	cfg.x$ = "64"
+	cfg.y$ = "93"
+	cfg.width$ = "166"
+	cfg.height$ = "44"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "NAVY"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts40", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts41 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts41
+
+' ---------------------------------------
+' CreateParts41 コールバック関数
+'   SUB CreateParts41
+' ---------------------------------------
+SUB CreateParts41
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts41"
+	cfg.x$ = "254"
+	cfg.y$ = "364"
+	cfg.width$ = "512"
+	cfg.height$ = "171"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts41", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts42 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts42
+
+' ---------------------------------------
+' CreateParts42 コールバック関数
+'   SUB CreateParts42
+' ---------------------------------------
+SUB CreateParts42
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts42"
+	cfg.x$ = "257"
+	cfg.y$ = "333"
+	cfg.width$ = "128"
+	cfg.height$ = "28"
+	cfg.text$ = "マイク入力"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts42", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  mtrRMS メーター設定
+' --------------------------------------------------
+' メーターを作成する
+CALL CreatemtrRMS
+
+' ---------------------------------------
+' CreatemtrRMS コールバック関数
+'   SUB CreatemtrRMS
+' ---------------------------------------
+SUB CreatemtrRMS
+	LOCAL STRUCT PageGeneratorMeterConfig cfg
+
+	' --------
+	' メーターを作成する
+	cfg.id$ = "mtrRMS"
+	cfg.x$ = "264"
+	cfg.y$ = "424"
+	cfg.width$ = "100"
+	cfg.height$ = "100"
+	cfg.metertype$ = "RADIAL"
+	cfg.min$ = "0"
+	cfg.max$ = "1"
+	cfg.value$ = "0"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "WHITE"
+	cfg.anglestart$ = "110"
+	cfg.angleend$ = "140"
+	cfg.majorlist$ = "0;1.0"
+	cfg.majorcolor$ = "BLACK"
+	cfg.miner$ = "4"
+	cfg.minercolor$ = "BLACK"
+	cfg.tickfontsize$ = "32"
+	cfg.tickfontcolor$ = "BLACK"
+	cfg.highlight$ = "{0.7;0.9;YELLOW}{0.9;1.0;RED}"
+	cfg.unit$ = ""
+	cfg.unitfontsize$ = "32"
+	cfg.unitfontcolor$ = "BLACK"
+	cfg.needle$ = "ARROW"
+	cfg.needlecolor$ = "RED"
+	cfg.needlestart$ = "10"
+	cfg.needleend$ = "100"
+	cfg.needlewidth$ = "3"
+	cfg.circlesize$ = "10"
+	cfg.circlecolor$ = "GRAY"
+	cfg.animation$ = "500"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorMeter("mtrRMS", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  grhMIC グラフ設定
+' --------------------------------------------------
+' グラフを作成する
+CALL CreategrhMIC
+
+' ---------------------------------------
+' CreategrhMIC コールバック関数
+'   SUB CreategrhMIC
+' ---------------------------------------
+SUB CreategrhMIC
+	LOCAL STRUCT PageGeneratorChartConfig cfg
+
+	' --------
+	' グラフを作成する
+	cfg.id$ = "grhMIC"
+	cfg.x$ = "372"
+	cfg.y$ = "369"
+	cfg.width$ = "203"
+	cfg.height$ = "160"
+	cfg.graphclass$ = "LINE"
+	cfg.graphtype$ = ""
+	cfg.horizontal$ = "FALSE"
+	cfg.shadecolor$ = ""
+	cfg.title$ = "波形"
+	cfg.titlesize$ = "12"
+	cfg.titlecolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.dataset$ = "系列1"
+	cfg.stackgroup$ = ""
+	cfg.item$ = ""
+	cfg.linetype$ = "CURVE"
+	cfg.linewidth$ = "1"
+	cfg.pointsize$ = "0"
+	cfg.pointstyle$ = ""
+	cfg.color$ = "BLACK"
+	cfg.x_label$ = ""
+	cfg.y_label$ = ""
+	cfg.y_label_right$ = ""
+	cfg.labelsize$ = "11"
+	cfg.labelcolor$ = "BLACK"
+	cfg.x_sublabel$ = "A;B;C;D"
+	cfg.sublabelsize$ = "11"
+	cfg.sublabelcolor$ = "BLACK"
+	cfg.sublabelangle$ = "90"
+	cfg.autoscale$ = "FALSE"
+	cfg.x_min$ = "0"
+	cfg.x_max$ = "100"
+	cfg.x_scale$ = ""
+	cfg.y_min$ = "-2"
+	cfg.y_max$ = "2"
+	cfg.y_scale$ = "LINEAR"
+	cfg.y_min_right$ = ""
+	cfg.y_max_right$ = ""
+	cfg.y_scale_right$ = ""
+	cfg.minvalue$ = ""
+	cfg.maxvalue$ = ""
+	cfg.gridwidth$ = "1"
+	cfg.gridcolor$ = "#CECECE"
+	cfg.legend$ = "FALSE"
+	cfg.datalabel$ = ""
+	cfg.datalabelsize$ = ""
+	cfg.datalabelcolor$ = ""
+	cfg.datasource$ = ""
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorChart("grhMIC", cfg, true, false)
+END SUB
+
+' --------------------------------------------------
+'  Parts45 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts45
+
+' ---------------------------------------
+' CreateParts45 コールバック関数
+'   SUB CreateParts45
+' ---------------------------------------
+SUB CreateParts45
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts45"
+	cfg.x$ = "21"
+	cfg.y$ = "364"
+	cfg.width$ = "195"
+	cfg.height$ = "404"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts45", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  mtrPOW メーター設定
+' --------------------------------------------------
+' メーターを作成する
+CALL CreatemtrPOW
+
+' ---------------------------------------
+' CreatemtrPOW コールバック関数
+'   SUB CreatemtrPOW
+' ---------------------------------------
+SUB CreatemtrPOW
+	LOCAL STRUCT PageGeneratorMeterConfig cfg
+
+	' --------
+	' メーターを作成する
+	cfg.id$ = "mtrPOW"
+	cfg.x$ = "104"
+	cfg.y$ = "424"
+	cfg.width$ = "100"
+	cfg.height$ = "100"
+	cfg.metertype$ = "RADIAL"
+	cfg.min$ = "0"
+	cfg.max$ = "20"
+	cfg.value$ = "0"
+	cfg.background$ = "BLACK"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.anglestart$ = "40"
+	cfg.angleend$ = "140"
+	cfg.majorlist$ = "0;5;10;15;20"
+	cfg.majorcolor$ = "WHITE"
+	cfg.miner$ = "4"
+	cfg.minercolor$ = "WHITE"
+	cfg.tickfontsize$ = "32"
+	cfg.tickfontcolor$ = "WHITE"
+	cfg.highlight$ = "{15;18;YELLOW}{18;20;RED}"
+	cfg.unit$ = ""
+	cfg.unitfontsize$ = "32"
+	cfg.unitfontcolor$ = "WHITE"
+	cfg.needle$ = "ARROW"
+	cfg.needlecolor$ = "RED"
+	cfg.needlestart$ = "10"
+	cfg.needleend$ = "100"
+	cfg.needlewidth$ = "3"
+	cfg.circlesize$ = "6"
+	cfg.circlecolor$ = "GRAY"
+	cfg.animation$ = "500"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorMeter("mtrPOW", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  mtrCPU_TMP メーター設定
+' --------------------------------------------------
+' メーターを作成する
+CALL CreatemtrCPU_TMP
+
+' ---------------------------------------
+' CreatemtrCPU_TMP コールバック関数
+'   SUB CreatemtrCPU_TMP
+' ---------------------------------------
+SUB CreatemtrCPU_TMP
+	LOCAL STRUCT PageGeneratorMeterConfig cfg
+
+	' --------
+	' メーターを作成する
+	cfg.id$ = "mtrCPU_TMP"
+	cfg.x$ = "103"
+	cfg.y$ = "536"
+	cfg.width$ = "100"
+	cfg.height$ = "101"
+	cfg.metertype$ = "LINEAR"
+	cfg.min$ = "0"
+	cfg.max$ = "80"
+	cfg.value$ = "0"
+	cfg.background$ = "BLACK"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.barcolor$ = "RED"
+	cfg.barbordercolor$ = "GRAY"
+	cfg.bulb$ = "TRUE"
+	cfg.majorlist$ = "0;30;50;80"
+	cfg.majorcolor$ = "WHITE"
+	cfg.miner$ = "4"
+	cfg.minercolor$ = "WHITE"
+	cfg.tickfontsize$ = "30"
+	cfg.tickfontcolor$ = "WHITE"
+	cfg.highlight$ = "{60;70;YELLOW}{70;80;RED}"
+	cfg.unit$ = ""
+	cfg.unitfontsize$ = "32"
+	cfg.unitfontcolor$ = "WHITE"
+	cfg.needle$ = "ARROW"
+	cfg.needlecolor$ = "RED"
+	cfg.needlewidth$ = "8"
+	cfg.animation$ = "500"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorMeter("mtrCPU_TMP", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  mtrBRD_TMP メーター設定
+' --------------------------------------------------
+' メーターを作成する
+CALL CreatemtrBRD_TMP
+
+' ---------------------------------------
+' CreatemtrBRD_TMP コールバック関数
+'   SUB CreatemtrBRD_TMP
+' ---------------------------------------
+SUB CreatemtrBRD_TMP
+	LOCAL STRUCT PageGeneratorMeterConfig cfg
+
+	' --------
+	' メーターを作成する
+	cfg.id$ = "mtrBRD_TMP"
+	cfg.x$ = "103"
+	cfg.y$ = "650"
+	cfg.width$ = "100"
+	cfg.height$ = "101"
+	cfg.metertype$ = "LINEAR"
+	cfg.min$ = "0"
+	cfg.max$ = "80"
+	cfg.value$ = "0"
+	cfg.background$ = "GREEN"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.barcolor$ = "RED"
+	cfg.barbordercolor$ = "GRAY"
+	cfg.bulb$ = "TRUE"
+	cfg.majorlist$ = "0;30;50;80"
+	cfg.majorcolor$ = "WHITE"
+	cfg.miner$ = "4"
+	cfg.minercolor$ = "WHITE"
+	cfg.tickfontsize$ = "30"
+	cfg.tickfontcolor$ = "WHITE"
+	cfg.highlight$ = "{60;70;YELLOW}{70;80;RED}"
+	cfg.unit$ = ""
+	cfg.unitfontsize$ = "32"
+	cfg.unitfontcolor$ = "WHITE"
+	cfg.needle$ = "ARROW"
+	cfg.needlecolor$ = "RED"
+	cfg.needlewidth$ = "8"
+	cfg.animation$ = "500"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorMeter("mtrBRD_TMP", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  grhFFT グラフ設定
+' --------------------------------------------------
+' グラフを作成する
+CALL CreategrhFFT
+
+' ---------------------------------------
+' CreategrhFFT コールバック関数
+'   SUB CreategrhFFT
+' ---------------------------------------
+SUB CreategrhFFT
+	LOCAL STRUCT PageGeneratorChartConfig cfg
+
+	' --------
+	' グラフを作成する
+	cfg.id$ = "grhFFT"
+	cfg.x$ = "584"
+	cfg.y$ = "369"
+	cfg.width$ = "180"
+	cfg.height$ = "160"
+	cfg.graphclass$ = "LINE"
+	cfg.graphtype$ = ""
+	cfg.horizontal$ = "FALSE"
+	cfg.shadecolor$ = ""
+	cfg.title$ = "FFT"
+	cfg.titlesize$ = "12"
+	cfg.titlecolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.dataset$ = "系列1"
+	cfg.stackgroup$ = ""
+	cfg.item$ = ""
+	cfg.linetype$ = "CURVE"
+	cfg.linewidth$ = "1"
+	cfg.pointsize$ = "0"
+	cfg.pointstyle$ = ""
+	cfg.color$ = "RED"
+	cfg.x_label$ = ""
+	cfg.y_label$ = ""
+	cfg.y_label_right$ = ""
+	cfg.labelsize$ = "11"
+	cfg.labelcolor$ = "BLACK"
+	cfg.x_sublabel$ = "A;B;C;D"
+	cfg.sublabelsize$ = "11"
+	cfg.sublabelcolor$ = "BLACK"
+	cfg.sublabelangle$ = "90"
+	cfg.autoscale$ = "FALSE"
+	cfg.x_min$ = "0"
+	cfg.x_max$ = "100"
+	cfg.x_scale$ = ""
+	cfg.y_min$ = "0"
+	cfg.y_max$ = "100"
+	cfg.y_scale$ = "LINEAR"
+	cfg.y_min_right$ = ""
+	cfg.y_max_right$ = ""
+	cfg.y_scale_right$ = ""
+	cfg.minvalue$ = ""
+	cfg.maxvalue$ = ""
+	cfg.gridwidth$ = "1"
+	cfg.gridcolor$ = "#CECECE"
+	cfg.legend$ = "FALSE"
+	cfg.datalabel$ = ""
+	cfg.datalabelsize$ = ""
+	cfg.datalabelcolor$ = ""
+	cfg.datasource$ = ""
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorChart("grhFFT", cfg, true, false)
+END SUB
+
+' --------------------------------------------------
+'  Parts51 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts51
+
+' ---------------------------------------
+' CreateParts51 コールバック関数
+'   SUB CreateParts51
+' ---------------------------------------
+SUB CreateParts51
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts51"
+	cfg.x$ = "72"
+	cfg.y$ = "211"
+	cfg.width$ = "33"
+	cfg.height$ = "24"
+	cfg.text$ = "||||||"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts51", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtCLOCK テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtCLOCK
+
+' ---------------------------------------
+' CreatetxtCLOCK コールバック関数
+'   SUB CreatetxtCLOCK
+' ---------------------------------------
+SUB CreatetxtCLOCK
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtCLOCK"
+	cfg.x$ = "143"
+	cfg.y$ = "151"
+	cfg.width$ = "75"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = "00:00:00"
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "BLACK"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "15"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorText("txtCLOCK", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts64 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts64
+
+' ---------------------------------------
+' CreateParts64 コールバック関数
+'   SUB CreateParts64
+' ---------------------------------------
+SUB CreateParts64
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts64"
+	cfg.x$ = "26"
+	cfg.y$ = "333"
+	cfg.width$ = "104"
+	cfg.height$ = "28"
+	cfg.text$ = "測定メーター"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts64", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts65 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts65
+
+' ---------------------------------------
+' CreateParts65 コールバック関数
+'   SUB CreateParts65
+' ---------------------------------------
+SUB CreateParts65
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts65"
+	cfg.x$ = "27"
+	cfg.y$ = "454"
+	cfg.width$ = "92"
+	cfg.height$ = "26"
+	cfg.text$ = "外部電源電圧"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "11"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts65", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts66 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts66
+
+' ---------------------------------------
+' CreateParts66 コールバック関数
+'   SUB CreateParts66
+' ---------------------------------------
+SUB CreateParts66
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts66"
+	cfg.x$ = "26"
+	cfg.y$ = "574"
+	cfg.width$ = "65"
+	cfg.height$ = "26"
+	cfg.text$ = "CPU温度"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts66", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts67 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts67
+
+' ---------------------------------------
+' CreateParts67 コールバック関数
+'   SUB CreateParts67
+' ---------------------------------------
+SUB CreateParts67
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts67"
+	cfg.x$ = "28"
+	cfg.y$ = "693"
+	cfg.width$ = "64"
+	cfg.height$ = "26"
+	cfg.text$ = "基板温度"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts67", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts69 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts69
+
+' ---------------------------------------
+' CreateParts69 コールバック関数
+'   SUB CreateParts69
+' ---------------------------------------
+SUB CreateParts69
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts69"
+	cfg.x$ = "407"
+	cfg.y$ = "140"
+	cfg.width$ = "360"
+	cfg.height$ = "165"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts69", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO1_2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO1_2
+
+' ---------------------------------------
+' CreatelmpDO1_2 コールバック関数
+'   SUB CreatelmpDO1_2
+' ---------------------------------------
+SUB CreatelmpDO1_2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO1_2"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "502"
+	cfg.y$ = "190"
+	cfg.width$ = "45"
+	cfg.height$ = "45"
+	cfg.value$ = "0"
+	cfg.color$ = "#9ACD32"
+	cfg.text$ = "1"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "SILVER"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO1_2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO2_2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO2_2
+
+' ---------------------------------------
+' CreatelmpDO2_2 コールバック関数
+'   SUB CreatelmpDO2_2
+' ---------------------------------------
+SUB CreatelmpDO2_2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO2_2"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "567"
+	cfg.y$ = "190"
+	cfg.width$ = "45"
+	cfg.height$ = "45"
+	cfg.value$ = "0"
+	cfg.color$ = "BLUE"
+	cfg.text$ = "2"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "SILVER"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO2_2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO3_2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO3_2
+
+' ---------------------------------------
+' CreatelmpDO3_2 コールバック関数
+'   SUB CreatelmpDO3_2
+' ---------------------------------------
+SUB CreatelmpDO3_2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO3_2"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "632"
+	cfg.y$ = "190"
+	cfg.width$ = "45"
+	cfg.height$ = "45"
+	cfg.value$ = "0"
+	cfg.color$ = "GREEN"
+	cfg.text$ = "3"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "SILVER"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO3_2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnDI1 ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnDI1
+
+' ---------------------------------------
+' CreatebtnDI1 コールバック関数
+'   SUB CreatebtnDI1
+' ---------------------------------------
+SUB CreatebtnDI1
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnDI1"
+	cfg.x$ = "501"
+	cfg.y$ = "264"
+	cfg.width$ = "46"
+	cfg.height$ = "30"
+	cfg.type$ = "PUSH"
+	cfg.text$ = "PUSH"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "16"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnDI1", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnDI2 ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnDI2
+
+' ---------------------------------------
+' CreatebtnDI2 コールバック関数
+'   SUB CreatebtnDI2
+' ---------------------------------------
+SUB CreatebtnDI2
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnDI2"
+	cfg.x$ = "566"
+	cfg.y$ = "264"
+	cfg.width$ = "46"
+	cfg.height$ = "30"
+	cfg.type$ = "PUSH"
+	cfg.text$ = "PUSH"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "17"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnDI2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnDI3 ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnDI3
+
+' ---------------------------------------
+' CreatebtnDI3 コールバック関数
+'   SUB CreatebtnDI3
+' ---------------------------------------
+SUB CreatebtnDI3
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnDI3"
+	cfg.x$ = "635"
+	cfg.y$ = "264"
+	cfg.width$ = "40"
+	cfg.height$ = "30"
+	cfg.type$ = "TOGGLE"
+	cfg.text$ = "OFF"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "18"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnDI3", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnDI4 ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnDI4
+
+' ---------------------------------------
+' CreatebtnDI4 コールバック関数
+'   SUB CreatebtnDI4
+' ---------------------------------------
+SUB CreatebtnDI4
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnDI4"
+	cfg.x$ = "701"
+	cfg.y$ = "264"
+	cfg.width$ = "40"
+	cfg.height$ = "30"
+	cfg.type$ = "TOGGLE"
+	cfg.text$ = "OFF"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "19"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnDI4", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts87 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts87
+
+' ---------------------------------------
+' CreateParts87 コールバック関数
+'   SUB CreateParts87
+' ---------------------------------------
+SUB CreateParts87
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts87"
+	cfg.x$ = "677"
+	cfg.y$ = "572"
+	cfg.width$ = "89"
+	cfg.height$ = "196"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts87", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnREC ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnREC
+
+' ---------------------------------------
+' CreatebtnREC コールバック関数
+'   SUB CreatebtnREC
+' ---------------------------------------
+SUB CreatebtnREC
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnREC"
+	cfg.x$ = "702"
+	cfg.y$ = "613"
+	cfg.width$ = "40"
+	cfg.height$ = "40"
+	cfg.type$ = "NORMAL"
+	cfg.text$ = "●"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "RED"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "25"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnREC", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnPLAY ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnPLAY
+
+' ---------------------------------------
+' CreatebtnPLAY コールバック関数
+'   SUB CreatebtnPLAY
+' ---------------------------------------
+SUB CreatebtnPLAY
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnPLAY"
+	cfg.x$ = "702"
+	cfg.y$ = "690"
+	cfg.width$ = "40"
+	cfg.height$ = "40"
+	cfg.type$ = "NORMAL"
+	cfg.text$ = "▶"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "26"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnPLAY", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnMTR ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnMTR
+
+' ---------------------------------------
+' CreatebtnMTR コールバック関数
+'   SUB CreatebtnMTR
+' ---------------------------------------
+SUB CreatebtnMTR
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnMTR"
+	cfg.x$ = "133"
+	cfg.y$ = "377"
+	cfg.width$ = "40"
+	cfg.height$ = "30"
+	cfg.type$ = "TOGGLE"
+	cfg.text$ = "OFF"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "30"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnMTR", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts95 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts95
+
+' ---------------------------------------
+' CreateParts95 コールバック関数
+'   SUB CreateParts95
+' ---------------------------------------
+SUB CreateParts95
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts95"
+	cfg.x$ = "254"
+	cfg.y$ = "572"
+	cfg.width$ = "413"
+	cfg.height$ = "196"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts95", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts96 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts96
+
+' ---------------------------------------
+' CreateParts96 コールバック関数
+'   SUB CreateParts96
+' ---------------------------------------
+SUB CreateParts96
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts96"
+	cfg.x$ = "704"
+	cfg.y$ = "585"
+	cfg.width$ = "36"
+	cfg.height$ = "26"
+	cfg.text$ = "録音"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts96", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts97 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts97
+
+' ---------------------------------------
+' CreateParts97 コールバック関数
+'   SUB CreateParts97
+' ---------------------------------------
+SUB CreateParts97
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts97"
+	cfg.x$ = "705"
+	cfg.y$ = "660"
+	cfg.width$ = "36"
+	cfg.height$ = "26"
+	cfg.text$ = "再生"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts97", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts98 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts98
+
+' ---------------------------------------
+' CreateParts98 コールバック関数
+'   SUB CreateParts98
+' ---------------------------------------
+SUB CreateParts98
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts98"
+	cfg.x$ = "409"
+	cfg.y$ = "95"
+	cfg.width$ = "120"
+	cfg.height$ = "28"
+	cfg.text$ = "デジタル入出力"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts98", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts100 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts100
+
+' ---------------------------------------
+' CreateParts100 コールバック関数
+'   SUB CreateParts100
+' ---------------------------------------
+SUB CreateParts100
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts100"
+	cfg.x$ = "430"
+	cfg.y$ = "190"
+	cfg.width$ = "36"
+	cfg.height$ = "26"
+	cfg.text$ = "出力"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts100", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts101 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts101
+
+' ---------------------------------------
+' CreateParts101 コールバック関数
+'   SUB CreateParts101
+' ---------------------------------------
+SUB CreateParts101
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts101"
+	cfg.x$ = "430"
+	cfg.y$ = "254"
+	cfg.width$ = "36"
+	cfg.height$ = "26"
+	cfg.text$ = "入力"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts101", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  chkDIO チェックボックス設定
+' --------------------------------------------------
+' チェックボックスを作成する
+CALL CreatechkDIO
+
+' ---------------------------------------
+' CreatechkDIO コールバック関数
+'   SUB CreatechkDIO
+' ---------------------------------------
+SUB CreatechkDIO
+	LOCAL STRUCT PageGeneratorCheckConfig cfg
+
+	' --------
+	' チェックボックスを作成する
+	cfg.id$ = "chkDIO"
+	cfg.x$ = "622"
+	cfg.y$ = "115"
+	cfg.width$ = "142"
+	cfg.height$ = "23"
+	cfg.text$ = "操作卓に切り替える"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.value$ = "FALSE"
+	cfg.tabindex$ = "31"
+	cfg.disabled$ = "FALSE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorCheck("chkDIO", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpBUZZ ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpBUZZ
+
+' ---------------------------------------
+' CreatelmpBUZZ コールバック関数
+'   SUB CreatelmpBUZZ
+' ---------------------------------------
+SUB CreatelmpBUZZ
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpBUZZ"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "102"
+	cfg.y$ = "214"
+	cfg.width$ = "32"
+	cfg.height$ = "20"
+	cfg.value$ = "0"
+	cfg.color$ = "WHITE"
+	cfg.text$ = "Pi-"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "GREEN"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpBUZZ", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts108 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts108
+
+' ---------------------------------------
+' CreateParts108 コールバック関数
+'   SUB CreateParts108
+' ---------------------------------------
+SUB CreateParts108
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts108"
+	cfg.x$ = "67"
+	cfg.y$ = "267"
+	cfg.width$ = "167"
+	cfg.height$ = "22"
+	cfg.text$ = "DO 4　3　2　1　　DI 4　3　2　1"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "10"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts108", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnSPCH_AIKO ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnSPCH_AIKO
+
+' ---------------------------------------
+' CreatebtnSPCH_AIKO コールバック関数
+'   SUB CreatebtnSPCH_AIKO
+' ---------------------------------------
+SUB CreatebtnSPCH_AIKO
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnSPCH_AIKO"
+	cfg.x$ = "481"
+	cfg.y$ = "670"
+	cfg.width$ = "80"
+	cfg.height$ = "80"
+	cfg.type$ = "NORMAL"
+	cfg.text$ = ""
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "23"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnSPCH_AIKO", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnSPCH_FUTAGO ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnSPCH_FUTAGO
+
+' ---------------------------------------
+' CreatebtnSPCH_FUTAGO コールバック関数
+'   SUB CreatebtnSPCH_FUTAGO
+' ---------------------------------------
+SUB CreatebtnSPCH_FUTAGO
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnSPCH_FUTAGO"
+	cfg.x$ = "571"
+	cfg.y$ = "670"
+	cfg.width$ = "80"
+	cfg.height$ = "80"
+	cfg.type$ = "NORMAL"
+	cfg.text$ = ""
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "24"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnSPCH_FUTAGO", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  selDIO_MODE セレクトボックス設定
+' --------------------------------------------------
+' セレクトボックスを作成する
+CALL CreateselDIO_MODE
+
+' ---------------------------------------
+' CreateselDIO_MODE コールバック関数
+'   SUB CreateselDIO_MODE
+' ---------------------------------------
+SUB CreateselDIO_MODE
+	LOCAL STRUCT PageGeneratorSelectConfig cfg
+
+	' --------
+	' セレクトボックスを作成する
+	cfg.id$ = "selDIO_MODE"
+	cfg.x$ = "495"
+	cfg.y$ = "151"
+	cfg.width$ = "258"
+	cfg.height$ = "26"
+	cfg.index$ = "1;2"
+	cfg.item$ = "1:ノーマル;2:メーター読み上げ"
+	cfg.itemsize$ = "14"
+	cfg.itemcolor$ = "BLACK"
+	cfg.selectedidx$ = "1"
+	cfg.tabindex$ = "33"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.disabled$ = "FALSE"
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorSelect("selDIO_MODE", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts127 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts127
+
+' ---------------------------------------
+' CreateParts127 コールバック関数
+'   SUB CreateParts127
+' ---------------------------------------
+SUB CreateParts127
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts127"
+	cfg.x$ = "426"
+	cfg.y$ = "152"
+	cfg.width$ = "44"
+	cfg.height$ = "23"
+	cfg.text$ = "モード"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts127", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts129 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts129
+
+' ---------------------------------------
+' CreateParts129 コールバック関数
+'   SUB CreateParts129
+' ---------------------------------------
+SUB CreateParts129
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts129"
+	cfg.x$ = "257"
+	cfg.y$ = "540"
+	cfg.width$ = "104"
+	cfg.height$ = "28"
+	cfg.text$ = "読み上げ"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts129", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  selSPCH_LIST セレクトボックス設定
+' --------------------------------------------------
+' セレクトボックスを作成する
+CALL CreateselSPCH_LIST
+
+' ---------------------------------------
+' CreateselSPCH_LIST コールバック関数
+'   SUB CreateselSPCH_LIST
+' ---------------------------------------
+SUB CreateselSPCH_LIST
+	LOCAL STRUCT PageGeneratorSelectConfig cfg
+
+	' --------
+	' セレクトボックスを作成する
+	cfg.id$ = "selSPCH_LIST"
+	cfg.x$ = "270"
+	cfg.y$ = "586"
+	cfg.width$ = "381"
+	cfg.height$ = "28"
+	cfg.index$ = ";こんにちは;おつかれさまです;時間ですよ;今何時？;自己紹介;本の紹介;SuperCD®の紹介;AJAN®の紹介"
+	cfg.item$ = "ここで選択するか、下の欄へ入力して下さい。;こんにちは;おつかれさまです;時間ですよ;今何時？;自己紹介;本の紹介;SuperCD®の紹介;AJAN®の紹介"
+	cfg.itemsize$ = "16"
+	cfg.itemcolor$ = "BLACK"
+	cfg.selectedidx$ = ""
+	cfg.tabindex$ = "28"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.disabled$ = "FALSE"
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorSelect("selSPCH_LIST", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtSPCH_TXT テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtSPCH_TXT
+
+' ---------------------------------------
+' CreatetxtSPCH_TXT コールバック関数
+'   SUB CreatetxtSPCH_TXT
+' ---------------------------------------
+SUB CreatetxtSPCH_TXT
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtSPCH_TXT"
+	cfg.x$ = "270"
+	cfg.y$ = "624"
+	cfg.width$ = "382"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = "読ませたい文章を入力します。"
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "29"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorText("txtSPCH_TXT", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts132 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts132
+
+' ---------------------------------------
+' CreateParts132 コールバック関数
+'   SUB CreateParts132
+' ---------------------------------------
+SUB CreateParts132
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts132"
+	cfg.x$ = "677"
+	cfg.y$ = "540"
+	cfg.width$ = "88"
+	cfg.height$ = "28"
+	cfg.text$ = "ボイスメモ"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts132", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts133 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts133
+
+' ---------------------------------------
+' CreateParts133 コールバック関数
+'   SUB CreateParts133
+' ---------------------------------------
+SUB CreateParts133
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts133"
+	cfg.x$ = "40"
+	cfg.y$ = "380"
+	cfg.width$ = "40"
+	cfg.height$ = "28"
+	cfg.text$ = "測定"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts133", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts134 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts134
+
+' ---------------------------------------
+' CreateParts134 コールバック関数
+'   SUB CreateParts134
+' ---------------------------------------
+SUB CreateParts134
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts134"
+	cfg.x$ = "68"
+	cfg.y$ = "90"
+	cfg.width$ = "110"
+	cfg.height$ = "22"
+	cfg.text$ = "オーディオ"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "11"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "NAVY"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts134", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts135 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts135
+
+' ---------------------------------------
+' CreateParts135 コールバック関数
+'   SUB CreateParts135
+' ---------------------------------------
+SUB CreateParts135
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts135"
+	cfg.x$ = "10"
+	cfg.y$ = "145"
+	cfg.width$ = "47"
+	cfg.height$ = "22"
+	cfg.text$ = "ひもSW"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "11"
+	cfg.textcolor$ = "WHITE"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts135", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtDI1 テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtDI1
+
+' ---------------------------------------
+' CreatetxtDI1 コールバック関数
+'   SUB CreatetxtDI1
+' ---------------------------------------
+SUB CreatetxtDI1
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtDI1"
+	cfg.x$ = "786"
+	cfg.y$ = "218"
+	cfg.width$ = "14"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "43"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtDI1", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtDI2 テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtDI2
+
+' ---------------------------------------
+' CreatetxtDI2 コールバック関数
+'   SUB CreatetxtDI2
+' ---------------------------------------
+SUB CreatetxtDI2
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtDI2"
+	cfg.x$ = "811"
+	cfg.y$ = "218"
+	cfg.width$ = "14"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "44"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtDI2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtDI3 テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtDI3
+
+' ---------------------------------------
+' CreatetxtDI3 コールバック関数
+'   SUB CreatetxtDI3
+' ---------------------------------------
+SUB CreatetxtDI3
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtDI3"
+	cfg.x$ = "836"
+	cfg.y$ = "218"
+	cfg.width$ = "15"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "45"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtDI3", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtDI4 テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtDI4
+
+' ---------------------------------------
+' CreatetxtDI4 コールバック関数
+'   SUB CreatetxtDI4
+' ---------------------------------------
+SUB CreatetxtDI4
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtDI4"
+	cfg.x$ = "864"
+	cfg.y$ = "218"
+	cfg.width$ = "15"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "46"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtDI4", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO4_2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO4_2
+
+' ---------------------------------------
+' CreatelmpDO4_2 コールバック関数
+'   SUB CreatelmpDO4_2
+' ---------------------------------------
+SUB CreatelmpDO4_2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO4_2"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "697"
+	cfg.y$ = "190"
+	cfg.width$ = "45"
+	cfg.height$ = "45"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = "4"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "SILVER"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO4_2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtREC テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtREC
+
+' ---------------------------------------
+' CreatetxtREC コールバック関数
+'   SUB CreatetxtREC
+' ---------------------------------------
+SUB CreatetxtREC
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtREC"
+	cfg.x$ = "786"
+	cfg.y$ = "612"
+	cfg.width$ = "14"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "47"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtREC", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtPLAY テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtPLAY
+
+' ---------------------------------------
+' CreatetxtPLAY コールバック関数
+'   SUB CreatetxtPLAY
+' ---------------------------------------
+SUB CreatetxtPLAY
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtPLAY"
+	cfg.x$ = "785"
+	cfg.y$ = "687"
+	cfg.width$ = "16"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "48"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtPLAY", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnSPCH_IOTA ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnSPCH_IOTA
+
+' ---------------------------------------
+' CreatebtnSPCH_IOTA コールバック関数
+'   SUB CreatebtnSPCH_IOTA
+' ---------------------------------------
+SUB CreatebtnSPCH_IOTA
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnSPCH_IOTA"
+	cfg.x$ = "390"
+	cfg.y$ = "670"
+	cfg.width$ = "80"
+	cfg.height$ = "80"
+	cfg.type$ = "NORMAL"
+	cfg.text$ = ""
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "22"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnSPCH_IOTA", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts147 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts147
+
+' ---------------------------------------
+' CreateParts147 コールバック関数
+'   SUB CreateParts147
+' ---------------------------------------
+SUB CreateParts147
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts147"
+	cfg.x$ = "259"
+	cfg.y$ = "673"
+	cfg.width$ = "116"
+	cfg.height$ = "23"
+	cfg.text$ = "キャラクターを"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts147", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts148 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts148
+
+' ---------------------------------------
+' CreateParts148 コールバック関数
+'   SUB CreateParts148
+' ---------------------------------------
+SUB CreateParts148
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts148"
+	cfg.x$ = "259"
+	cfg.y$ = "700"
+	cfg.width$ = "128"
+	cfg.height$ = "23"
+	cfg.text$ = "クリックして下さい。"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts148", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts149 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts149
+
+' ---------------------------------------
+' CreateParts149 コールバック関数
+'   SUB CreateParts149
+' ---------------------------------------
+SUB CreateParts149
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts149"
+	cfg.x$ = "518"
+	cfg.y$ = "242"
+	cfg.width$ = "15"
+	cfg.height$ = "22"
+	cfg.text$ = "1"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts149", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts150 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts150
+
+' ---------------------------------------
+' CreateParts150 コールバック関数
+'   SUB CreateParts150
+' ---------------------------------------
+SUB CreateParts150
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts150"
+	cfg.x$ = "582"
+	cfg.y$ = "242"
+	cfg.width$ = "15"
+	cfg.height$ = "22"
+	cfg.text$ = "2"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts150", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts151 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts151
+
+' ---------------------------------------
+' CreateParts151 コールバック関数
+'   SUB CreateParts151
+' ---------------------------------------
+SUB CreateParts151
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts151"
+	cfg.x$ = "647"
+	cfg.y$ = "242"
+	cfg.width$ = "15"
+	cfg.height$ = "22"
+	cfg.text$ = "3"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts151", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts152 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts152
+
+' ---------------------------------------
+' CreateParts152 コールバック関数
+'   SUB CreateParts152
+' ---------------------------------------
+SUB CreateParts152
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts152"
+	cfg.x$ = "712"
+	cfg.y$ = "242"
+	cfg.width$ = "15"
+	cfg.height$ = "22"
+	cfg.text$ = "4"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts152", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts153 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts153
+
+' ---------------------------------------
+' CreateParts153 コールバック関数
+'   SUB CreateParts153
+' ---------------------------------------
+SUB CreateParts153
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts153"
+	cfg.x$ = "428"
+	cfg.y$ = "210"
+	cfg.width$ = "39"
+	cfg.height$ = "24"
+	cfg.text$ = "(DO)"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts153", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts154 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts154
+
+' ---------------------------------------
+' CreateParts154 コールバック関数
+'   SUB CreateParts154
+' ---------------------------------------
+SUB CreateParts154
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts154"
+	cfg.x$ = "432"
+	cfg.y$ = "273"
+	cfg.width$ = "32"
+	cfg.height$ = "24"
+	cfg.text$ = "(DI)"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts154", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpSPK ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpSPK
+
+' ---------------------------------------
+' CreatelmpSPK コールバック関数
+'   SUB CreatelmpSPK
+' ---------------------------------------
+SUB CreatelmpSPK
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpSPK"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "72"
+	cfg.y$ = "108"
+	cfg.width$ = "25"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = "出"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpSPK", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpMIC ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpMIC
+
+' ---------------------------------------
+' CreatelmpMIC コールバック関数
+'   SUB CreatelmpMIC
+' ---------------------------------------
+SUB CreatelmpMIC
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpMIC"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "100"
+	cfg.y$ = "108"
+	cfg.width$ = "25"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = "入"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpMIC", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts155 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts155
+
+' ---------------------------------------
+' CreateParts155 コールバック関数
+'   SUB CreateParts155
+' ---------------------------------------
+SUB CreateParts155
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts155"
+	cfg.x$ = "285"
+	cfg.y$ = "114"
+	cfg.width$ = "108"
+	cfg.height$ = "26"
+	cfg.text$ = "/ひもスイッチ"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts155", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts99 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts99
+
+' ---------------------------------------
+' CreateParts99 コールバック関数
+'   SUB CreateParts99
+' ---------------------------------------
+SUB CreateParts99
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts99"
+	cfg.x$ = "257"
+	cfg.y$ = "95"
+	cfg.width$ = "140"
+	cfg.height$ = "26"
+	cfg.text$ = "警報ランプ/ブザー"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts99", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts70 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts70
+
+' ---------------------------------------
+' CreateParts70 コールバック関数
+'   SUB CreateParts70
+' ---------------------------------------
+SUB CreateParts70
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts70"
+	cfg.x$ = "254"
+	cfg.y$ = "140"
+	cfg.width$ = "139"
+	cfg.height$ = "165"
+	cfg.text$ = ""
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts70", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts80 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts80
+
+' ---------------------------------------
+' CreateParts80 コールバック関数
+'   SUB CreateParts80
+' ---------------------------------------
+SUB CreateParts80
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts80"
+	cfg.x$ = "257"
+	cfg.y$ = "150"
+	cfg.width$ = "68"
+	cfg.height$ = "26"
+	cfg.text$ = "警報ランプ"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts80", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts81 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts81
+
+' ---------------------------------------
+' CreateParts81 コールバック関数
+'   SUB CreateParts81
+' ---------------------------------------
+SUB CreateParts81
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts81"
+	cfg.x$ = "332"
+	cfg.y$ = "150"
+	cfg.width$ = "50"
+	cfg.height$ = "26"
+	cfg.text$ = "ブザー"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts81", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtLED テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtLED
+
+' ---------------------------------------
+' CreatetxtLED コールバック関数
+'   SUB CreatetxtLED
+' ---------------------------------------
+SUB CreatetxtLED
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtLED"
+	cfg.x$ = "306"
+	cfg.y$ = "185"
+	cfg.width$ = "15"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "35"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtLED", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtBUZZ テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtBUZZ
+
+' ---------------------------------------
+' CreatetxtBUZZ コールバック関数
+'   SUB CreatetxtBUZZ
+' ---------------------------------------
+SUB CreatetxtBUZZ
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtBUZZ"
+	cfg.x$ = "375"
+	cfg.y$ = "180"
+	cfg.width$ = "14"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "36"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtBUZZ", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnLED ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnLED
+
+' ---------------------------------------
+' CreatebtnLED コールバック関数
+'   SUB CreatebtnLED
+' ---------------------------------------
+SUB CreatebtnLED
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnLED"
+	cfg.x$ = "270"
+	cfg.y$ = "190"
+	cfg.width$ = "46"
+	cfg.height$ = "30"
+	cfg.type$ = "PUSH"
+	cfg.text$ = "PUSH"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "20"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnLED", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  btnBUZZ ボタン設定
+' --------------------------------------------------
+' ボタンを作成する
+CALL CreatebtnBUZZ
+
+' ---------------------------------------
+' CreatebtnBUZZ コールバック関数
+'   SUB CreatebtnBUZZ
+' ---------------------------------------
+SUB CreatebtnBUZZ
+	LOCAL STRUCT PageGeneratorButtonConfig cfg
+
+	' --------
+	' ボタンを作成する
+	cfg.id$ = "btnBUZZ"
+	cfg.x$ = "332"
+	cfg.y$ = "190"
+	cfg.width$ = "46"
+	cfg.height$ = "30"
+	cfg.type$ = "PUSH"
+	cfg.text$ = "PUSH"
+	cfg.textsize$ = "14"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "#EEEEEC"
+	cfg.imagefile$ = ""
+	cfg.value$ = "OFF"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "21"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorButton("btnBUZZ", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  Parts124 ラベル設定
+' --------------------------------------------------
+' ラベルを作成する
+CALL CreateParts124
+
+' ---------------------------------------
+' CreateParts124 コールバック関数
+'   SUB CreateParts124
+' ---------------------------------------
+SUB CreateParts124
+	LOCAL STRUCT PageGeneratorLabelConfig cfg
+
+	' --------
+	' ラベルを作成する
+	cfg.id$ = "Parts124"
+	cfg.x$ = "253"
+	cfg.y$ = "230"
+	cfg.width$ = "80"
+	cfg.height$ = "23"
+	cfg.text$ = "ひもスイッチ"
+	cfg.textalign$ = "CENTER"
+	cfg.textsize$ = "12"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "TRANSPARENT"
+	cfg.borderwidth$ = "0"
+	cfg.bordercolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLabel("Parts124", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpHIMO_2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpHIMO_2
+
+' ---------------------------------------
+' CreatelmpHIMO_2 コールバック関数
+'   SUB CreatelmpHIMO_2
+' ---------------------------------------
+SUB CreatelmpHIMO_2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpHIMO_2"
+	cfg.figure$ = "CIRCLE"
+	cfg.x$ = "273"
+	cfg.y$ = "257"
+	cfg.width$ = "40"
+	cfg.height$ = "40"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpHIMO_2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  txtMTR テキストボックス設定
+' --------------------------------------------------
+' テキストボックスを作成する
+CALL CreatetxtMTR
+
+' ---------------------------------------
+' CreatetxtMTR コールバック関数
+'   SUB CreatetxtMTR
+' ---------------------------------------
+SUB CreatetxtMTR
+	LOCAL STRUCT PageGeneratorTextConfig cfg
+
+	' --------
+	' テキストボックスを作成する
+	cfg.id$ = "txtMTR"
+	cfg.x$ = "175"
+	cfg.y$ = "351"
+	cfg.width$ = "20"
+	cfg.height$ = "28"
+	cfg.texttype$ = "TEXT"
+	cfg.text$ = ""
+	cfg.placeholder$ = ""
+	cfg.password$ = "FALSE"
+	cfg.textalign$ = "LEFT"
+	cfg.textsize$ = "16"
+	cfg.textcolor$ = "BLACK"
+	cfg.background$ = "WHITE"
+	cfg.borderwidth$ = "1"
+	cfg.bordercolor$ = "BLACK"
+	cfg.disabled$ = "FALSE"
+	cfg.tabindex$ = "38"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "FALSE"
+	CALL PageGeneratorText("txtMTR", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpLED ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpLED
+
+' ---------------------------------------
+' CreatelmpLED コールバック関数
+'   SUB CreatelmpLED
+' ---------------------------------------
+SUB CreatelmpLED
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpLED"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "66"
+	cfg.y$ = "236"
+	cfg.width$ = "35"
+	cfg.height$ = "15"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpLED", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpHIMO ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpHIMO
+
+' ---------------------------------------
+' CreatelmpHIMO コールバック関数
+'   SUB CreatelmpHIMO
+' ---------------------------------------
+SUB CreatelmpHIMO
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpHIMO"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "15"
+	cfg.y$ = "165"
+	cfg.width$ = "40"
+	cfg.height$ = "15"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpHIMO", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO1 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO1
+
+' ---------------------------------------
+' CreatelmpDO1 コールバック関数
+'   SUB CreatelmpDO1
+' ---------------------------------------
+SUB CreatelmpDO1
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO1"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "124"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO1", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO2
+
+' ---------------------------------------
+' CreatelmpDO2 コールバック関数
+'   SUB CreatelmpDO2
+' ---------------------------------------
+SUB CreatelmpDO2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO2"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "105"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO3 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO3
+
+' ---------------------------------------
+' CreatelmpDO3 コールバック関数
+'   SUB CreatelmpDO3
+' ---------------------------------------
+SUB CreatelmpDO3
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO3"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "86"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO3", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDO4 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDO4
+
+' ---------------------------------------
+' CreatelmpDO4 コールバック関数
+'   SUB CreatelmpDO4
+' ---------------------------------------
+SUB CreatelmpDO4
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDO4"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "67"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "RED"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDO4", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDI1 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDI1
+
+' ---------------------------------------
+' CreatelmpDI1 コールバック関数
+'   SUB CreatelmpDI1
+' ---------------------------------------
+SUB CreatelmpDI1
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDI1"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "208"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDI1", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDI2 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDI2
+
+' ---------------------------------------
+' CreatelmpDI2 コールバック関数
+'   SUB CreatelmpDI2
+' ---------------------------------------
+SUB CreatelmpDI2
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDI2"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "189"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDI2", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDI3 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDI3
+
+' ---------------------------------------
+' CreatelmpDI3 コールバック関数
+'   SUB CreatelmpDI3
+' ---------------------------------------
+SUB CreatelmpDI3
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDI3"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "170"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDI3", cfg, true)
+END SUB
+
+' --------------------------------------------------
+'  lmpDI4 ランプ設定
+' --------------------------------------------------
+' ランプを作成する
+CALL CreatelmpDI4
+
+' ---------------------------------------
+' CreatelmpDI4 コールバック関数
+'   SUB CreatelmpDI4
+' ---------------------------------------
+SUB CreatelmpDI4
+	LOCAL STRUCT PageGeneratorLampConfig cfg
+
+	' --------
+	' ランプを作成する
+	cfg.id$ = "lmpDI4"
+	cfg.figure$ = "ROUNDRECT"
+	cfg.x$ = "151"
+	cfg.y$ = "286"
+	cfg.width$ = "18"
+	cfg.height$ = "25"
+	cfg.value$ = "0"
+	cfg.color$ = "LIME"
+	cfg.text$ = ""
+	cfg.textsize$ = "24"
+	cfg.textcolor$ = "BLACK"
+	cfg.event$ = "TRUE"
+	cfg.event$ = "TRUE"
+	cfg.tooltip$ = ""
+	cfg.visible$ = "TRUE"
+	CALL PageGeneratorLamp("lmpDI4", cfg, true)
+END SUB
+
+' --------------------
+' 一括表示終了
+WEB_BATCH_END
+
+' -------------------------------------------------------
+' WEB ページのアイドリング
+'   ページのプロパティ 'resident' が TRUE の場合:
+'     ページが閉じられるまで，この関数内で
+'     イベント待ちを継続します。
+'   ページのプロパティ 'resident' が FALSE の場合:
+'     イベント待ちを行わず、即座に処理が返ります。
+' -------------------------------------------------------
+CALL PageGeneratorRunIdle()
+
+' ----------------------------
+' WEB ページの動作を終了する
+END
+
+' -----------------------------------------------------------------
+' イベントアクションソースデータの生成
+' -----------------------------------------------------------------
+SUB PageGeneratorEventActionSourceMaker()
+	redim PageGeneratorEventActionSource$(22, 8)
+	PageGeneratorEventActionSource$(0 to 22, 0 to 8) = [ _
+		["@act:CallSub", "@id:pgMAIN", "@event:IDLE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SWITCH_IDLE"], _
+		["@act:CallSub", "@id:pgMAIN", "@event:IDLE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SET_WEB_PARTS_REFRESH"], _
+		["@act:CallSub", "@id:pgMAIN", "@event:ENTER", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:MAIN_ENTER"], _
+		["@act:FromCommon", "@id:pgMAIN", "@event:ENTER", "@msg:", "@target:selDIO_MODE", "@targetname:easyweb-select", "@prop:selectedidx", "@ajantype:string", "@data:IGM_BK_0102_DIO_MODE"], _
+		["@act:CallSub", "@id:pgMAIN", "@event:LEAVE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:MAIN_LEAVE"], _
+		["@act:ToCommon", "@id:btnDI1", "@event:CHANGE", "@msg:", "@target:btnDI1", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_DIN1"], _
+		["@act:ToCommon", "@id:btnDI2", "@event:CHANGE", "@msg:", "@target:btnDI2", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_DIN2"], _
+		["@act:ToCommon", "@id:btnDI3", "@event:CHANGE", "@msg:", "@target:btnDI3", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_DIN3"], _
+		["@act:ToCommon", "@id:btnDI4", "@event:CHANGE", "@msg:", "@target:btnDI4", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_DIN4"], _
+		["@act:CallSub", "@id:btnREC", "@event:CLICK", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SWITCH"], _
+		["@act:CallSub", "@id:btnPLAY", "@event:CLICK", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SWITCH"], _
+		["@act:ToCommon", "@id:btnMTR", "@event:CHANGE", "@msg:", "@target:btnMTR", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_MTR"], _
+		["@act:CallSub", "@id:chkDIO", "@event:CHANGE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SET_DIO"], _
+		["@act:ToCommon", "@id:btnSPCH_AIKO", "@event:CLICK", "@msg:", "@target:txtSPCH_TXT", "@targetname:easyweb-text", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_SPCH_TXT"], _
+		["@act:CallSub", "@id:btnSPCH_AIKO", "@event:CLICK", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SET_SPCH_FLG"], _
+		["@act:ToCommon", "@id:btnSPCH_FUTAGO", "@event:CLICK", "@msg:", "@target:txtSPCH_TXT", "@targetname:easyweb-text", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_SPCH_TXT"], _
+		["@act:CallSub", "@id:btnSPCH_FUTAGO", "@event:CLICK", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SET_SPCH_FLG"], _
+		["@act:ToCommon", "@id:selDIO_MODE", "@event:CHANGE", "@msg:", "@target:selDIO_MODE", "@targetname:easyweb-select", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_DIO_MODE"], _
+		["@act:CallSub", "@id:selSPCH_LIST", "@event:CHANGE", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SET_SPCH_TEXT"], _
+		["@act:ToCommon", "@id:btnSPCH_IOTA", "@event:CLICK", "@msg:", "@target:txtSPCH_TXT", "@targetname:easyweb-text", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_SPCH_TXT"], _
+		["@act:CallSub", "@id:btnSPCH_IOTA", "@event:CLICK", "@msg:", "@target:pgMAIN", "@targetname:undefined", "@prop:undefined", "@ajantype:undefined", "@data:SET_SPCH_FLG"], _
+		["@act:ToCommon", "@id:btnLED", "@event:CHANGE", "@msg:", "@target:btnLED", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_LED"], _
+		["@act:ToCommon", "@id:btnBUZZ", "@event:CHANGE", "@msg:", "@target:btnBUZZ", "@targetname:easyweb-button", "@prop:undefined", "@ajantype:string", "@data:IGM_BK_0102_BUZZ"] _
+	]
+END SUB
+
+

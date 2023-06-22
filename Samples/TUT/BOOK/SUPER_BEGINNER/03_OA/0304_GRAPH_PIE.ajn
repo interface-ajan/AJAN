@@ -1,0 +1,187 @@
+' -----------------------------------------------------------------------------
+'    かんたん AJAN web プログラム by Interface PageGenerator
+'
+'      filename:   0304_GRAPH_PIE.ajn
+'      generate:   2021/05/17 18:52:29
+'      generator:  ver 1.10.018d
+'                                                    Powerd by Interface AJAN
+' -----------------------------------------------------------------------------
+
+' #############################################################################
+'  このファイルには，イベントアクションエディタで定義したアクションで使用する
+'  グローバル変数の作成(初期化)やサブルーチンを記述します。
+'  このファイルを編集した場合は、PageGenerator による web ページの生成が必要です。
+' #############################################################################
+
+' #######################################################
+' グローバル変数を定義する場合は，ここで作成(初期化)します。
+' #######################################################
+
+G_NUM = COMMON FREEFILE()			'オープンするときのグローバル共有変数用番号を取得します
+
+LIST IGM_BK_0304_GRAPH_DATA$		'グラフ用データ
+
+G_BFR_TITLE$ = ""					'画面タイトル（前回の値）
+G_BFR_TITLE_COLOR$ = ""				'画面タイトル文字色（前回の値）
+G_BFR_TITLE_BGCOLOR$ = ""			'画面タイトル背景色（前回の値）
+G_BFR_GRAPH_DATALABEL_TYPE$ = ""	'データラベルのタイプ（前回の値）
+									'(NONE:なし,VALUE:値表示,PERCENT:パーセント表示,BOTH:値とパーセント表示)
+G_BFR_GRAPH_LEGEND$ = ""			'グラフ凡例の表示/非表示(TRUE:表示,FALSE:非表示)（前回の値）
+G_BFR_GRAPH_COLOR$ = ""				'グラフの色（前回の値）
+G_BFR_GRAPH_FONT_SIZE$ = ""			'グラフのフォントサイズ（前回の値）
+G_BFR_TABLE_FONT_SIZE$ = ""			'テーブルのフォントサイズ（前回の値）
+G_BFR_GRAPH_DATA$ = ""				'グラフ用データ（前回の値）
+
+
+' #######################################################
+' サブルーチンを記述する場合は，ここに記述します。
+' #######################################################
+
+
+
+'===============================================================================
+' sub module   :GRAPH_PIE_ENTER
+' explanation   :(1)画面表示完了時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB GRAPH_PIE_ENTER(id$, event$, msg$)
+	
+	COMMON OPEN "127.0.0.1" AS #G_NUM							'グローバル共有を開きます
+
+	WEB_TABLE_SET "tblDATA", AJAN_TABLE_COLUMN_ALIGN, "2,RIGHT"	'表の2列目を右寄せにします
+
+	CALL SET_WEB_PARTS_REFRESH									'Web部品にデータをセットします。
+
+	ON TIMER(1000) CALL SET_WEB_PARTS_REFRESH					'グローバル共有変数を定期的(1秒おき)にチェックします
+	TIMER ON
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :GRAPH_PIE_LEAVE
+' explanation   :(1)画面を閉じる時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB GRAPH_PIE_LEAVE(id$, event$, msg$)
+
+	COMMON CLOSE #G_NUM		'グローバル共有を閉じます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_WEB_PARTS_REFRESH
+' explanation   :(1)前回の値を違っていたら、Web部品にデータをセットします。
+' input         :(1)
+' output        :(1)
+'===============================================================================
+
+SUB SET_WEB_PARTS_REFRESH()
+	LOCAL L_LGD_VISIBLE										'グラフ凡例の表示/非表示
+	LOCAL LIST L_TABLE_DATA$								'表用データ
+	LOCAL L_CK_GRAPH_DATA$									'チェック用グラフデータ
+	LOCAL L_GRAPH_COLOR$									'グラフにセットするための色の値
+	LOCAL L_GRAPH_UPD_FLG$									'グラフ更新フラグ（T：更新する、F：更新しない）
+
+	'グローバル共有変数を読み出します
+	COMMON INPUT #G_NUM, IGM_BK_0304_TITLE$					'画面タイトル
+	COMMON INPUT #G_NUM, IGM_BK_0304_TITLE_COLOR$			'画面タイトル文字色
+	COMMON INPUT #G_NUM, IGM_BK_0304_TITLE_BGCOLOR$			'画面タイトル背景色
+	COMMON INPUT #G_NUM, IGM_BK_0304_GRAPH_DATALABEL_TYPE$	'データラベルのタイプ
+															'(NONE:なし,VALUE:値表示,PERCENT:パーセント表示,BOTH:値とパーセント表示)
+	COMMON INPUT #G_NUM, IGM_BK_0304_GRAPH_LEGEND$			'グラフ凡例の表示/非表示(TRUE:表示,FALSE:非表示)
+	COMMON INPUT #G_NUM, IGM_BK_0304_GRAPH_COLOR$			'グラフの色
+	COMMON INPUT #G_NUM, IGM_BK_0304_GRAPH_FONT_SIZE$		'グラフのフォントサイズ
+	COMMON INPUT #G_NUM, IGM_BK_0304_TABLE_FONT_SIZE$		'テーブルのフォントサイズ
+	COMMON INPUT #G_NUM, IGM_BK_0304_GRAPH_DATA$			'グラフ用データ
+
+	L_GRAPH_UPD_FLG$ = "F"																	'グラフ更新フラグを初期化します
+
+	IF G_BFR_TITLE$ <> IGM_BK_0304_TITLE$ THEN												'前回の値と違っていたら処理します
+		WEB_PAGE_SET AJAN_PAGE_TITLE, IGM_BK_0304_TITLE$									'画面タイトルの値をセットします
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_VALUE, IGM_BK_0304_TITLE$						'画面タイトルの値をセットします
+		G_BFR_TITLE$ = IGM_BK_0304_TITLE$													'今回の値を保持します
+	END IF	
+
+	IF G_BFR_TITLE_COLOR$ <> IGM_BK_0304_TITLE_COLOR$ THEN									'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_COLOR, IGM_BK_0304_TITLE_COLOR$				'画面タイトル文字色の値をセットします
+		G_BFR_TITLE_COLOR$ = IGM_BK_0304_TITLE_COLOR$										'今回の値を保持します
+	END IF	
+	
+	IF G_BFR_TITLE_BGCOLOR$ <> IGM_BK_0304_TITLE_BGCOLOR$ THEN								'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_BACKGROUND_COLOR, IGM_BK_0304_TITLE_BGCOLOR$	'画面タイトル背景色の値をセットします
+		G_BFR_TITLE_BGCOLOR$ = IGM_BK_0304_TITLE_BGCOLOR$									'今回の値を保持します
+	END IF	
+
+	IF G_BFR_GRAPH_DATALABEL_TYPE$ <> IGM_BK_0304_GRAPH_DATALABEL_TYPE$ THEN				'前回の値と違っていたら処理します
+		SELECT CASE IGM_BK_0304_GRAPH_DATALABEL_TYPE$										'データラベルのタイプの値に応じて設定します
+		CASE "VALUE", "PERCENT", "BOTH"
+			WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_DATA_LABEL_DISP, AJAN_TRUE				'データラベルを表示します
+			WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_DATA_LABEL_TYPE, IGM_BK_0304_GRAPH_DATALABEL_TYPE$	'データラベルのタイプの値をセットします
+		CASE ELSE
+			WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_DATA_LABEL_DISP, AJAN_FALSE				'データラベルを非表示にします
+		END SELECT
+
+		G_BFR_GRAPH_DATALABEL_TYPE$ = IGM_BK_0304_GRAPH_DATALABEL_TYPE$						'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF	
+	
+	IF G_BFR_GRAPH_LEGEND$ <> IGM_BK_0304_GRAPH_LEGEND$ THEN								'前回の値と違っていたら処理します
+		SELECT CASE UCASE$(IGM_BK_0304_GRAPH_LEGEND$)										'グラフ凡例の表示/非表示によって処理します
+		CASE "TRUE":	L_LGD_VISIBLE = AJAN_TRUE
+		CASE ELSE:		L_LGD_VISIBLE = AJAN_FALSE
+		END SELECT
+		
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA_NAME_DISPLAY, L_LGD_VISIBLE					'グラフ凡例の表示/非表示の値をセットします
+		G_BFR_GRAPH_LEGEND$ = IGM_BK_0304_GRAPH_LEGEND$										'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF	
+	
+	IF G_BFR_GRAPH_COLOR$ <> IGM_BK_0304_GRAPH_COLOR$ THEN									'前回の値と違っていたら処理します
+		L_GRAPH_COLOR$ = REPLACE$(IGM_BK_0304_GRAPH_COLOR$, ";", ",")						'グラフの仕様に合わせるために";"を","に変換します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA_BACKGROUND_COLOR, L_GRAPH_COLOR$				'グラフの色の値をセットします
+		G_BFR_GRAPH_COLOR$ = IGM_BK_0304_GRAPH_COLOR$										'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF	
+
+	IF G_BFR_GRAPH_FONT_SIZE$ <> IGM_BK_0304_GRAPH_FONT_SIZE$ THEN									'前回の値と違っていたら処理します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_DATA_LABEL_FONT_SIZE, IGM_BK_0304_GRAPH_FONT_SIZE$	'グラフのフォントサイズの値をセットします
+		G_BFR_GRAPH_FONT_SIZE$ = IGM_BK_0304_GRAPH_FONT_SIZE$										'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF	
+
+	IF G_BFR_TABLE_FONT_SIZE$ <> IGM_BK_0304_TABLE_FONT_SIZE$ THEN							'前回の値と違っていたら処理します
+		WEB_TABLE_SET "tblDATA", AJAN_TABLE_FONT_SIZE, IGM_BK_0304_TABLE_FONT_SIZE$			'テーブルのフォントサイズの値をセットします
+		G_BFR_TABLE_FONT_SIZE$ = IGM_BK_0304_TABLE_FONT_SIZE$								'今回の値を保持します
+		L_GRAPH_UPD_FLG$ = "T"																'グラフ更新フラグをON("T")にします
+	END IF	
+
+	L_CK_GRAPH_DATA$ = ARRAY2CSV$(IGM_BK_0304_GRAPH_DATA$)									'配列をテキスト文字列に変換します
+	IF G_BFR_GRAPH_DATA$ <> L_CK_GRAPH_DATA$ OR L_GRAPH_UPD_FLG$ = "T" THEN					'前回の値と違っているか、グラフ更新フラグがON("T")なら処理します
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_GRAPH_LABEL, IGM_BK_0304_GRAPH_DATA$(1 TO UBOUND(IGM_BK_0304_GRAPH_DATA$, 1), 0)
+		WEB_GRAPH_SET "grhDATA", 1, AJAN_DATA, IGM_BK_0304_GRAPH_DATA$(1 TO UBOUND(IGM_BK_0304_GRAPH_DATA$, 1), 1)
+
+		L_TABLE_DATA$ = IGM_BK_0304_GRAPH_DATA$												'表用データにグラフ用データを代入します
+		TWODIM REMOVE ROW, L_TABLE_DATA$, 0, 1												'見出し行を削除します
+		
+		WEB_TABLE_SET "tblDATA", AJAN_TABLE_COLUMN, IGM_BK_0304_GRAPH_DATA$(0, 0 TO UBOUND(IGM_BK_0304_GRAPH_DATA$, 2))	'表の見出しの値をセットします
+		WEB_TABLE_SET "tblDATA", AJAN_TABLE_DATA, L_TABLE_DATA$								'表の値をセットします
+
+		G_BFR_GRAPH_DATA$ = L_CK_GRAPH_DATA$												'今回の値を保持します
+	END IF
+		
+END SUB
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

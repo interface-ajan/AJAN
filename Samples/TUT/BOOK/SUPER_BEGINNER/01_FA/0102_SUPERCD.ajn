@@ -1,0 +1,494 @@
+' -----------------------------------------------------------------------------
+'    かんたん AJAN web プログラム by Interface PageGenerator
+'
+'      filename:   0102_SUPERCD.ajn
+'      generate:   2021/08/20 17:11:50
+'      generator:  ver 1.10.018d
+'                                                    Powerd by Interface AJAN
+' -----------------------------------------------------------------------------
+
+' #############################################################################
+'  このファイルには，イベントアクションエディタで定義したアクションで使用する
+'  グローバル変数の作成(初期化)やサブルーチンを記述します。
+'  このファイルを編集した場合は、PageGenerator による web ページの生成が必要です。
+' #############################################################################
+
+' #######################################################
+' グローバル変数を定義する場合は，ここで作成(初期化)します。
+' #######################################################
+
+G_NUM = COMMON FREEFILE()	'オープンするときのグローバル共有変数用番号を取得します	
+
+LIST IGM_BK_0102_MIC_DATA$	'マイク入力データ
+LIST IGM_BK_0102_FFT_DATA$	'FFTデータ
+
+G_BFR_TITLE$ = ""			'画面タイトル（前回の値）
+G_BFR_TITLE_COLOR$ = ""		'画面タイトル文字色（前回の値）
+G_BFR_TITLE_BGCOLOR$ = ""	'画面タイトル背景色（前回の値）
+
+G_BFR_TIME$ = ""			'時刻（前回の値）
+
+G_BFR_SPK$ = ""				'スピーカー出力の有/無(1/0)（前回の値）
+G_BFR_MIC$ = ""				'マイク入力の有/無(1/0)（前回の値）
+G_BFR_LED$ = ""				'警報ランプのON/OFF(1/0)（前回の値）
+G_BFR_BUZZ$ = ""			'ブザーのON/OFF(1/0)（前回の値）
+G_BFR_HIMO_SW$ = ""			'ひもスイッチ用センサのON/OFF(1/0)（前回の値）
+
+G_BFR_DIO$ = ""				'DIO機器接続有無(1:接続あり,0:接続なし)（前回の値）
+G_BFR_DIN1$ = ""			'DIO IN1（前回の値）
+G_BFR_DIN2$ = ""			'DIO IN2（前回の値）
+G_BFR_DIN3$ = ""			'DIO IN3（前回の値）
+G_BFR_DIN4$ = ""			'DIO IN4（前回の値）
+G_BFR_DOUT1$ = ""			'DIO OUT1（前回の値）
+G_BFR_DOUT2$ = ""			'DIO OUT2（前回の値）
+G_BFR_DOUT3$ = ""			'DIO OUT3（前回の値）
+G_BFR_DOUT4$ = ""			'DIO OUT4（前回の値）
+
+G_BFR_POW$ = ""				'外部電源電圧（前回の値）
+G_BFR_CPU_TMP$ = ""			'CPU温度（前回の値）
+G_BFR_BRD_TMP$ = ""			'基板温度（前回の値）
+G_BFR_MIC_RMS$ = ""			'RMS（前回の値）
+
+
+' #######################################################
+' サブルーチンを記述する場合は，ここに記述します。
+' #######################################################
+
+
+
+
+'===============================================================================
+' sub module   :MAIN_ENTER
+' explanation   :(1)画面表示完了時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB MAIN_ENTER(id$, event$, msg$)
+	
+	COMMON OPEN "127.0.0.1" AS #G_NUM			'グローバル共有を開きます
+	
+	'ボタンに画像を設定します
+	WEB_BUTTON_SET "btnSPCH_IOTA", AJAN_WEB_CSS, "background-image:url('DATA/IOTA.gif');"
+	WEB_BUTTON_SET "btnSPCH_IOTA", AJAN_WEB_CSS, "background-repeat:no-repeat;"
+	WEB_BUTTON_SET "btnSPCH_IOTA", AJAN_WEB_CSS, "background-position:center center;"
+	WEB_BUTTON_SET "btnSPCH_AIKO", AJAN_WEB_CSS, "background-image:url('DATA/AIKO.gif');"
+	WEB_BUTTON_SET "btnSPCH_AIKO", AJAN_WEB_CSS, "background-repeat:no-repeat;"
+	WEB_BUTTON_SET "btnSPCH_AIKO", AJAN_WEB_CSS, "background-position:center center;"
+	WEB_BUTTON_SET "btnSPCH_FUTAGO", AJAN_WEB_CSS, "background-image:url('DATA/FUTAGO.gif');"
+	WEB_BUTTON_SET "btnSPCH_FUTAGO", AJAN_WEB_CSS, "background-repeat:no-repeat;"
+	WEB_BUTTON_SET "btnSPCH_FUTAGO", AJAN_WEB_CSS, "background-position:center center;"
+
+END SUB	
+
+
+'===============================================================================
+' sub module   :MAIN_LEAVE
+' explanation   :(1)画面を閉じる時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB MAIN_LEAVE(id$, event$, msg$)
+
+	IGM_BK_0101_MAIN_FLG$ = "F"					'メインフラグを"F"(停止)にします
+	COMMON PRINT #G_NUM, IGM_BK_0101_MAIN_FLG$	'グローバル共有変数(メインフラグ)を書き込みます
+
+	COMMON CLOSE #G_NUM							'グローバル共有を閉じます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_DIO
+' explanation   :(1)DIO機器接続有無を更新する。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SET_DIO(id$, event$, msg$)
+
+	IGM_BK_0102_DIO$ = AJAN_WEB_FORM$("chkDIO")	'DIO機器接続有無のチェック状況をグローバル共有変数へ取り出します
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIO$		'グローバル共有変数(DIO機器接続有無)を書き込みます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_SPCH_FLG
+' explanation   :(1)読み上げフラグを立てる。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SET_SPCH_FLG(id$, event$, msg$)
+
+	SELECT CASE id$	'クリックされたボタンによって、読み上げタイプを決めます
+	CASE "btnSPCH_IOTA":	IGM_BK_0102_SPCH_TYPE$ = "M"	'いお太くん
+	CASE "btnSPCH_AIKO":	IGM_BK_0102_SPCH_TYPE$ = "F"	'あぃ子さん
+	CASE "btnSPCH_FUTAGO":	IGM_BK_0102_SPCH_TYPE$ = "R"	'両子くん
+	CASE ELSE
+	END SELECT
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TYPE$	'グローバル共有変数(読み上げタイプ)を書き込みます
+	
+	IGM_BK_0102_SPCH_FLG$ = "T"					'読み上げフラグをON("T")にします
+	COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$	'グローバル共有変数(読み上げフラグ)を書き込みます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_SPCH_TEXT
+' explanation   :(1)選択した文字をテキストボックスへセットします。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SET_SPCH_TEXT(id$, event$, msg$)
+
+	WEB_TEXT_SET "txtSPCH_TXT", AJAN_TEXT_VALUE, AJAN_WEB_FORM$("selSPCH_LIST")	'選択した文字をテキストボックスへセットします
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SET_WEB_PARTS_REFRESH
+' explanation   :(1)前回の値を違っていたら、Web部品にデータをセットします。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SET_WEB_PARTS_REFRESH(id$, event$, msg$)
+
+	'グローバル共有変数を読み出します
+	COMMON INPUT #G_NUM, IGM_BK_0102_TITLE$			'画面タイトル
+	COMMON INPUT #G_NUM, IGM_BK_0102_TITLE_COLOR$	'画面タイトル文字色
+	COMMON INPUT #G_NUM, IGM_BK_0102_TITLE_BGCOLOR$	'画面タイトル背景色
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_TIME$			'時刻
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_SPK$			'スピーカー出力の有/無(1/0)
+	COMMON INPUT #G_NUM, IGM_BK_0102_MIC$			'マイク入力の有/無(1/0)
+	COMMON INPUT #G_NUM, IGM_BK_0102_LED$			'警報ランプのON/OFF(1/0)
+	COMMON INPUT #G_NUM, IGM_BK_0102_BUZZ$			'ブザーのON/OFF(1/0)
+	COMMON INPUT #G_NUM, IGM_BK_0102_HIMO_SW$		'ひもスイッチ用センサのON/OFF(1/0)
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIO$			'DIO機器接続有無(1:接続あり,0:接続なし)
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN1$			'DIO IN1
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN2$			'DIO IN2
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN3$			'DIO IN3
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN4$			'DIO IN4
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT1$			'DIO OUT1
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT2$			'DIO OUT2
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT3$			'DIO OUT3
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT4$			'DIO OUT4
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_POW$			'外部電源電圧
+	COMMON INPUT #G_NUM, IGM_BK_0102_CPU_TMP$		'CPU温度
+	COMMON INPUT #G_NUM, IGM_BK_0102_BRD_TMP$		'基板温度
+	COMMON INPUT #G_NUM, IGM_BK_0102_MIC_RMS$		'RMS
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_MIC_DATA$		'マイク入力データ
+	COMMON INPUT #G_NUM, IGM_BK_0102_FFT_DATA$		'FFTデータ
+
+	IF G_BFR_TITLE$ <> IGM_BK_0102_TITLE$ THEN								'前回の値と違っていたら処理します
+		WEB_PAGE_SET AJAN_PAGE_TITLE, IGM_BK_0102_TITLE$					'画面タイトルの値をセットします
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_VALUE, IGM_BK_0102_TITLE$		'画面タイトルの値をセットします
+		G_BFR_TITLE$ = IGM_BK_0102_TITLE$									'今回の値を保持します
+	END IF
+
+	IF G_BFR_TITLE_COLOR$ <> IGM_BK_0102_TITLE_COLOR$ THEN						'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_COLOR, IGM_BK_0102_TITLE_COLOR$	'画面タイトル文字色の値をセットします
+		G_BFR_TITLE_COLOR$ = IGM_BK_0102_TITLE_COLOR$							'今回の値を保持します
+	END IF
+
+	IF G_BFR_TITLE_BGCOLOR$ <> IGM_BK_0102_TITLE_BGCOLOR$ THEN								'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_BACKGROUND_COLOR, IGM_BK_0102_TITLE_BGCOLOR$	'画面タイトル背景色の値をセットします
+		G_BFR_TITLE_BGCOLOR$ = IGM_BK_0102_TITLE_BGCOLOR$									'今回の値を保持します
+	END IF
+
+	IF G_BFR_TIME$ <> IGM_BK_0102_TIME$ THEN								'前回の値と違っていたら処理します
+		WEB_TEXT_SET "txtCLOCK", AJAN_TEXT_VALUE, IGM_BK_0102_TIME$			'時刻の値をセットします
+		G_BFR_TIME$ = IGM_BK_0102_TIME$										'今回の値を保持します
+	END IF
+
+	IF G_BFR_SPK$ <> IGM_BK_0102_SPK$ THEN									'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpSPK", AJAN_LAMP_VALUE, IGM_BK_0102_SPK$			'スピーカー出力の有/無の値をセットします
+		G_BFR_SPK$ = IGM_BK_0102_SPK$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_MIC$ <> IGM_BK_0102_MIC$ THEN									'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpMIC", AJAN_LAMP_VALUE, IGM_BK_0102_MIC$			'マイク入力の有/無の値をセットします
+		G_BFR_MIC$ = IGM_BK_0102_MIC$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_LED$ <> IGM_BK_0102_LED$ THEN									'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpLED", AJAN_LAMP_VALUE, IGM_BK_0102_LED$			'警報ランプのON/OFFの値をセットします
+		G_BFR_LED$ = IGM_BK_0102_LED$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_BUZZ$ <> IGM_BK_0102_BUZZ$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpBUZZ", AJAN_LAMP_VALUE, IGM_BK_0102_BUZZ$			'ブザーのON/OFFの値をセットします
+		G_BFR_BUZZ$ = IGM_BK_0102_BUZZ$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_HIMO_SW$ <> IGM_BK_0102_HIMO_SW$ THEN							'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpHIMO", AJAN_LAMP_VALUE, IGM_BK_0102_HIMO_SW$		'ひもスイッチ用センサのON/OFFの値をセットします
+		WEB_LAMP_SET "lmpHIMO_2", AJAN_LAMP_VALUE, IGM_BK_0102_HIMO_SW$		'ひもスイッチ用センサのON/OFFの値をセットします
+		G_BFR_HIMO_SW$ = IGM_BK_0102_HIMO_SW$								'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DIO$ <> IGM_BK_0102_DIO$ THEN									'前回の値と違っていたら処理します
+		WEB_CHECKBOX_SET "chkDIO", AJAN_CHECKBOX_VALUE, IGM_BK_0102_DIO$	'DIO機器接続有無の値をセットします
+		G_BFR_DIO$ = IGM_BK_0102_DIO$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DIN1$ <> IGM_BK_0102_DIN1$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDI1", AJAN_LAMP_VALUE, IGM_BK_0102_DIN1$			'DIO IN1の値をセットします
+		G_BFR_DIN1$ = IGM_BK_0102_DIN1$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DIN2$ <> IGM_BK_0102_DIN2$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDI2", AJAN_LAMP_VALUE, IGM_BK_0102_DIN2$			'DIO IN2の値をセットします
+		G_BFR_DIN2$ = IGM_BK_0102_DIN2$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DIN3$ <> IGM_BK_0102_DIN3$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDI3", AJAN_LAMP_VALUE, IGM_BK_0102_DIN3$			'DIO IN3の値をセットします
+		G_BFR_DIN3$ = IGM_BK_0102_DIN3$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DIN4$ <> IGM_BK_0102_DIN4$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDI4", AJAN_LAMP_VALUE, IGM_BK_0102_DIN4$			'DIO IN4の値をセットします
+		G_BFR_DIN4$ = IGM_BK_0102_DIN4$										'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DOUT1$ <> IGM_BK_0102_DOUT1$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDO1", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT1$			'DIO OUT1の値をセットします
+		WEB_LAMP_SET "lmpDO1_2", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT1$		'DIO OUT1の値をセットします
+		G_BFR_DOUT1$ = IGM_BK_0102_DOUT1$									'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DOUT2$ <> IGM_BK_0102_DOUT2$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDO2", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT2$			'DIO OUT2の値をセットします
+		WEB_LAMP_SET "lmpDO2_2", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT2$		'DIO OUT2の値をセットします
+		G_BFR_DOUT2$ = IGM_BK_0102_DOUT2$									'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DOUT3$ <> IGM_BK_0102_DOUT3$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDO3", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT3$			'DIO OUT3の値をセットします
+		WEB_LAMP_SET "lmpDO3_2", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT3$		'DIO OUT3の値をセットします
+		G_BFR_DOUT3$ = IGM_BK_0102_DOUT3$									'今回の値を保持します
+	END IF
+	
+	IF G_BFR_DOUT4$ <> IGM_BK_0102_DOUT4$ THEN								'前回の値と違っていたら処理します
+		WEB_LAMP_SET "lmpDO4", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT4$			'DIO OUT4の値をセットします
+		WEB_LAMP_SET "lmpDO4_2", AJAN_LAMP_VALUE, IGM_BK_0102_DOUT4$		'DIO OUT4の値をセットします
+		G_BFR_DOUT4$ = IGM_BK_0102_DOUT4$									'今回の値を保持します
+	END IF
+
+	IF G_BFR_POW$ <> IGM_BK_0102_POW$ THEN									'前回の値と違っていたら処理します
+		WEB_METER_SET "mtrPOW", AJAN_METER_DATA, IGM_BK_0102_POW$			'外部電源電圧の値をセットします
+		WEB_METER_SET "mtrPOW", AJAN_METER_ANIMATION_DELAY, "1000"			'メーターにアニメーションを付けます
+		G_BFR_POW$ = IGM_BK_0102_POW$										'今回の値を保持します
+	END IF
+
+	IF G_BFR_CPU_TMP$ <> IGM_BK_0102_CPU_TMP$ THEN							'前回の値と違っていたら処理します
+		WEB_METER_SET "mtrCPU_TMP", AJAN_METER_DATA, IGM_BK_0102_CPU_TMP$	'CPU温度の値をセットします
+		WEB_METER_SET "mtrCPU_TMP", AJAN_METER_ANIMATION_DELAY, "1000"		'メーターにアニメーションを付けます
+		G_BFR_CPU_TMP$ = IGM_BK_0102_CPU_TMP$								'今回の値を保持します
+	END IF
+
+	IF G_BFR_BRD_TMP$ <> IGM_BK_0102_BRD_TMP$ THEN							'前回の値と違っていたら処理します
+		WEB_METER_SET "mtrBRD_TMP", AJAN_METER_DATA, IGM_BK_0102_BRD_TMP$	'基板温度の値をセットします
+		WEB_METER_SET "mtrBRD_TMP", AJAN_METER_ANIMATION_DELAY, "1000"		'メーターにアニメーションを付けます
+		G_BFR_BRD_TMP$ = IGM_BK_0102_BRD_TMP$								'今回の値を保持します
+	END IF
+	
+	IF G_BFR_MIC_RMS$ <> IGM_BK_0102_MIC_RMS$ THEN							'前回の値と違っていたら処理します
+		WEB_METER_SET "mtrRMS", AJAN_METER_DATA, IGM_BK_0102_MIC_RMS$		'RMSの値をセットします
+		WEB_METER_SET "mtrRMS", AJAN_METER_ANIMATION_DELAY, "1000"			'メーターにアニメーションを付けます
+		G_BFR_MIC_RMS$ = IGM_BK_0102_MIC_RMS$								'今回の値を保持します
+	END IF
+
+	'マイク入力データの値をセットします（稼働中は常に変化があるため、前回の値とのチェックはしません）
+	WEB_GRAPH_SET "grhMIC", 1, AJAN_GRAPH_LABEL, IGM_BK_0102_MIC_DATA$(0 TO UBOUND(IGM_BK_0102_MIC_DATA$, 1), 0)
+	WEB_GRAPH_SET "grhMIC", 1, AJAN_DATA, IGM_BK_0102_MIC_DATA$(0 TO UBOUND(IGM_BK_0102_MIC_DATA$, 1), 1)
+
+	'FFTデータの値をセットします（稼働中は常に変化があるため、前回の値とのチェックはしません）
+	WEB_GRAPH_SET "grhFFT", 1, AJAN_GRAPH_LABEL, IGM_BK_0102_FFT_DATA$(0 TO UBOUND(IGM_BK_0102_FFT_DATA$, 1), 0)
+	WEB_GRAPH_SET "grhFFT", 1, AJAN_DATA, IGM_BK_0102_FFT_DATA$(0 TO UBOUND(IGM_BK_0102_FFT_DATA$, 1), 1)
+
+END SUB
+
+
+'===============================================================================
+' sub module   :SWITCH
+' explanation   :(1)ボタンを押したときの処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SWITCH(id$, event$, msg$)
+	LOCAL L_TEXT_ID$							'テキストボックスのID
+	LOCAL L_BTN_TEXT$							'ボタンの表示文字
+	LOCAL L_BTN_BGCOLOR$						'ボタンの背景色
+	LOCAL L_SW_VAL$								'ボタンの状態(ON(1)/OFF(0))
+
+	L_BTN_TEXT$ = ""							'ボタンの表示文字を初期化します
+	L_BTN_BGCOLOR$ = ""							'ボタンの背景色を初期化します
+	L_SW_VAL$ = ""								'ボタンの状態を初期化します
+	
+	SELECT CASE event$							'イベントに応じて処理を分けます
+	CASE "CLICK"
+
+		L_TEXT_ID$ = REPLACE$(id$, "btn", "txt")	'IDの名前を押されたid$から求めます("btn"を"txt"に変換します)
+
+		SELECT CASE id$
+		CASE "btnREC"
+			SELECT CASE AJAN_WEB_FORM$(L_TEXT_ID$)	'テキストの値に応じてON/OFFを切り替えます
+			CASE "0":	L_BTN_TEXT$ = "■":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "1"	'OFFならONに変えます
+			CASE "1":	L_BTN_TEXT$ = "●":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'ONならOFFに変えます
+			END SELECT
+		CASE "btnPLAY"
+			SELECT CASE AJAN_WEB_FORM$(L_TEXT_ID$)	'テキストの値に応じてON/OFFを切り替えます
+			CASE "1":	L_BTN_TEXT$ = "▶":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'ONならOFFに変えます
+			CASE ELSE:	L_BTN_TEXT$ = "■":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "1"	'OFFならONに変えます
+			END SELECT
+		CASE ELSE
+			SELECT CASE AJAN_WEB_FORM$(L_TEXT_ID$)	'テキストの値に応じてON/OFFを切り替えます
+			CASE "0":	L_BTN_TEXT$ = "ON":		L_BTN_BGCOLOR$ = "YELLOW":	L_SW_VAL$ = "1"	'OFFならONに変えます
+			CASE "1":	L_BTN_TEXT$ = "OFF":	L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'ONならOFFに変えます
+			END SELECT
+		END SELECT
+
+		WEB_TEXT_SET L_TEXT_ID$, AJAN_TEXT_VALUE, L_SW_VAL$		'テキストの値を更新します
+
+		WEB_BUTTON_SET id$, AJAN_BUTTON_TEXT, L_BTN_TEXT$		'ボタンの文字を更新します
+		WEB_BUTTON_SET id$, AJAN_BUTTON_COLOR, L_BTN_BGCOLOR$	'ボタンの背景色を更新します
+
+		SELECT CASE id$		'押されたボタンに関するグローバル共有変数へボタンの状態を書き込みます
+		CASE "btnLED":	IGM_BK_0102_LED$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_LED$
+		CASE "btnBUZZ":	IGM_BK_0102_BUZZ$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_BUZZ$
+		CASE "btnMTR":	IGM_BK_0102_MTR$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_MTR$
+		CASE "btnDI1":	IGM_BK_0102_DIN1$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_DIN1$
+		CASE "btnDI2":	IGM_BK_0102_DIN2$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_DIN2$
+		CASE "btnDI3":	IGM_BK_0102_DIN3$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_DIN3$
+		CASE "btnDI4":	IGM_BK_0102_DIN4$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_DIN4$
+		CASE "btnREC":	IGM_BK_0102_REC$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_REC$
+		CASE "btnPLAY":	IGM_BK_0102_PLAY$ = L_SW_VAL$:	COMMON PRINT #G_NUM, IGM_BK_0102_PLAY$
+		END SELECT
+		
+	CASE ELSE 
+	END SELECT
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :SWITCH_GCM
+' explanation   :(1)グローバル共有変数の読み込み処理です。
+' input         :(1)id$
+' output        :(1)
+'===============================================================================
+
+SUB SWITCH_GCM(id$)
+	LOCAL L_TEXT_ID$							'テキストボックスのID
+	LOCAL L_BTN_TEXT$							'ボタンの表示文字
+	LOCAL L_BTN_BGCOLOR$						'ボタンの背景色
+	LOCAL L_SW_VAL$								'ボタンの状態(ON(1)/OFF(0))
+	LOCAL L_WEB_PARTS_TYPE$						'WEB部品の種類
+	
+	L_BTN_TEXT$ = ""							'ボタンの表示文字を初期化します
+	L_BTN_BGCOLOR$ = ""							'ボタンの背景色を初期化します
+	L_SW_VAL$ = ""								'ボタンの状態を初期化します
+
+	L_TEXT_ID$ = REPLACE$(id$, "btn", "txt")	'IDの名前を押されたid$から求めます("btn"を"txt"に変換します)
+
+	'押されたボタンに関するグローバル共有変数(ボタン)を読み出します
+	SELECT CASE id$
+	CASE "btnLED":	COMMON INPUT #G_NUM, IGM_BK_0102_LED$:	L_SW_VAL$ = IGM_BK_0102_LED$:	L_WEB_PARTS_TYPE$ = "BUTTON"
+	CASE "btnBUZZ":	COMMON INPUT #G_NUM, IGM_BK_0102_BUZZ$:	L_SW_VAL$ = IGM_BK_0102_BUZZ$:	L_WEB_PARTS_TYPE$ = "BUTTON"
+	CASE "btnMTR":	COMMON INPUT #G_NUM, IGM_BK_0102_MTR$:	L_SW_VAL$ = IGM_BK_0102_MTR$:	L_WEB_PARTS_TYPE$ = "BUTTON_TGL"
+	CASE "btnDI1":	COMMON INPUT #G_NUM, IGM_BK_0102_DIN1$:	L_SW_VAL$ = IGM_BK_0102_DIN1$:	L_WEB_PARTS_TYPE$ = "BUTTON"
+	CASE "btnDI2":	COMMON INPUT #G_NUM, IGM_BK_0102_DIN2$:	L_SW_VAL$ = IGM_BK_0102_DIN2$:	L_WEB_PARTS_TYPE$ = "BUTTON"
+	CASE "btnDI3":	COMMON INPUT #G_NUM, IGM_BK_0102_DIN3$:	L_SW_VAL$ = IGM_BK_0102_DIN3$:	L_WEB_PARTS_TYPE$ = "BUTTON_TGL"
+	CASE "btnDI4":	COMMON INPUT #G_NUM, IGM_BK_0102_DIN4$:	L_SW_VAL$ = IGM_BK_0102_DIN4$:	L_WEB_PARTS_TYPE$ = "BUTTON_TGL"
+	CASE "btnREC":	COMMON INPUT #G_NUM, IGM_BK_0102_REC$:	L_SW_VAL$ = IGM_BK_0102_REC$:	L_WEB_PARTS_TYPE$ = "BUTTON_REC"
+	CASE "btnPLAY":	COMMON INPUT #G_NUM, IGM_BK_0102_PLAY$:	L_SW_VAL$ = IGM_BK_0102_PLAY$:	L_WEB_PARTS_TYPE$ = "BUTTON_PLAY"
+	END SELECT
+	
+	SELECT CASE L_WEB_PARTS_TYPE$
+	CASE "BUTTON_REC"			'録音ボタン
+		SELECT CASE L_SW_VAL$	'グローバル共有変数の値に応じてON/OFFを切り替えます
+		CASE "1":	L_BTN_TEXT$ = "■":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "1"	'ON
+		CASE "0":	L_BTN_TEXT$ = "●":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'OFF
+		END SELECT
+	CASE "BUTTON_PLAY"			'再生ボタン
+		SELECT CASE L_SW_VAL$	'グローバル共有変数の値に応じてON/OFFを切り替えます
+		CASE "1":	L_BTN_TEXT$ = "■":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "1"	'ON
+		CASE "0":	L_BTN_TEXT$ = "▶":		L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'OFF
+		END SELECT
+	CASE "BUTTON_TGL"			'トグルボタン
+		SELECT CASE L_SW_VAL$	'グローバル共有変数の値に応じてON/OFFを切り替えます
+		CASE "1":	L_BTN_TEXT$ = "ON":		L_BTN_BGCOLOR$ = "YELLOW":	L_SW_VAL$ = "1"	'ON
+		CASE "0":	L_BTN_TEXT$ = "OFF":	L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'OFF
+		END SELECT
+	CASE ELSE					'その他のボタン
+		SELECT CASE L_SW_VAL$	'グローバル共有変数の値に応じてON/OFFを切り替えます
+		CASE "1":	L_BTN_TEXT$ = "PUSH":	L_BTN_BGCOLOR$ = "#YELLOW":	L_SW_VAL$ = "1"	'ON
+		CASE "0":	L_BTN_TEXT$ = "PUSH":	L_BTN_BGCOLOR$ = "#EEEEEC":	L_SW_VAL$ = "0"	'OFF
+		END SELECT
+	END SELECT
+
+	WEB_TEXT_SET L_TEXT_ID$, AJAN_TEXT_VALUE, L_SW_VAL$		'テキストの値を更新します
+
+	WEB_BUTTON_SET id$, AJAN_BUTTON_TEXT, L_BTN_TEXT$		'ボタンの文字を更新します
+	WEB_BUTTON_SET id$, AJAN_BUTTON_COLOR, L_BTN_BGCOLOR$	'ボタンの背景色を更新します
+
+END SUB	
+
+
+'===============================================================================
+' sub module   :SWITCH_IDLE
+' explanation   :(1)アイドル中の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SWITCH_IDLE(id$, event$, msg$)
+
+	'ボタンに関するグローバル共有変数の状態をボタンに書き込みます
+	CALL SWITCH_GCM("btnLED")
+	CALL SWITCH_GCM("btnBUZZ")
+	CALL SWITCH_GCM("btnMTR")
+	CALL SWITCH_GCM("btnDI1")
+	CALL SWITCH_GCM("btnDI2")
+	CALL SWITCH_GCM("btnDI3")
+	CALL SWITCH_GCM("btnDI4")
+	CALL SWITCH_GCM("btnREC")
+	CALL SWITCH_GCM("btnPLAY")
+	
+END SUB	
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

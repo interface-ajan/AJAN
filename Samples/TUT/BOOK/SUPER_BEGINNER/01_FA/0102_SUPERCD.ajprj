@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver00.91-02"/>
+  <App ExecuteName="0102_SUPERCD" Type="PageGenerator"/>
+  <FileGroup>
+    <file path="0102_SUPERCDStartup.ajn"/>
+    <file path="0102_SUPERCD.ajn">
+      <DependentUpon>0102_SUPERCDStartup.ajn</DependentUpon>
+    </file>
+    <file path="0102_SUPERCDForm.ajn">
+      <DependentUpon>0102_SUPERCDStartup.ajn</DependentUpon>
+    </file>
+  </FileGroup>
+</Ajan>

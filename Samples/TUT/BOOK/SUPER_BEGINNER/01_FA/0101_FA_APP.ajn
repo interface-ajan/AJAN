@@ -1,0 +1,766 @@
+' ================================================================================
+' コンピュータ操作 サンプルプログラム 
+'  書籍「IoT言語AJAN(R)超入門」向けのサンプルプログラムです。詳しくは書籍をご参照ください。
+'  SuperCD(R)を操作できます。
+'				Copyright 2021 Interface Corporation
+' ================================================================================
+
+'===============================================================================
+' 初期化
+'===============================================================================
+'---------------------------------------------------------------------------
+'グローバル共有変数の設定
+'---------------------------------------------------------------------------
+IGM_BK_0101_MAIN_FLG$ = "T"				'メインフラグ(F:停止,T:稼働)
+
+IGM_BK_0102_TITLE$ = "SuperCD®操作"		'画面タイトル
+IGM_BK_0102_TITLE_COLOR$ = "BLACK"		'画面タイトル文字色
+IGM_BK_0102_TITLE_BGCOLOR$ = "SILVER"	'画面タイトル背景色
+
+IGM_BK_0102_TIME$ = ""					'時刻
+
+IGM_BK_0102_LED$ = "0"					'警報ランプのON/OFF(1/0)
+IGM_BK_0102_BUZZ$ = "0"					'ブザーのON/OFF(1/0)
+
+IGM_BK_0102_HIMO_SW$ = "0"				'ひもスイッチ用センサのON/OFF(1/0)
+IGM_BK_0102_HIMO_FLG$ = "F"				'ひもスイッチフラグ(T:ひもスイッチ用センサに変化あり,F:変化なし)
+
+IGM_BK_0102_DIO$ = "0"					'DIO機器接続有無(1:接続あり,0:接続なし)
+IGM_BK_0102_DIO_MODE$ = "1"				'DIOモード(1:ノーマル,2:測定メーター読み上げ)
+
+IGM_BK_0102_DIN1$ = "0"					'DIO IN1
+IGM_BK_0102_DIN2$ = "0"					'DIO IN2
+IGM_BK_0102_DIN3$ = "0"					'DIO IN3
+IGM_BK_0102_DIN4$ = "0"					'DIO IN4
+
+IGM_BK_0102_DOUT1$ = "0"				'DIO OUT1
+IGM_BK_0102_DOUT2$ = "0"				'DIO OUT2
+IGM_BK_0102_DOUT3$ = "0"				'DIO OUT3
+IGM_BK_0102_DOUT4$ = "0"				'DIO OUT4
+
+IGM_BK_0102_MTR$ = "0"					'メーター測定有無(1:測定する,0:測定しない)
+IGM_BK_0102_POW$ = "0"					'外部電源電圧
+IGM_BK_0102_CPU_TMP$ = "0"				'CPU温度
+IGM_BK_0102_BRD_TMP$ = "0"				'基板温度
+
+IGM_BK_0102_MIC$ = "0"					'マイク入力の有/無(1/0)
+
+LIST IGM_BK_0102_MIC_DATA$				'マイク入力データ
+REDIM PRESERVE IGM_BK_0102_MIC_DATA$(1000, 1)
+
+IGM_BK_0102_MIC_RMS$ = "0"				'RMS
+
+LIST IGM_BK_0102_FFT_DATA$				'FFTデータ
+REDIM PRESERVE IGM_BK_0102_FFT_DATA$(1023, 1)
+
+IGM_BK_0102_REC$ = "0"					'録音ボタンのON/OFF(1/0)
+IGM_BK_0102_PLAY$ = "0"					'再生ボタンのON/OFF(1/0)
+
+IGM_BK_0102_SPK$ = "0"					'スピーカー出力の有/無(1/0)
+
+IGM_BK_0102_SPCH_TXT$ = ""				'読み上げテキスト
+IGM_BK_0102_SPCH_TYPE$ = "M"			'読み上げタイプ
+IGM_BK_0102_SPCH_FLG$ = "F"				'読み上げフラグ
+
+'---------------------------------------------------------------------------
+'その他
+'---------------------------------------------------------------------------
+'外部プログラム実行用(プログラムの場所、URLの特定)
+G_WRK_SPC$ = "/AjanProWS/"				'ワークスペース名("/"含む)
+G_BASE_PATH$ = PATH GET DIRNAME$(GETCOMMANDLINEARGS$())	'プログラムの保存先
+G_DIR$ = MID$(G_BASE_PATH$, INSTR(G_BASE_PATH$, G_WRK_SPC$) + LEN(G_WRK_SPC$)) + "/"
+										'ファイルの場所(フォルダ名)を取得します
+										'(プログラムを他のプロジェクトにコピーしても動くようにするため)
+										'ユーザー名とワークスペース名が同じだと正常に動作しません
+G_URL_HEAD$ = "http://localhost:8080/"	'URLの先頭文字
+
+'オープンするときの番号を取得します
+G_NUM = COMMON FREEFILE()				'グローバル共有変数用
+G_SPK_NUM = FREEFILE()					'読み上げファイル用
+G_SND_NUM = 1							'マイク入力用
+G_SND_WR_NUM = 2						'スピーカー出力用
+G_SND_REC_NUM = 3						'録音ファイル用
+
+'読み上げファイル情報
+G_SPK_PATH$ = G_BASE_PATH$ + "/DATA/"	'読み上げファイルの保存先
+G_SPK_FILE$ = "SPK_DATA.txt"			'読み上げファイルの名前
+
+'録音ファイル情報
+LIST G_REC_DATA							'録音用マイク入力データ
+G_REC_PATH$ = G_BASE_PATH$ + "/DATA/"	'録音ファイルの保存先
+G_REC_FILE$ = "REC_DATA.dat"			'録音ファイルの名前
+
+'---------------------------------------------------------------------------
+'スレッド(センサー情報取得処理)
+'---------------------------------------------------------------------------
+DEFINE THREAD GET_SNSR(NUMBER)
+	ON ERROR CALL ERR_MSG							'エラー処理を設定します
+	ERROR ON										'エラー処理を有効にします
+
+	LOCAL L_HIMO_SW$								'ひもスイッチ用センサ
+
+	L_HIMO_SW$ = STR$(HIMOSWITCHSTATUS)				'初期化します
+
+	DO WHILE TRUE									'ずっと繰り返します
+		IF IGM_BK_0102_MTR$ = "1" THEN				'メーター測定有無(1:測定する,0:測定しない)
+			IGM_BK_0102_POW$ = STR$(POWERGET(1))	'外部電源電圧をグローバル共有へ取り出します
+			IGM_BK_0102_CPU_TMP$ = STR$(TEMPGET(1))	'CPU温度をグローバル共有へ取り出します
+			IGM_BK_0102_BRD_TMP$ = STR$(TEMPGET(2))	'基板の温度をグローバル共有へ取り出します
+		ELSE
+			IGM_BK_0102_POW$ = "0"					'外部電源電圧を初期化します
+			IGM_BK_0102_CPU_TMP$ = "0"				'CPU温度を初期化します
+			IGM_BK_0102_BRD_TMP$ = "0"				'基板の温度を初期化します
+		END IF
+
+		COMMON PRINT #G_NUM, IGM_BK_0102_POW$		'グローバル共有変数(外部電源電圧)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0102_CPU_TMP$	'グローバル共有変数(CPU温度)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0102_BRD_TMP$	'グローバル共有変数(基板温度)を書き込みます
+		
+		IGM_BK_0102_HIMO_SW$ = STR$(HIMOSWITCHSTATUS)	'ひもスイッチ用センサの状態を取り出します
+		COMMON PRINT #G_NUM, IGM_BK_0102_HIMO_SW$	'グローバル共有変数(ひもスイッチ用センサ)を書き込みます
+
+		IF L_HIMO_SW$ <> IGM_BK_0102_HIMO_SW$ THEN	'スイッチの値に変化があれば処理します
+			IGM_BK_0102_HIMO_FLG$ = "T"				'ひもスイッチフラグを変化あり("T")にします
+			COMMON PRINT #G_NUM, IGM_BK_0102_HIMO_FLG$	'グローバル共有変数(ひもスイッチフラグ)を書き込みます
+		END IF
+
+		L_HIMO_SW$ = IGM_BK_0102_HIMO_SW$			'ひもスイッチ用センサの値を保持します
+
+		IGM_BK_0102_TIME$ = TIME$
+		COMMON PRINT #G_NUM, IGM_BK_0102_TIME$		'グローバル共有変数(時計)を書き込みます
+
+		SLEEP 0.1									'0.1秒待ちます
+	LOOP
+
+END THREAD
+
+
+'---------------------------------------------------------------------------
+'スレッド(音声取得処理)
+'---------------------------------------------------------------------------
+DEFINE THREAD GET_SOUND(NUMBER)
+	ON ERROR CALL ERR_MSG						'エラー処理を設定します
+	ERROR ON									'エラー処理を有効にします
+
+	LOCAL L_SND_LEN								'マイク入力のデータ数
+	LOCAL LIST L_SND_READ						'マイク入力データ
+	LOCAL LIST L_SND_ARY						'グローバル共有へ渡すデータを貯めておく一時的な引き渡し用配列変数
+	LOCAL L_LOOP								'繰り返し用変数
+	LOCAL L_CLK									'時間保持用変数
+	LOCAL LIST L_CALC_ARY						'FFT計算用配列変数
+	LOCAL LIST L_FFT_WRK						'FFT計算結果配列変数
+	LOCAL LIST L_FFT							'FFT表示用配列変数
+	LOCAL L_RMS_W								'RMS計算用変数
+	LOCAL L_MAX									'音声の最大取得件数
+
+	REDIM PRESERVE L_CALC_ARY(1023)					'FFT計算結果の配列を初期化します
+
+	L_CLK  = CLOCK									'時間を保持します
+	
+	DO WHILE TRUE									'ずっと繰り返します
+		
+		L_SND_LEN = SNDREADLEN(G_SND_NUM)			'マイク入力のデータ数を取り出します
+
+		IF (L_SND_LEN > 100 OR (CLOCK - L_CLK)  > 0.3) AND L_SND_LEN > 0 THEN	'マイク入力データが100件以上貯まるか、
+																				'前回の処理から0.3秒を経過したら処理します
+			L_SND_READ = SNDREAD(G_SND_NUM, L_SND_LEN)	'マイク入力データを100件取り出します
+
+			ONEDIM INSERT L_SND_ARY, -1, L_SND_READ		'引き渡し用配列変数の末尾に追加します
+
+			IF IGM_BK_0102_REC$ = "1" THEN			'録音ボタンがON("1")であれば処理します
+				ONEDIM INSERT G_REC_DATA, -1, L_SND_READ	'録音用マイク入力データ変数の末尾へマイク入力データを追加します
+			END IF
+
+			IF LDIM(L_SND_ARY) >= 1000 THEN			'1000件以上あれば、1000件処理します(0〜999＝1000件)
+				L_MAX = 1000 - 1
+			ELSE									'1000件以上ではない場合、ある数だけ処理します
+				L_MAX = LDIM(L_SND_ARY) - 1
+			END IF
+
+			L_RMS_W = 0								'RMS計算用変数を初期化します
+
+			FOR L_LOOP = 0 TO L_MAX					'指定回数分繰り返します
+				IGM_BK_0102_MIC_DATA$(L_LOOP, 0) = STR$(L_LOOP)		'グローバル共有変数へ連番を代入します
+				IGM_BK_0102_MIC_DATA$(L_LOOP, 1) = STR$(L_SND_ARY(L_LOOP))	'グローバル共有変数へマイク入力データを代入します
+
+				L_RMS_W = L_RMS_W + (L_SND_ARY(L_LOOP) * L_SND_ARY(L_LOOP))	'RMS計算用のデータを計算します
+			NEXT L_LOOP
+
+			IGM_BK_0102_MIC_RMS$ = STR$(SQR(L_RMS_W / (L_MAX + 1)))	'RMSを計算します
+
+			COMMON PRINT #G_NUM, IGM_BK_0102_MIC_RMS$	'グローバル共有変数(RMS)へ書き込みます
+
+			COMMON PRINT #G_NUM, IGM_BK_0102_MIC_DATA$	'グローバル共有変数(マイク入力データ)を書き込みます
+
+			IF LDIM(L_SND_ARY) >= 1000 THEN				'マイク入力データが1000件以上あれば処理します
+				FOR L_LOOP = 0 TO 1023					'1024回繰り返します(FFTを計算するのに2の2乗単位である必要があるため)
+					IF L_LOOP < LDIM(L_SND_ARY) THEN	'配列の要素数以内であれば処理します
+						L_CALC_ARY(L_LOOP) = L_SND_ARY(L_LOOP)	'マイク入力データを代入します
+					ELSE								'それ以外であれば処理します
+						L_CALC_ARY(L_LOOP) = 0			'0を代入します
+					END IF
+				NEXT L_LOOP	
+				
+				L_FFT_WRK = CALC FFT(0, L_CALC_ARY)		'FFT演算をします
+				L_FFT = CALC CMPL2ABS(0, L_FFT_WRK)		'絶対値にします
+
+				REDIM PRESERVE IGM_BK_0102_FFT_DATA$((LDIM(L_FFT, 1) / 2 - 1)- 1, 1)	'FFTの配列を半分のサイズに初期化します
+
+				FOR L_LOOP = 0 TO (LDIM(L_FFT, 1) / 2 - 1)- 1		'得られたデータの半分を処理します(半分以上は鏡のようなデータなので不要)
+					IGM_BK_0102_FFT_DATA$(L_LOOP, 0) = STR$(L_LOOP)	'グローバル共有変数へ連番を代入します
+					IGM_BK_0102_FFT_DATA$(L_LOOP, 1) = STR$(L_FFT(L_LOOP))	'グローバル共有変数へFFTデータを代入します
+				NEXT L_LOOP
+				
+				COMMON PRINT #G_NUM, IGM_BK_0102_FFT_DATA$			'グローバル共有変数(FFTデータ)を書き込みます
+
+			END IF
+			
+			IF LDIM(L_SND_ARY) >= 1000 THEN							'マイク入力データが1000件以上あれば処理します
+				ONEDIM REMOVE L_SND_ARY, 0, LDIM(L_SND_ARY) - 1000	'1000からはみ出た分だけ配列の先頭を削除します
+																	'これを繰り返すと、グラフがスクロールしているように見えます
+			END IF
+
+		END IF
+
+		SLEEP 0.1									'0.1秒待ちます
+
+		L_CLK  = CLOCK								'時間を保持します
+	LOOP
+
+END THREAD
+
+
+'---------------------------------------------------------------------------
+'スレッド(DIO処理)
+'---------------------------------------------------------------------------
+DEFINE THREAD GET_DIO(NUMBER)
+	ON ERROR CALL ERR_MSG							'エラー処理を設定します
+	ERROR ON										'エラー処理を有効にします
+
+	DO WHILE TRUE									'ずっと繰り返します
+		IF IGM_BK_0102_DIO$ = "1" THEN				'DIO機器接続有無が接続あり（"1"）なら処理します
+			IGM_BK_0102_DIN1$ = STR$(INPUTUP(1))	'デジタル入力1の値をグローバル共有変数へ取り出します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DIN1$	'グローバル共有変数(DIO IN1)を書き込みます
+
+			IGM_BK_0102_DIN2$ = STR$(INPUTUP(2))	'デジタル入力2の値をグローバル共有変数へ取り出します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DIN2$	'グローバル共有変数(DIO IN2)を書き込みます
+
+			IGM_BK_0102_DIN3$ = STR$(INPUTUP(3))	'デジタル入力3の値をグローバル共有変数へ取り出します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DIN3$	'グローバル共有変数(DIO IN3)を書き込みます
+
+			IGM_BK_0102_DIN4$ = STR$(INPUTUP(4))	'デジタル入力4の値をグローバル共有変数へ取り出します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DIN4$	'グローバル共有変数(DIO IN4)を書き込みます
+		END IF
+		
+		SLEEP 0.1									'0.1秒待ちます
+	LOOP
+
+END THREAD
+
+
+'===============================================================================
+' MAIN
+'===============================================================================
+MAIN:
+	ON ERROR CALL ERR_MSG							'エラー処理を設定します
+	ERROR ON										'エラー処理を有効にします
+
+	SNDOPEN "?FORMAT=FLOAT32LE&RATE=8000&FRAGSIZE=10000" FOR INPUT AS #G_SND_NUM	'オーディオ入力(マイク)を開きます
+	SNDOPEN "?FORMAT=FLOAT32LE&RATE=8000&TLENGTH=10000" FOR OUTPUT AS #G_SND_WR_NUM	'オーディオ出力(スピーカー)を開きます
+
+	COMMON OPEN "127.0.0.1" AS #G_NUM				'グローバル共有を開きます
+	
+	CALL INIT_GCOM									'グローバル共有変数を初期化します
+
+	ATTACH THREAD 1, GET_SNSR						'スレッド(センサー情報取得処理)を開始します
+	ATTACH THREAD 2, GET_SOUND						'スレッド(音声取得処理)を開始します
+	ATTACH THREAD 3, GET_DIO						'スレッド(DIO処理)を開始します
+	
+	CALL CK_GCOM									'グローバル共有変数をチェックします
+	
+	ON TIMER(1000) CALL CK_GCOM						'グローバル共有変数を定期的(1秒おき)にチェックします(タイマー)
+	TIMER ON										'タイマーを有効にします
+
+	SHELL OPEN G_URL_HEAD$ + G_DIR$ + "0102_SUPERCD.ajn"	'SuperCD®操作画面を開きます
+
+	CLS												'コンソールウィンドウをクリアします
+	PRINT TIME$ + " : " + "開始します。"
+	PRINT TIME$ + " : " + "SuperCD®操作画面を閉じると終了します。"
+
+	DO WHILE IGM_BK_0101_MAIN_FLG$ = "T" 			'IGM_BK_0101_MAIN_FLG$が"T"の間、繰り返します
+		SLEEP 1										'1秒休止します
+	LOOP
+	
+	DETACH THREAD 3									'スレッド(DIO処理)を終了します
+	DETACH THREAD 2									'スレッド(音声取得処理)を終了します
+	DETACH THREAD 1									'スレッド(センサー情報取得処理)を終了します
+
+	COMMON CLOSE #G_NUM								'グローバル共有を閉じます
+
+	SNDCLOSE #G_SND_WR_NUM							'オーディオ出力(スピーカー)を閉じます
+	SNDCLOSE #G_SND_NUM								'オーディオ入力(マイク)を閉じます
+
+	PRINT TIME$ + " : " + "終了しました。"
+END
+
+
+'===============================================================================
+' SUB MODULES
+'===============================================================================
+'===============================================================================
+' sub module   :CK_GCOM
+' explanation   :(1)グローバル共有変数をチェックします。
+' input         :(1)なし
+' output        :(1)なし
+'===============================================================================
+
+SUB CK_GCOM()
+	LOCAL L_MIC$											'マイク入力データ用変数
+	
+	COMMON INPUT #G_NUM, IGM_BK_0101_MAIN_FLG$				'グローバル共有変数(メインフラグ)を読み出します
+	CALL PROC_GCOM("IGM_BK_0101_MAIN_FLG", IGM_BK_0101_MAIN_FLG$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_LED$					'グローバル共有変数(警報ランプ)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_LED", IGM_BK_0102_LED$)		'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_BUZZ$					'グローバル共有変数(ブザー)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_BUZZ", IGM_BK_0102_BUZZ$)	'関連する処理を実行します
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_HIMO_FLG$				'グローバル共有変数(ひもスイッチフラグ)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_HIMO_FLG", IGM_BK_0102_HIMO_FLG$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIO$					'グローバル共有変数(DIO機器接続有無)を読み出します
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIO_MODE$				'グローバル共有変数(DIOモード)を読み出します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN1$					'グローバル共有変数(DIO IN1)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DIN1", IGM_BK_0102_DIN1$)	'関連する処理を実行します
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN2$					'グローバル共有変数(DIO IN2)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DIN2", IGM_BK_0102_DIN2$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN3$					'グローバル共有変数(DIO IN3)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DIN3", IGM_BK_0102_DIN3$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DIN4$					'グローバル共有変数(DIO IN4)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DIN4", IGM_BK_0102_DIN4$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT1$					'グローバル共有変数(DIO OUT1)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DOUT1", IGM_BK_0102_DOUT1$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT2$					'グローバル共有変数(DIO OUT2)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DOUT2", IGM_BK_0102_DOUT2$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT3$					'グローバル共有変数(DIO OUT3)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DOUT3", IGM_BK_0102_DOUT3$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_DOUT4$					'グローバル共有変数(DIO OUT4)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_DOUT4", IGM_BK_0102_DOUT4$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_MTR$					'グローバル共有変数(メーター測定有無)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_MTR", IGM_BK_0102_MTR$)		'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_POW$					'グローバル共有変数(外部電源電圧)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_POW", IGM_BK_0102_POW$)		'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_CPU_TMP$				'グローバル共有変数(CPU温度)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_CPU_TMP", IGM_BK_0102_CPU_TMP$)	'関連する処理を実行します
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_BRD_TMP$				'グローバル共有変数(基板温度)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_BRD_TMP", IGM_BK_0102_BRD_TMP$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_MIC$					'グローバル共有変数(マイク入力有無)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_MIC", IGM_BK_0102_MIC$)		'関連する処理を実行します
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_MIC_DATA$				'グローバル共有変数(マイク入力データ)を読み出します
+	L_MIC$ = ARRAY2CSV$(IGM_BK_0102_MIC_DATA$)				'文字列に変換します
+	CALL PROC_GCOM("IGM_BK_0102_MIC_DATA", L_MIC$)			'関連する処理を実行します
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_REC$					'グローバル共有変数(録音ボタン)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_REC", IGM_BK_0102_REC$)		'関連する処理を実行します
+	
+	COMMON INPUT #G_NUM, IGM_BK_0102_PLAY$					'グローバル共有変数(再生ボタン)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_PLAY", IGM_BK_0102_PLAY$)	'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_SPK$					'グローバル共有変数(スピーカー出力有無)を読み出します
+	CALL PROC_GCOM("IGM_BK_0102_SPK", IGM_BK_0102_SPK$)		'関連する処理を実行します
+
+	COMMON INPUT #G_NUM, IGM_BK_0102_SPCH_FLG$				'グローバル共有変数(読み上げフラグ)を読み出します
+
+	IF IGM_BK_0102_SPCH_FLG$ = "T" THEN						'読み上げフラグが立っていたら処理します
+		COMMON INPUT #G_NUM, IGM_BK_0102_SPCH_TXT$			'グローバル共有変数(読み上げテキスト)を読み出します
+		COMMON INPUT #G_NUM, IGM_BK_0102_SPCH_TYPE$			'グローバル共有変数(読み上げタイプ)を読み出します
+		CALL PROC_GCOM("IGM_BK_0102_SPCH", IGM_BK_0102_SPCH_TXT$)	'関連する処理を実行します
+	END IF
+
+END SUB
+
+
+'===============================================================================
+' sub module    :ERR_MSG
+' explanation   :(1)エラーメッセージを表示します。
+' input         :(1)E_N		：エラーコード
+'                (2)E_M$	：エラーメッセージ
+'                (3)E_L		：エラー行
+' output        :(1)なし
+'===============================================================================
+
+SUB ERR_MSG(E_N, E_M$, E_L)
+	PRINT "エラーが発生しました。"; TIME$
+	PRINT "エラーコード:"; E_N
+	PRINT "エラーメッセージ:";E_M$
+	PRINT "エラー行:";E_L
+END SUB
+
+
+'===============================================================================
+' sub module   :GEN_SPCH_TEXT$
+' explanation   :(1)読み上げるテキストを作成します。
+' input         :(1)P_SPCH_TYPE$	：読み上げるキャラクタータイプ
+'                (2)P_SPCH_TEXT$	：元となる読み上げテキスト
+' output        :(1)GEN_SPCH_TEXT$	：作成した読み上げテキスト
+'===============================================================================
+
+FUNCTION GEN_SPCH_TEXT$(P_SPCH_TYPE$, P_SPCH_TEXT$)
+	LOCAL L_SPCH_TEXT$		'読み上げるテキスト
+	LOCAL L_TIME$			'時刻情報変数
+	LOCAL L_HOUR$			'時刻情報(時)変数
+	LOCAL L_MINUTE$			'時刻情報(分)変数
+	
+	SELECT CASE P_SPCH_TEXT$
+	CASE ""
+		L_SPCH_TEXT$ = "読み上げる言葉を指定してください。"
+	CASE "今何時？"
+		L_TIME$ = IGM_BK_0102_TIME$							'グローバル共有変数(時刻)を代入します
+		L_HOUR$ = STR$(HOUR(L_TIME$))						'時刻情報(時)を求めます
+		L_MINUTE$ = STR$(MINUTE(L_TIME$))					'時刻情報(分)を求めます
+
+		L_SPCH_TEXT$ = "只今の時刻は、" + L_HOUR$ + "時" + L_MINUTE$ + "分です。"	'読み上げ内容を代入します
+	
+	CASE "自己紹介"
+		SELECT CASE P_SPCH_TYPE$							'キャラクター毎にテキストを指定します
+		CASE "M":	L_SPCH_TEXT$ = "私はイオタと申します。"
+		CASE "F":	L_SPCH_TEXT$ = "私はあぃこです。"
+		CASE "R":	L_SPCH_TEXT$ = "私はフタゴです。"
+		CASE ELSE
+		END SELECT
+	
+	CASE "本の紹介"
+		SELECT CASE P_SPCH_TYPE$							'キャラクター毎にテキストを指定します
+		CASE "M":	L_SPCH_TEXT$ = "IoT言語　えぇじゃん　超入門、。コンピュータの活用アイデアを、私といっしょに、楽しみながら体験できる本です。"
+		CASE "F":	L_SPCH_TEXT$ = "IoT言語　えぇじゃん　超入門、。コンピュータの活用方法を、イオタさんに教わりながら、楽しく体験できますよ。"
+		CASE "R":	L_SPCH_TEXT$ = "IoT言語　えぇじゃん　超入門、。ワタクシの豆知識も読んでほしいデシ。"
+		CASE ELSE
+		END SELECT
+	
+	CASE "SuperCD®の紹介"
+		L_SPCH_TEXT$ = "小さくて強くて賢いコンピュータ、スーパーCD。株式会社　インタフェース製です。"
+	CASE "AJAN®の紹介"
+		L_SPCH_TEXT$ = "IoTのための国産言語、えぇじゃん。株式会社　インタフェース製ですけん。"
+	CASE ELSE
+		L_SPCH_TEXT$ = P_SPCH_TEXT$
+	END SELECT
+	
+	IF P_SPCH_TYPE$ = "R" THEN										'両子くんなら処理します
+		L_SPCH_TEXT$ = REPLACE$(L_SPCH_TEXT$, "私", "ワタクシ")		'"私"を"ワタクシ"に置き換えます
+		L_SPCH_TEXT$ = REPLACE$(L_SPCH_TEXT$, "です。", "デシ。")	'"です。"を"デシ。"に置き換えます
+		
+		IF RIGHT$(L_SPCH_TEXT$, 1) = "。" THEN						'終わりに"。"があれば処理します
+			L_SPCH_TEXT$ = MID$(L_SPCH_TEXT$, 1, LEN(L_SPCH_TEXT$) - 1)	'"。"を取ります
+		END IF
+
+		IF RIGHT$(L_SPCH_TEXT$, 2) = "です" THEN					'終わりに"です"があれば処理します
+			L_SPCH_TEXT$ = MID$(L_SPCH_TEXT$, 1, LEN(L_SPCH_TEXT$) - 2)	'"です"を取ります
+		END IF
+		
+		IF RIGHT$(L_SPCH_TEXT$, 2) <> "デシ" THEN					'終わりに"デシ"がなければ処理します
+			L_SPCH_TEXT$ = L_SPCH_TEXT$ + "デシ。"					'終わりに"デシ"を追加します
+		END IF
+	END IF
+	
+	GEN_SPCH_TEXT$ = L_SPCH_TEXT$									'作成したテキストを代入します
+	
+END FUNCTION
+
+
+'===============================================================================
+' sub module   :INIT_GCOM
+' explanation   :(1)グローバル共有変数を初期化します。
+' input         :(1)なし
+' output        :(1)なし
+'===============================================================================
+
+SUB INIT_GCOM()
+
+	COMMON PRINT #G_NUM, IGM_BK_0101_MAIN_FLG$		'メインフラグ
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_TITLE$			'画面タイトル
+	COMMON PRINT #G_NUM, IGM_BK_0102_TITLE_COLOR$	'画面タイトル文字色
+	COMMON PRINT #G_NUM, IGM_BK_0102_TITLE_BGCOLOR$	'画面タイトル背景色
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_TIME$			'時刻
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_LED$			'警報ランプのON/OFF(1/0)
+	COMMON PRINT #G_NUM, IGM_BK_0102_BUZZ$			'ブザーのON/OFF(1/0)
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_HIMO_SW$		'ひもスイッチ用センサ
+	COMMON PRINT #G_NUM, IGM_BK_0102_HIMO_FLG$		'ひもスイッチフラグ
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIO$			'DIO機器接続有無
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIO_MODE$		'DIOモード
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIN1$			'DIO IN1
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIN2$			'DIO IN2
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIN3$			'DIO IN3
+	COMMON PRINT #G_NUM, IGM_BK_0102_DIN4$			'DIO IN4
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_DOUT1$			'DIO OUT1
+	COMMON PRINT #G_NUM, IGM_BK_0102_DOUT2$			'DIO OUT2
+	COMMON PRINT #G_NUM, IGM_BK_0102_DOUT3$			'DIO OUT3
+	COMMON PRINT #G_NUM, IGM_BK_0102_DOUT4$			'DIO OUT4
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_MTR$			'メーター測定有無
+	COMMON PRINT #G_NUM, IGM_BK_0102_POW$			'外部電源電圧
+	COMMON PRINT #G_NUM, IGM_BK_0102_CPU_TMP$		'CPU温度
+	COMMON PRINT #G_NUM, IGM_BK_0102_BRD_TMP$		'基板温度
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_MIC$			'マイク入力の有/無
+	COMMON PRINT #G_NUM, IGM_BK_0102_MIC_DATA$		'マイク入力データ
+	COMMON PRINT #G_NUM, IGM_BK_0102_MIC_RMS$		'RMS
+	COMMON PRINT #G_NUM, IGM_BK_0102_FFT_DATA$		'FFTデータ
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_REC$			'録音ボタンのON/OFF(1/0)
+	COMMON PRINT #G_NUM, IGM_BK_0102_PLAY$			'再生ボタンのON/OFF(1/0)
+
+	COMMON PRINT #G_NUM, IGM_BK_0102_SPK$			'スピーカー出力の有/無
+	
+	COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TXT$		'読み上げテキスト
+	COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TYPE$		'読み上げタイプ
+	COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$		'読み上げフラグ
+
+END SUB
+
+
+'===============================================================================
+' sub module   :PROC_GCOM
+' explanation   :(1)グローバル共有変数毎の処理を実行します。
+' input         :(1)P_GCOM_NAME$：グローバル共有変数名
+'                (2)P_GCOM_VAL$	：グローバル共有変数の値
+' output        :(1)なし
+'===============================================================================
+
+SUB PROC_GCOM(P_GCOM_NAME$, P_GCOM_VAL$)
+	LOCAL LIST L_MIC_DATA$							'マイク入力データ処理用の配列変数
+	LOCAL L_LOOP									'繰り返し用変数
+	LOCAL L_REC_W$									'録音データ(作業用)変数
+	LOCAL LIST L_REC_ARY_W$							'録音配列データ(作業用)配列変数
+	LOCAL L_DAT#									'録音ファイルからの読み込みデータ用変数
+	LOCAL L_DAT_CNT									'繰り返し処理カウント用変数
+	LOCAL L_SPCH_TEXT$								'読み上げテキスト
+	LOCAL L_SPCH_GENDER$							'読み上げタイプ
+	LOCAL L_SPCH_TYPE$								'読み上げ時の感情タイプ
+
+	SELECT CASE P_GCOM_NAME$						'グローバル共有変数名に応じて処理します
+	CASE "IGM_BK_0101_MAIN_FLG"						'メインフラグ
+	CASE "IGM_BK_0102_TIME"							'時計
+	CASE "IGM_BK_0102_LED"							'警報ランプ
+		IF P_GCOM_VAL$ = "1" THEN					'警報ランプの値がON("1")であれば処理します
+			CMLED 1									'警報ランプを点灯します
+			SLEEP 0.5								'0.5秒休止します
+			CMLED 0									'警報ランプを消灯します
+		ELSE										'それ以外であれば処理します
+			CMLED 0									'警報ランプを消灯します
+		END IF
+
+	CASE "IGM_BK_0102_BUZZ"							'ブザー
+		IF P_GCOM_VAL$ = "1" THEN					'ブザーの値がON("1")であれば処理します
+			CMBUZZER 1								'ブザーを鳴らします
+			SLEEP 0.1								'0.1秒休止します
+			CMBUZZER 0								'ブザーを止めます
+			SLEEP 0.1								'0.1秒休止します
+			CMBUZZER 1								'ブザーを鳴らします
+			SLEEP 0.2								'0.2秒休止します
+			CMBUZZER 0								'ブザーを止めます
+			SLEEP 0.2								'0.2秒休止します
+		ELSE										'それ以外であれば処理します
+			CMBUZZER 0								'ブザーを止めます
+		END IF
+
+	CASE "IGM_BK_0102_HIMO_FLG"						'ひもスイッチフラグ
+		IF P_GCOM_VAL$ = "T" THEN					'変化あり("T")なら処理します
+			IGM_BK_0102_BUZZ$ = "1"					'ブザーをON("1")にします
+		ELSE										'それ以外であれば処理します
+			IGM_BK_0102_BUZZ$ = "0"					'ブザーをOFF("0")にします
+		END IF
+	
+		COMMON PRINT #G_NUM, IGM_BK_0102_BUZZ$		'グローバル共有変数(ブザー)を更新します
+
+		IGM_BK_0102_HIMO_FLG$ = "F"					'ひもスイッチフラグを変化なし("F")にします
+		COMMON PRINT #G_NUM, IGM_BK_0102_HIMO_FLG$	'グローバル共有変数(ひもスイッチフラグ)を更新します
+
+	CASE "IGM_BK_0102_DIN1"							'DIO IN1
+		SELECT CASE IGM_BK_0102_DIO_MODE$			'DIOモードに応じて処理します
+		CASE "1"
+			IGM_BK_0102_DOUT1$ = P_GCOM_VAL$		'DIO OUT1へ値を代入します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DOUT1$	'グローバル共有変数(DIO IN1)を書き込みます
+		CASE "2"
+			IF P_GCOM_VAL$ = "1" THEN				'ON("1")の場合に処理します
+				IGM_BK_0102_SPCH_TXT$ = "測定メーターが、" + REPLACE$(REPLACE$(IGM_BK_0102_MTR$, "0", "オフ"), "1", "オン") + "です。"
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TXT$	'グローバル共有変数(読み上げテキスト)を書き込みます
+				IGM_BK_0102_SPCH_FLG$ = "T"					'読み上げフラグをON("T")にします
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$	'グローバル共有変数(読み上げフラグ)を書き込みます
+				CALL PROC_GCOM("IGM_BK_0102_SPCH", IGM_BK_0102_SPCH_TXT$)	'読み上げ処理を実行します
+			END IF
+		CASE ELSE
+		END SELECT
+		
+	CASE "IGM_BK_0102_DIN2"							'DIO IN2
+		SELECT CASE IGM_BK_0102_DIO_MODE$			'DIOモードに応じて処理します
+		CASE "1"
+			IGM_BK_0102_DOUT2$ = P_GCOM_VAL$		'DIO OUT2へ値を代入します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DOUT2$	'グローバル共有変数(DIO IN2)を書き込みます
+		CASE "2"
+			IF P_GCOM_VAL$ = "1" THEN				'ON("1")の場合に処理します
+				IGM_BK_0102_SPCH_TXT$ = "外部電源電圧は、" + STR$(INT(VAL(IGM_BK_0102_POW$))) + "ボルトです。"	'整数のみに変換します
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TXT$	'グローバル共有変数(読み上げテキスト)を書き込みます
+				IGM_BK_0102_SPCH_FLG$ = "T"					'読み上げフラグをON("T")にします
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$	'グローバル共有変数(読み上げフラグ)を書き込みます
+				CALL PROC_GCOM("IGM_BK_0102_SPCH", IGM_BK_0102_SPCH_TXT$)	'読み上げ処理を実行します
+			END IF
+		CASE ELSE
+		END SELECT
+
+			
+	CASE "IGM_BK_0102_DIN3"							'DIO IN3
+		SELECT CASE IGM_BK_0102_DIO_MODE$			'DIOモードに応じて処理します
+		CASE "1"
+			IGM_BK_0102_DOUT3$ = P_GCOM_VAL$		'DIO OUT3へ値を代入します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DOUT3$	'グローバル共有変数(DIO IN3)を書き込みます
+		CASE "2"
+			IF P_GCOM_VAL$ = "1" THEN				'ON("1")の場合に処理します
+				IGM_BK_0102_SPCH_TXT$ = "CPU温度は、" + IGM_BK_0102_CPU_TMP$ + "度です。"
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TXT$	'グローバル共有変数(読み上げテキスト)を書き込みます
+				IGM_BK_0102_SPCH_FLG$ = "T"					'読み上げフラグをON("T")にします
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$	'グローバル共有変数(読み上げフラグ)を書き込みます
+				CALL PROC_GCOM("IGM_BK_0102_SPCH", IGM_BK_0102_SPCH_TXT$)	'読み上げ処理を実行します
+			END IF
+		CASE ELSE
+		END SELECT
+	
+	CASE "IGM_BK_0102_DIN4"							'DIO IN4
+		SELECT CASE IGM_BK_0102_DIO_MODE$			'DIOモードに応じて処理します
+		CASE "1"
+			IGM_BK_0102_DOUT4$ = P_GCOM_VAL$		'DIO OUT4へ値を代入します
+			COMMON PRINT #G_NUM, IGM_BK_0102_DOUT4$	'グローバル共有変数(DIO IN4)を書き込みます
+		CASE "2"
+			IF P_GCOM_VAL$ = "1" THEN				'ON("1")の場合に処理します
+				IGM_BK_0102_SPCH_TXT$ = "基板温度は、" + IGM_BK_0102_BRD_TMP$ + "度です。"
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_TXT$	'グローバル共有変数(読み上げテキスト)を書き込みます
+				IGM_BK_0102_SPCH_FLG$ = "T"					'読み上げフラグをON("T")にします
+				COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$	'グローバル共有変数(読み上げフラグ)を書き込みます
+				CALL PROC_GCOM("IGM_BK_0102_SPCH", IGM_BK_0102_SPCH_TXT$)	'読み上げ処理を実行します
+			END IF
+		CASE ELSE
+		END SELECT
+			
+	CASE "IGM_BK_0102_DOUT1"						'DIO OUT1
+		OUTPUTUP(1) = VAL(P_GCOM_VAL$)				'デジタル出力1をON/OFF(0/1)にします
+	CASE "IGM_BK_0102_DOUT2"						'DIO OUT2
+		OUTPUTUP(2) = VAL(P_GCOM_VAL$)				'デジタル出力2をON/OFF(0/1)にします
+	CASE "IGM_BK_0102_DOUT3"						'DIO OUT3
+		OUTPUTUP(3) = VAL(P_GCOM_VAL$)				'デジタル出力3をON/OFF(0/1)にします
+	CASE "IGM_BK_0102_DOUT4"						'DIO OUT4
+		OUTPUTUP(4) = VAL(P_GCOM_VAL$)				'デジタル出力4をON/OFF(0/1)にします
+	CASE "IGM_BK_0102_POW"							'外部電源電圧
+	CASE "IGM_BK_0102_CPU_TMP"						'CPU温度
+	CASE "IGM_BK_0102_BRD_TMP"						'基板温度
+	CASE "IGM_BK_0102_MIC_DATA"						'マイクデータ
+		L_MIC_DATA$ = CSV2ARRAY$(P_GCOM_VAL$, ",", """", FALSE)	'配列変数に登録します
+
+		IGM_BK_0102_MIC$ = "0"						'マイク入力を無("0")に初期化します
+		IGM_BK_0102_LED$ = "0"						'警報ランプをOFF("0")に初期化します
+		FOR L_LOOP =  1 TO UBOUND(L_MIC_DATA$, 1)	'件数分繰り返します(見出しを除くため1から始めます)
+			IF ABS(VAL(L_MIC_DATA$(L_LOOP, 1))) > 0 THEN	'マイク入力データが0を超えたら処理します
+				IGM_BK_0102_MIC$ = "1"				'マイク入力を有("1")に初期化します
+			END IF
+
+			IF ABS(VAL(L_MIC_DATA$(L_LOOP, 1))) > 1.0 THEN	'マイク入力データが1.0を超えたら処理します
+				IGM_BK_0102_LED$ = "1"				'警報ランプをON("1")に設定します
+				EXIT FOR							'繰り返しを強制的に終えます
+			END IF
+		NEXT L_LOOP
+
+		COMMON PRINT #G_NUM, IGM_BK_0102_MIC$		'グローバル共有変数(マイク入力有無)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0102_LED$		'グローバル共有変数(警報ランプ)を書き込みます
+
+	CASE "IGM_BK_0102_REC"							'録音ボタン
+		IF P_GCOM_VAL$ = "0" THEN					'OFF("0")なら処理します
+			IF UBOUND(G_REC_DATA) > 1 THEN			'録音用マイク入力データがあれば処理します
+				OPEN G_REC_PATH$ + G_REC_FILE$ FOR OUTPUT AS #G_SND_REC_NUM	'録音ファイルを新規作成モード(OUTPUT)で開きます
+				PRINT #G_SND_REC_NUM, G_REC_DATA	'録音用マイク入力データを書き込みます
+				CLOSE #G_SND_REC_NUM				'録音ファイルを閉じます
+
+				REDIM PRESERVE G_REC_DATA(0)		'録音用マイク入力データをクリアします
+			END IF
+		END IF
+
+	CASE "IGM_BK_0102_PLAY"							'再生ボタン
+		IF P_GCOM_VAL$ = "1" THEN					'ON("1")なら処理します
+			IGM_BK_0102_SPK$ = "1"					'スピーカー出力を有("1")にします
+			COMMON PRINT #G_NUM, IGM_BK_0102_SPK$	'グローバル共有変数(スピーカー出力有無)を書き込みます
+
+			IF FILEEXISTS(G_REC_PATH$ + G_REC_FILE$) = TRUE THEN	'録音ファイルがあれば処理します
+				L_REC_W$ = STR_FREADALL$(G_REC_PATH$ + G_REC_FILE$)	'録音ファイルの中身を取り出します
+				L_REC_ARY_W$ = CSV2ARRAY$(L_REC_W$, ",", "", FALSE)	'録音データを配列に変換します
+				REDIM PRESERVE G_REC_DATA(UBOUND(L_REC_ARY_W$, 2) + 2)	'変数の要素数を初期化します
+
+				OPEN G_REC_PATH$ + G_REC_FILE$ FOR INPUT AS #G_SND_REC_NUM	'録音ファイルを入力モード(INPUT)で開きます
+				
+				L_DAT# = 0							'録音ファイルからの読み込みデータ用変数を初期化します
+				L_DAT_CNT = 0						'繰り返し処理カウント用変数を初期化します
+				DO WHILE EOF(G_SND_REC_NUM) = FALSE	'録音ファイルの最後の行まで繰り返します
+					INPUT #G_SND_REC_NUM, L_DAT#	'ファイルの中身を変数へ入力します
+					G_REC_DATA(L_DAT_CNT) = L_DAT#	'録音用マイク入力データ変数へ代入します
+					L_DAT_CNT = L_DAT_CNT + 1		'繰り返し回数をカウントします(1足します)
+				LOOP
+
+				CLOSE #G_SND_REC_NUM				'録音ファイルを閉じます
+
+				SNDWRITE #G_SND_WR_NUM, G_REC_DATA	'スピーカーへ出力します
+			END IF
+
+			IGM_BK_0102_SPK$ = "0"					'スピーカー出力を無("0")にします
+			COMMON PRINT #G_NUM, IGM_BK_0102_SPK$	'グローバル共有変数(スピーカー出力)を書き込みます
+		END IF
+
+	CASE "IGM_BK_0102_SPCH"							'読み上げ
+		IGM_BK_0102_SPK$ = "1"						'スピーカー出力を有にします
+		COMMON PRINT #G_NUM, IGM_BK_0102_SPK$		'グローバル共有変数(スピーカー出力)を書き込みます
+
+		L_SPCH_TEXT$ = GEN_SPCH_TEXT$(IGM_BK_0102_SPCH_TYPE$, P_GCOM_VAL$)	'読み上げテキストを生成します
+		
+		OPEN G_SPK_PATH$ + G_SPK_FILE$ FOR OUTPUT AS #G_SPK_NUM	'読み上げファイルを新規作成モード(OUTPUT)で開きます
+		PRINT #G_SPK_NUM, L_SPCH_TEXT$				'読み上げるデータを書き込みます
+		CLOSE #G_SPK_NUM							'読み上げファイルを閉じます
+
+		SELECT CASE IGM_BK_0102_SPCH_TYPE$			'キャラクター毎に読み上げタイプと感情タイプを指定します
+		CASE "M":	L_SPCH_GENDER$ = "M":	L_SPCH_TYPE$ = "N"	'いお太くん
+		CASE "F":	L_SPCH_GENDER$ = "F":	L_SPCH_TYPE$ = "N"	'あぃ子さん
+		CASE "R":	L_SPCH_GENDER$ = "M":	L_SPCH_TYPE$ = "H"	'両子くん
+		END SELECT
+
+		SHELL "speech " + G_SPK_PATH$ + G_SPK_FILE$ + " " + L_SPCH_GENDER$ + " " + L_SPCH_TYPE$	'読み上げコマンド(Linuxコマンド)を実行します
+		
+		IGM_BK_0102_SPCH_FLG$ = "F"					'読み上げフラグをOFF("F")にします
+		COMMON PRINT #G_NUM, IGM_BK_0102_SPCH_FLG$	'グローバル共有変数(読み上げフラグ)を書き込みます
+
+		IGM_BK_0102_SPK$ = "0"						'スピーカー出力を無("0")にします
+		COMMON PRINT #G_NUM, IGM_BK_0102_SPK$		'グローバル共有変数(スピーカー出力)を書き込みます
+	
+	END SELECT
+		
+END SUB
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

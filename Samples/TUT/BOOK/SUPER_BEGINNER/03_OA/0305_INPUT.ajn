@@ -1,0 +1,482 @@
+' -----------------------------------------------------------------------------
+'    かんたん AJAN web プログラム by Interface PageGenerator
+'
+'      filename:   0305_INPUT.ajn
+'      generate:   2021/04/19 16:10:32
+'      generator:  ver 1.10.018d
+'                                                    Powerd by Interface AJAN
+' -----------------------------------------------------------------------------
+
+' #############################################################################
+'  このファイルには，イベントアクションエディタで定義したアクションで使用する
+'  グローバル変数の作成(初期化)やサブルーチンを記述します。
+'  このファイルを編集した場合は、PageGenerator による web ページの生成が必要です。
+' #############################################################################
+
+' #######################################################
+' グローバル変数を定義する場合は，ここで作成(初期化)します。
+' #######################################################
+
+G_NUM = COMMON FREEFILE()		'オープンするときのグローバル共有変数用番号を取得します
+G_CUD_CLS$ = "C"				'登録区分(C:追加,U:更新,D:削除)
+G_SRC_ITEM$ = ""				'検索値
+
+G_BFR_TITLE$ = ""				'画面タイトル（前回の値）
+G_BFR_TITLE_COLOR$ = ""			'画面タイトル文字色（前回の値）
+G_BFR_TITLE_BGCOLOR$ = ""		'画面タイトル背景色（前回の値）
+
+
+' #######################################################
+' サブルーチンを記述する場合は，ここに記述します。
+' #######################################################
+
+
+
+
+
+
+'===============================================================================
+' sub module   :btnCANCEL_CLICK
+' explanation   :(1)キャンセルボタンをクリックした時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB btnCANCEL_CLICK(id$, event$, msg$)
+
+	WEB_MOVE_PAGE "0302_LIST.ajn"	'一覧画面へ移動します
+
+END SUB
+
+
+'===============================================================================
+' sub module   :btnDELETE_CLICK
+' explanation   :(1)削除ボタンをクリックした時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB btnDELETE_CLICK(id$, event$, msg$)
+	CALL INPUT_DISABLE("TRUE")		'ボタンを使用不可にします
+	CALL DIALOG_VISIBLE("TRUE")		'削除確認用ダイアログを表示します
+END SUB
+
+
+'===============================================================================
+' sub module   :btnDIALOG_CANCEL_CLICK
+' explanation   :(1)削除ダイアログのキャンセルボタンをクリックした時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB btnDIALOG_CANCEL_CLICK(id$, event$, msg$)
+	CALL INPUT_DISABLE("FALSE")		'ボタンを使用可にします
+	CALL DIALOG_VISIBLE("FALSE")	'削除確認用ダイアログを非表示にします
+
+END SUB
+
+
+'===============================================================================
+' sub module   :btnDIALOG_DELETE_CLICK
+' explanation   :(1)削除ダイアログの削除ボタンをクリックした時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB btnDIALOG_DELETE_CLICK(id$, event$, msg$)
+	G_CUD_CLS$ = "D"				'削除を設定します
+	CALL SET_ENTRY					'削除処理をセットします
+
+	CALL INPUT_DISABLE("FALSE")		'ボタンを使用可にします
+	CALL DIALOG_VISIBLE("FALSE")	'削除確認用ダイアログを非表示にします
+
+END SUB
+
+
+'===============================================================================
+' sub module   :btnENTRY_CLICK
+' explanation   :(1)保存ボタンをクリックした時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB btnENTRY_CLICK(id$, event$, msg$)
+
+	IF G_SRC_ITEM$ = "" THEN	'検索値がない場合に処理します
+		G_CUD_CLS$ = "C"		'追加を設定します
+	ELSE
+		G_CUD_CLS$ = "U"		'更新を設定します
+	END IF
+	
+	CALL SET_ENTRY				'追加/更新処理をセットします
+	
+END SUB
+
+
+'===============================================================================
+' sub module    :CALC_AMOUNT
+' explanation   :(1)受注金額(単価×受注数量)を求めます。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB CALC_AMOUNT(id$, event$, msg$)
+	LOCAL L_UNIT_PRICE									'単価
+	LOCAL L_ODR_CNT										'受注数量
+	LOCAL L_ODR_AMOUNT									'受注金額(単価×受注数量)
+	
+	L_UNIT_PRICE = VAL(AJAN_WEB_FORM$("txtUNIT_PRICE"))	'入力した単価を取り出します
+	L_ODR_CNT = VAL(AJAN_WEB_FORM$("txtODR_CNT"))		'入力した受注数量を取り出します
+
+	L_ODR_AMOUNT = L_UNIT_PRICE * L_ODR_CNT				'受注金額(単価×受注数量)を計算します
+
+	WEB_TEXT_SET "txtODR_AMOUNT", AJAN_TEXT_VALUE, STR$(L_ODR_AMOUNT)	'受注金額を表示します
+	
+END SUB
+
+
+'===============================================================================
+' sub module    :DIALOG_VISIBLE
+' explanation   :(1)削除ダイアログの表示/非表示を制御します。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB DIALOG_VISIBLE(P_VISIBLE$)
+
+	SELECT CASE P_VISIBLE$	'表示/非表示を切り替えます
+	CASE "TRUE"
+		WEB_LABEL_SET "lblDIALOG", AJAN_WEB_VISIBLE, AJAN_TRUE
+		WEB_LABEL_SET "lblDIALOG_MSG", AJAN_WEB_VISIBLE, AJAN_TRUE
+		WEB_BUTTON_SET "btnDIALOG_CANCEL", AJAN_WEB_VISIBLE, AJAN_TRUE
+		WEB_BUTTON_SET "btnDIALOG_DELETE", AJAN_WEB_VISIBLE, AJAN_TRUE
+	CASE ELSE
+		WEB_LABEL_SET "lblDIALOG", AJAN_WEB_VISIBLE, AJAN_FALSE
+		WEB_LABEL_SET "lblDIALOG_MSG", AJAN_WEB_VISIBLE, AJAN_FALSE
+		WEB_BUTTON_SET "btnDIALOG_CANCEL", AJAN_WEB_VISIBLE, AJAN_FALSE
+		WEB_BUTTON_SET "btnDIALOG_DELETE", AJAN_WEB_VISIBLE, AJAN_FALSE
+	END SELECT
+
+END SUB
+
+
+'===============================================================================
+' sub module    :INPUT_DISABLE
+' explanation   :(1)入力項目、ボタンのロックを制御します。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB INPUT_DISABLE(P_DISABLE$)
+	SELECT CASE P_DISABLE$	'表示/非表示を切り替えます
+	CASE "TRUE"
+		WEB_TEXT_SET "txtINPUT_NUM", AJAN_TEXT_DISABLED, AJAN_TRUE
+		WEB_TEXT_SET "txtODR_DATE", AJAN_TEXT_DISABLED, AJAN_TRUE
+		WEB_TEXT_SET "txtSUPPLIER_NAME", AJAN_TEXT_DISABLED, AJAN_TRUE
+		WEB_TEXT_SET "txtSHIP_DATE", AJAN_TEXT_DISABLED, AJAN_TRUE
+		WEB_TEXT_SET "txtPRDC_NAME", AJAN_TEXT_DISABLED, AJAN_TRUE
+		WEB_TEXT_SET "txtUNIT_PRICE", AJAN_TEXT_DISABLED, AJAN_TRUE
+		WEB_TEXT_SET "txtODR_CNT", AJAN_TEXT_DISABLED, AJAN_TRUE
+
+		WEB_BUTTON_SET "btnCANCEL", AJAN_BUTTON_DISABLED, AJAN_TRUE
+		WEB_BUTTON_SET "btnENTRY", AJAN_BUTTON_DISABLED, AJAN_TRUE
+		WEB_BUTTON_SET "btnDELETE", AJAN_BUTTON_DISABLED, AJAN_TRUE
+	CASE ELSE
+		WEB_TEXT_SET "txtINPUT_NUM", AJAN_TEXT_DISABLED, AJAN_FALSE
+		WEB_TEXT_SET "txtODR_DATE", AJAN_TEXT_DISABLED, AJAN_FALSE
+		WEB_TEXT_SET "txtSUPPLIER_NAME", AJAN_TEXT_DISABLED, AJAN_FALSE
+		WEB_TEXT_SET "txtSHIP_DATE", AJAN_TEXT_DISABLED, AJAN_FALSE
+		WEB_TEXT_SET "txtPRDC_NAME", AJAN_TEXT_DISABLED, AJAN_FALSE
+		WEB_TEXT_SET "txtUNIT_PRICE", AJAN_TEXT_DISABLED, AJAN_FALSE
+		WEB_TEXT_SET "txtODR_CNT", AJAN_TEXT_DISABLED, AJAN_FALSE
+
+		WEB_BUTTON_SET "btnCANCEL", AJAN_BUTTON_DISABLED, AJAN_FALSE
+		WEB_BUTTON_SET "btnENTRY", AJAN_BUTTON_DISABLED, AJAN_FALSE
+		
+		IF G_SRC_ITEM$ <> "" THEN
+			WEB_BUTTON_SET "btnDELETE", AJAN_BUTTON_DISABLED, AJAN_FALSE
+		END IF
+	END SELECT
+
+END SUB
+
+
+'===============================================================================
+' sub module   :INPUT_ENTER
+' explanation   :(1)画面表示完了時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB INPUT_ENTER(id$, event$, msg$)
+	LIST IGM_BK_0302_LIST_DATA$			'受注一覧
+	LOCAL LIST L_SRC_DIM				'検索結果の配列の添字
+	LOCAL L_MAX_SRC_DIM					'受注データの添字の最大値
+	
+	COMMON OPEN "127.0.0.1" AS #G_NUM				'グローバル共有を開きます
+
+	COMMON INPUT #G_NUM, IGM_BK_0305_ENTRY_FLG$		'グローバル共有変数(登録フラグ)を読み出します
+
+	IF IGM_BK_0305_ENTRY_FLG$ = "F" THEN			'登録フラグが下りている場合に処理します
+		COMMON INPUT #G_NUM, IGM_BK_0302_LIST_DATA$	'受注一覧
+
+		G_SRC_ITEM$ = AJAN_WEB$("INPUT_NUM")		'検索値(受付番号)を代入します
+
+		L_SRC_DIM = 0								'検索結果の配列の添字を初期化します
+		IF G_SRC_ITEM$ <> "" THEN					'検索値がある場合(修正入力)に処理します
+			L_MAX_SRC_DIM = UBOUND(IGM_BK_0302_LIST_DATA$, 1)		'受注データの添字の最大値
+			L_SRC_DIM = DIMFIND(IGM_BK_0302_LIST_DATA$, G_SRC_ITEM$, 0, [1;1], [L_MAX_SRC_DIM;1])	'指定した受付番号のデータがあるか
+																									'検索します(受付番号の列のみを検索します)
+		END IF
+		
+		IF CDIM(L_SRC_DIM) > 1 THEN													'検索結果があれば処理します
+			IGM_BK_0305_INPUT_NUM$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 1)		'受付番号
+			IGM_BK_0305_ODR_DATE$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 2)		'受注日
+			IGM_BK_0305_SUPPLIER_NAME$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 3)	'取引先名
+			IGM_BK_0305_SHIP_DATE$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 4)		'出荷予定日
+			IGM_BK_0305_PRDC_NAME$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 5)		'商品名
+			IGM_BK_0305_UNIT_PRICE$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 6)	'単価
+			IGM_BK_0305_ODR_CNT$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 7)		'数量
+			IGM_BK_0305_ODR_AMOUNT$ = IGM_BK_0302_LIST_DATA$(L_SRC_DIM(0, 0), 8)	'合計金額
+		ELSE
+			'初期値を読み込みます
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_INPUT_NUM$			'初期値(受付番号)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_ODR_DATE$ 			'初期値(受注日)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_SUPPLIER_NAME$		'初期値(取引先名)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_SHIP_DATE$			'初期値(出荷予定日)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_PRDC_NAME$			'初期値(商品名)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_UNIT_PRICE$		'初期値(単価)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_ODR_CNT$			'初期値(数量)
+			COMMON INPUT #G_NUM, IGM_BK_0305_DEF_ODR_AMOUNT$		'初期値(合計金額)
+
+			'初期化します
+			IGM_BK_0305_INPUT_NUM$ = IGM_BK_0305_DEF_INPUT_NUM$		'受付番号
+			IGM_BK_0305_ODR_DATE$ = IGM_BK_0305_DEF_ODR_DATE$		'受注日
+			IGM_BK_0305_SUPPLIER_NAME$ = IGM_BK_0305_DEF_SUPPLIER_NAME$	'取引先名
+			IGM_BK_0305_SHIP_DATE$ = IGM_BK_0305_DEF_SHIP_DATE$		'出荷予定日
+			IGM_BK_0305_PRDC_NAME$ = IGM_BK_0305_DEF_PRDC_NAME$		'商品名
+			IGM_BK_0305_UNIT_PRICE$ = IGM_BK_0305_DEF_UNIT_PRICE$	'単価
+			IGM_BK_0305_ODR_CNT$ = IGM_BK_0305_DEF_ODR_CNT$			'数量
+			IGM_BK_0305_ODR_AMOUNT$ = IGM_BK_0305_DEF_ODR_AMOUNT$	'合計金額
+		END IF
+
+		COMMON PRINT #G_NUM, IGM_BK_0305_INPUT_NUM$					'グローバル共有変数(受付番号)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_DATE$					'グローバル共有変数(受注日)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_SUPPLIER_NAME$				'グローバル共有変数(取引先名)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_SHIP_DATE$					'グローバル共有変数(出荷予定日)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_PRDC_NAME$					'グローバル共有変数(商品名)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_UNIT_PRICE$				'グローバル共有変数(単価)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_CNT$					'グローバル共有変数(数量)を書き込みます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_AMOUNT$				'グローバル共有変数(合計金額)を書き込みます
+	ELSE
+		WEB_MSG_BOX "ただいま処理中です。しばらく待ってから、再度クリックしてください。"
+	END IF
+
+	IF G_SRC_ITEM$ <> "" THEN										'検索値がある場合(修正入力/削除)に処理します
+		WEB_BUTTON_SET "btnDELETE", AJAN_BUTTON_DISABLED, AJAN_FALSE	'削除ボタンを使用可にします
+	ELSE															'そうでない場合(新規入力)に処理します
+		WEB_BUTTON_SET "btnDELETE", AJAN_BUTTON_DISABLED, AJAN_TRUE	'削除ボタンを使用不可にします
+	END IF
+
+	CALL SET_WEB_PARTS_REFRESH										'Web部品にデータをセットします。
+
+	ON TIMER(1000) CALL SET_WEB_PARTS_REFRESH						'グローバル共有変数を定期的(1秒おき)にチェックします
+	TIMER ON
+	
+END SUB	
+
+
+'===============================================================================
+' sub module   :INPUT_LEAVE
+' explanation   :(1)画面を閉じる時の処理です。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB INPUT_LEAVE(id$, event$, msg$)
+
+	COMMON CLOSE #G_NUM		'グローバル共有を閉じます
+	
+END SUB	
+
+
+'===============================================================================
+' sub module    :MSG_ENTRY_RESULT
+' explanation   :(1)処理結果メッセージを表示します。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB MSG_ENTRY_RESULT(id$, event$, msg$)
+	LOCAL L_MSG$		'表示メッセージ
+	LOCAL L_RESULT$		'処理結果
+	
+	L_MSG$ = ""			'表示メッセージを初期化します
+	L_RESULE$ = ""		'処理結果を初期化します
+	
+	SELECT CASE msg$			'msg$に応じた処理結果メッセージを代入します
+	CASE "ENTRY_COMPLETE": 	L_MSG$ = "登録しました。": L_RESULT$ = "OK"
+	CASE "UPDATE_COMPLETE": L_MSG$ = "更新しました。": L_RESULT$ = "OK"
+	CASE "DELETE_COMPLETE": L_MSG$ = "削除しました。": L_RESULT$ = "OK"
+	CASE "ENTRY_ERROR": 	L_MSG$ = "登録に失敗しました。": L_RESULT$ = "NG"
+	CASE "UPDATE_ERROR": 	L_MSG$ = "更新に失敗しました。": L_RESULT$ = "NG"
+	CASE "DELETE_ERROR": 	L_MSG$ = "削除に失敗しました。": L_RESULT$ = "NG"
+	CASE ELSE: 				L_MSG$ = "予期せぬエラーが発生しました。": L_RESULT$ = "NG"
+	END SELECT
+
+	IF L_RESULT$ = "OK" THEN			'処理が成功していたら処理します
+		WEB_MOVE_PAGE "0302_LIST.ajn"	'一覧画面へ移動します
+	ELSE
+		CALL INPUT_DISABLE("FALSE")		'ボタンを使用可にします
+		WEB_MSG_BOX L_MSG$				'画面にメッセージを表示します
+	END IF
+
+END SUB
+
+
+'===============================================================================
+' sub module    :SET_ENTRY
+' explanation   :(1)登録処理を設定します。
+' input         :(1)id$
+'                (2)event$
+'                (3)msg$
+' output        :(1)
+'===============================================================================
+
+SUB SET_ENTRY()
+	LOCAL L_ERR_MSG$						'エラーメッセージ用変数
+	LOCAL L_UNIT_PRICE						'単価
+	LOCAL L_ODR_CNT							'受注数量
+	LOCAL L_ODR_AMOUNT						'受注金額(単価×受注数量)
+
+	CALL INPUT_DISABLE("TRUE")				'ボタンを使用不可にします
+
+	L_ERR_MSG$ = ""							'エラーメッセージ用変数を初期化します
+	
+	IF TRIM$(AJAN_WEB_FORM$("txtINPUT_NUM")) = "" THEN				'受付番号
+		L_ERR_MSG$ = L_ERR_MSG$ + "「受付番号」を入力してください。" + CHR$(10)
+	END IF
+	
+	IF G_CUD_CLS$ <> "D" THEN										'削除以外の場合に処理します
+		'入力チェック
+		IF ISDATETIME(AJAN_WEB_FORM$("txtODR_DATE")) = FALSE THEN	'受注日
+			L_ERR_MSG$ = L_ERR_MSG$ + "「受注日」を入力してください。" + CHR$(10)
+		ELSEIF LEN(DATE$(CDATETIME(AJAN_WEB_FORM$("txtODR_DATE")))) <> 10 THEN
+			L_ERR_MSG$ = L_ERR_MSG$ + "「受注日」を”YYYY/MM/DD”の書式で入力してください。" + CHR$(10)
+		END IF
+		
+		IF TRIM$(AJAN_WEB_FORM$("txtSUPPLIER_NAME")) = "" THEN		'取引先名
+			L_ERR_MSG$ = L_ERR_MSG$ + "「取引先名」を入力してください。" + CHR$(10)
+		END IF
+		
+		IF ISDATETIME(AJAN_WEB_FORM$("txtSHIP_DATE")) = FALSE THEN	'出荷予定日
+			L_ERR_MSG$ = L_ERR_MSG$ + "「出荷予定日」を入力してください。" + CHR$(10)
+		ELSEIF LEN(DATE$(CDATETIME(AJAN_WEB_FORM$("txtSHIP_DATE")))) <> 10 THEN
+			L_ERR_MSG$ = L_ERR_MSG$ + "「出荷予定日」を”YYYY/MM/DD”の書式で入力してください。" + CHR$(10)
+		END IF
+		
+		IF TRIM$(AJAN_WEB_FORM$("txtPRDC_NAME")) = "" THEN			'商品名
+			L_ERR_MSG$ = L_ERR_MSG$ + "「商品名」を入力してください。" + CHR$(10)
+		END IF
+
+		L_UNIT_PRICE = VAL(AJAN_WEB_FORM$("txtUNIT_PRICE"))	'入力した単価を取り出します
+		L_ODR_CNT = VAL(AJAN_WEB_FORM$("txtODR_CNT"))		'入力した受注数量を取り出します
+
+		L_ODR_AMOUNT = L_UNIT_PRICE * L_ODR_CNT				'受注金額(単価×受注数量)を計算します
+
+		IF VAL(AJAN_WEB_FORM$("txtODR_AMOUNT")) <> L_ODR_AMOUNT THEN	'合計金額
+			L_ERR_MSG$ = L_ERR_MSG$ + "「合計金額」を確認してください。" + CHR$(10)
+		END IF
+	END IF
+
+	IF L_ERR_MSG$ = "" THEN								'エラーメッセージがない場合(＝入力内容が正常)に処理します
+
+		IGM_BK_0305_INPUT_NUM$ = AJAN_WEB_FORM$("txtINPUT_NUM")									'受付番号
+		IGM_BK_0305_ODR_DATE$ = DATE$(CDATETIME(AJAN_WEB_FORM$("txtODR_DATE")))					'受注日
+		IGM_BK_0305_SUPPLIER_NAME$ = AJAN_WEB_FORM$("txtSUPPLIER_NAME")							'取引先名
+		IGM_BK_0305_SHIP_DATE$ = DATE$(CDATETIME(AJAN_WEB_FORM$("txtSHIP_DATE")))				'出荷予定日
+		IGM_BK_0305_PRDC_NAME$ = AJAN_WEB_FORM$("txtPRDC_NAME")									'商品名
+		IGM_BK_0305_UNIT_PRICE$ = STR$(VAL(REPLACE$(AJAN_WEB_FORM$("txtUNIT_PRICE"), ",", "")))	'単価
+		IGM_BK_0305_ODR_CNT$ = STR$(VAL(REPLACE$(AJAN_WEB_FORM$("txtODR_CNT"), ",", "")))		'数量
+		IGM_BK_0305_ODR_AMOUNT$ = STR$(VAL(REPLACE$(AJAN_WEB_FORM$("txtODR_AMOUNT"), ",", "")))	'合計金額
+		
+		COMMON PRINT #G_NUM, IGM_BK_0305_INPUT_NUM$		'受付番号
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_DATE$		'受注日
+		COMMON PRINT #G_NUM, IGM_BK_0305_SUPPLIER_NAME$	'取引先名
+		COMMON PRINT #G_NUM, IGM_BK_0305_SHIP_DATE$		'出荷予定日
+		COMMON PRINT #G_NUM, IGM_BK_0305_PRDC_NAME$		'商品名
+		COMMON PRINT #G_NUM, IGM_BK_0305_UNIT_PRICE$	'単価
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_CNT$		'数量
+		COMMON PRINT #G_NUM, IGM_BK_0305_ODR_AMOUNT$	'合計金額
+
+		IGM_BK_0305_CUD_CLS$ = G_CUD_CLS$				'登録区分を代入します
+		COMMON PRINT #G_NUM, IGM_BK_0305_CUD_CLS$		'グローバル共有変数(登録区分)を書き込みます
+
+		IGM_BK_0305_ENTRY_FLG$ = "T"					'登録フラグを立てます
+		COMMON PRINT #G_NUM, IGM_BK_0305_ENTRY_FLG$		'グローバル共有変数(登録フラグ)を書き込みます
+	ELSE
+		WEB_MSG_BOX L_ERR_MSG$			'エラーメッセージを表示します
+		CALL INPUT_DISABLE("FALSE")		'ボタンを使用可にします
+	END IF
+	
+END SUB
+
+
+'===============================================================================
+' sub module   :SET_WEB_PARTS_REFRESH
+' explanation   :(1)前回の値を違っていたら、Web部品にデータをセットします。
+' input         :(1)
+' output        :(1)
+'===============================================================================
+
+SUB SET_WEB_PARTS_REFRESH()
+
+	'グローバル共有変数を読み出します
+	COMMON INPUT #G_NUM, IGM_BK_0305_TITLE$			'画面タイトル
+	COMMON INPUT #G_NUM, IGM_BK_0305_TITLE_COLOR$	'画面タイトル文字色
+	COMMON INPUT #G_NUM, IGM_BK_0305_TITLE_BGCOLOR$	'画面タイトル背景色
+	
+	IF G_BFR_TITLE$ <> IGM_BK_0305_TITLE$ THEN									'前回の値と違っていたら処理します
+		WEB_PAGE_SET AJAN_PAGE_TITLE, IGM_BK_0305_TITLE$						'画面タイトルの値をセットします
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_VALUE, IGM_BK_0305_TITLE$			'画面タイトルの値をセットします
+		G_BFR_TITLE$ = IGM_BK_0305_TITLE$										'今回の値を保持します
+	END IF	
+	
+	IF G_BFR_TITLE_COLOR$ <> IGM_BK_0305_TITLE_COLOR$ THEN						'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_COLOR, IGM_BK_0305_TITLE_COLOR$	'画面タイトル文字色の値をセットします
+		G_BFR_TITLE_COLOR$ = IGM_BK_0305_TITLE_COLOR$							'今回の値を保持します
+	END IF	
+	
+	IF G_BFR_TITLE_BGCOLOR$ <> IGM_BK_0305_TITLE_BGCOLOR$ THEN								'前回の値と違っていたら処理します
+		WEB_LABEL_SET "lblTITLE", AJAN_LABEL_BACKGROUND_COLOR, IGM_BK_0305_TITLE_BGCOLOR$	'画面タイトル背景色の値をセットします
+		G_BFR_TITLE_BGCOLOR$ = IGM_BK_0305_TITLE_BGCOLOR$									'今回の値を保持します
+	END IF	
+	
+END SUB
+
+
+'===============================================================================
+'END OF FILE
+'===============================================================================

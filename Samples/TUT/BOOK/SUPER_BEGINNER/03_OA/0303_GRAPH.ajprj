@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<Ajan version="1.00">
+  <AJANVER ver="Ver8385"/>
+  <App ExecuteName="0303_GRAPH" Type="PageGenerator"/>
+  <FileGroup>
+    <file path="0303_GRAPHStartup.ajn"/>
+    <file path="0303_GRAPH.ajn">
+      <DependentUpon>0303_GRAPHStartup.ajn</DependentUpon>
+    </file>
+    <file path="0303_GRAPHForm.ajn">
+      <DependentUpon>0303_GRAPHStartup.ajn</DependentUpon>
+    </file>
+  </FileGroup>
+</Ajan>
