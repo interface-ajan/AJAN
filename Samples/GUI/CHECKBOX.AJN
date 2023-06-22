@@ -1,0 +1,68 @@
+' ================================================================================
+' CHECKBOX サンプルプログラム 
+'  ウィンドウにチェックボックスを配置し、チェックボックスをクリックした際に、
+'  呼び出されるサブルーチン(CHECKBOX_EVENT)を登録します。
+'  チェックボックスをクリックすると、クリックしたチェックボックスの
+'  情報(GUGET$ CHECKBOX関数でチェック内容も)が表示されます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' チェックボックスをクリックした際に呼ばれるイベント
+SUB CHECKBOX_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	? NUM, NAME$, GUGET$ CHECKBOX(NUM)
+	? "チェックボックス！"
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "チェックボックス", 1, FONT$, SIZE$, POSI$, TIP$
+'チェックボックスを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 30"
+POSI$ = "100, 60"
+TIP$ = "チェックボックス"
+GUCREATE CHECKBOX 1, 10, "SAMPLE", 0, FONT$, SIZE$, POSI$, TIP$
+POSI$ = "100, 120"
+GUCREATE CHECKBOX 1, 20, "SAMPLE", 1, FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT CHECKBOX 10 CALL CHECKBOX_EVENT
+ON GUEVT CHECKBOX 20 CALL CHECKBOX_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT CHECKBOX 10 ON
+GUEVT CHECKBOX 20 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT CHECKBOX 10 OFF
+GUEVT CHECKBOX 20 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

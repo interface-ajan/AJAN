@@ -1,0 +1,79 @@
+' ================================================================================
+' GUDIALOGBOX SAVE$ サンプルプログラム 
+'  ウィンドウにボタンとラベルを配置し、ボタンをクリックした際に、
+'  呼び出されるサブルーチン(BUTTON_EVENT)を登録します。
+'  ボタンをクリックすると、ファイルを保存するためのダイアログボックスを表示し、
+'  選択したファイルパスを取得して、ラベルに更新表示します。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じるときのイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' ボタンをクリックする際のイベント
+SUB BUTTON_EVENT(NUM, NAME$, EVT)
+	'ダイアログを表示し、ファイルパスを取得
+	FILEPATH$ = GUDIALOGBOX SAVE$(1,FIRSTDIR$,TITLE$,(FILTERNAME$,FILTER$),FIRSTFILENAME$,DESCRIPTION$)
+	'取得したファイルパスにラベルを更新
+	GUUPD LABEL 20,FILEPATH$
+END SUB
+
+CLS
+'ウィンドウを作成する
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "900, 150"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1,"GUDIALOGBOX SAVE$",1,FONT$,SIZE$,POSI$,TIP$
+'ボタンを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "200, 30"
+POSI$ = "50, 80"
+TIP$ = "ボタン"
+GUCREATE BUTTON 1, 10, "プログラム保存", FONT$, SIZE$, POSI$, TIP$
+'ラベルを作成する(左寄せ)
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "700, 40"
+POSI$ = "50, 30, LEFT, TOP"
+TIP$ = "ラベル1"
+GUCREATE LABEL 1, 20, "取得したファイルパスをここに表示します", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT BUTTON 10 CALL BUTTON_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT BUTTON 10 ON
+'初期ディレクトリ
+FIRSTDIR$ = "/tmp/"
+'タイトル
+TITLE$ = "プログラムを保存"
+'フィルタ名
+DIM FILTERNAME$(1)
+FILTERNAME$ = ["AJAN"; "全て" ]
+'フィルタ指定
+DIM FILTER$(1)
+FILTER$ = ["*.AJN"; "*"]
+'最初に表示される名前
+FIRSTFILENAME$ = "SAMPLE.AJN"
+'説明文
+DESCRIPTION$ = "プログラムを保存します"
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT BUTTON 10 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+'終了
+END

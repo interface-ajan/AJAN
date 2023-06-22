@@ -1,0 +1,33 @@
+' ================================================================================
+' himoswitch Sample Program
+'  3秒ごとにひもスイッチの状態を表示するサンプルプログラムです。
+'  5回表示すると終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Get himoswhitch status loop
+FOR I=0 TO 4
+	' Get himoswitch status
+	SWSTATUS = HIMOSWITCHSTATUS
+	PRINT "Himo Switch Status:"; SWSTATUS
+	' WAIT
+	CALL WAIT(3.0)
+NEXT I
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

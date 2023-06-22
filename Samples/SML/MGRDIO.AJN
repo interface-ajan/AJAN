@@ -1,0 +1,37 @@
+' ================================================================================
+' DIO Sample Program
+'  汎用デジタル入出力を行うサンプルプログラムです。デジタ
+'  ル出力後、１秒待機してデジタル入力を行い、入力データを
+'  表示します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+FOR I=0 TO 3
+    ' Output Universal Port
+    OUTPUTUP(I+1) = 1
+    ' WAIT
+    CALL WAIT(1.0)
+    ' Input Universal Port
+    InputData1 = INPUTUP(I+1)
+    PRINT "INPUTUP("; I+1; "):"; InputData1
+NEXT I
+PRINT INPUTUP([1 to 4])
+OUTPUTUP([1 to 4]) = [0;0;0;0]
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

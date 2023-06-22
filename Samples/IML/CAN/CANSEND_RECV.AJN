@@ -1,0 +1,108 @@
+' ================================================================================
+' CANメッセージの送受信テスト用サンプル
+'  CAN通信の送信・受信のどちらを行うか選択できるサンプルプログラムです。
+'  実行開始すると、1=CAN送信 / 2=CAN受信 / 99=終了 を選択入力します。
+'  CAN送信を選ぶと、凡そ 1ms周期で乱数値をCAN送信します。
+'  CAN受信を選ぶと、受信バッファを確認する都度、
+'  受信データがあればCAN受信して、前回の受信との周期性を表示します。
+'  CAN受信は、割り込みを用いず、CANSTATUS関数で受信バッファに
+'  受信データが入ってきたか否かで、受信可能を判断しています。
+'              Copyright 2020 Interface Corporation
+' ================================================================================
+INCLUDE "IML002CAN.AJN"
+
+' CANメッセージの送受信用バッファ
+LIST MSG
+
+TRY_LOOP:
+INPUT "1=CAN送信 / 2=CAN受信 / 99=終了>"; CMD
+IF CMD = 1 THEN
+	CALL SUB_SEND()
+ELSEIF CMD = 2 THEN
+	CALL SUB_RECV()
+ELSEIF CMD = 99 THEN
+	' 抜ける
+ELSE
+	GOTO TRY_LOOP
+END IF
+
+? "bye.bye"
+END
+
+' CAN送信処理
+SUB SUB_SEND()
+
+	CANOPEN 1, "BAUDRATE=125000"
+	CANACTIVATE 1
+
+	ST_TM = CLOCK
+	DO WHILE TRUE
+		DF_TM = CLOCK - ST_TM
+		IF DF_TM >= 0.001 THEN
+			' 0.001 = 1ms経過したら、メッセージを送信する
+			ST_TM = CLOCK
+			V = RND() * 100		' 送信する値を求める
+			MSG = DBL2ARY(V)	' 値から、CANメッセージ用に配列に分解
+			' CAN送信
+			CANSEND 1, 12, LDIM(MSG), MSG
+			'? CHR$(13); FORMAT$(DF_TM, "#.######"), FORMAT$(V, "###.###");
+		END IF
+	LOOP
+
+	CANDEACTIVATE 1
+	CANCLOSE 1
+
+END SUB
+
+' CAN受信処理
+SUB SUB_RECV()
+	LOCAL STRUCT TCANSTATUS	ST
+
+	CANOPEN 1, "BAUDRATE=125000"
+	CANCLEAR 1, "TXB=ON, RXB=ON, TXERR=ON, RXERR=ON, ERB=ON, TIMERCOUNTER=ON"
+	CANACTIVATE 1
+
+	DO WHILE TRUE
+		' CANバスの現状態を取得
+		ST = CANSTATUS(1)
+		IF ST.RXBCOUNT > 0 THEN
+			' 受信バッファにデータが来たので、CAN受信処理
+			MSG = CANRECV(1)
+			V = ARY2DBL(MSG)
+			
+			' 受信に掛かった時間の計測
+			CNT = CNT + 1
+			DF_TM = CLOCK - PRE_TM
+			IF (DF_TM > MAX_TM) AND (CNT > 1) THEN MAX_TM = DF_TM
+			' MSG(1)は、ドライバが報告するメッセージを受信した時間(US)
+			' DF_TMは、前回の受信から今回の受信までの差分時間
+			? FORMAT$(V, "###.###"), MSG(1) - PRE_TIME, FORMAT$(DF_TM, "#.######"), FORMAT$(MAX_TM, "#.######")
+			PRE_TIME = MSG(1)
+			PRE_TM = CLOCK
+		END IF
+	LOOP
+
+	CANDEACTIVATE 1
+	CANCLOSE 1
+
+END SUB
+
+' 倍精度実数値を、CANメッセージ用の配列(8要素)に分解
+FUNCTION DBL2ARY(V) AS LIST
+	LOCAL	ARY(7), S$, I
+	S$ = MKD$(V)
+	FOR I=0 TO UBOUND(ARY)
+		ARY(I) = ASCB(MIDB$(S$, I+1, 1))
+	NEXT I
+	DBL2ARY = ARY
+END FUNCTION
+
+' CANメッセージ用の配列(11要素)のデータ部分(8要素)を、倍精度実数に統合
+FUNCTION ARY2DBL(ARY AS LIST)
+	LOCAL	S$, I
+	' CANRECVで受け取った配列は、添字:3から有効なデータ
+	FOR I=3 TO UBOUND(ARY)
+		S$ = S$ + CHRB$(ARY(I))
+	NEXT I
+	ARY2DBL = CVD(S$)
+END FUNCTION

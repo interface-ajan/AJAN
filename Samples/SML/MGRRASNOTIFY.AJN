@@ -1,0 +1,42 @@
+' ================================================================================
+' RasNotify Sample Program
+'  WDT異常時にブザーをONするサンプルプログラムです。
+'  WDT異常発生時にブザーが自動でONとなる設定を行い、WDT周期
+'  を3秒に設定して、WDTをスタートさせて5秒間待機します。
+'  5秒後、WDTを停止させてブザーの自動通知を無効化し、ブザー
+'  を停止させてプログラムを終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Set Rasnotify
+RASNOTIFY "ENABLE=BUZZER", &H1
+' Set WDT
+WDTCONFIG 3, "ACTION=EVENT"
+' Start WDT
+WDTSTART
+' Wait 10 sec
+CALL WAIT(5.0)
+' WDT Stop
+WDTSTOP
+' Set RasNotify
+RASNOTIFY "ENABLE=BUZZER", &H0
+' Buzzer OFF
+BUZZERCONTROL "CONTROL=OFF"
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

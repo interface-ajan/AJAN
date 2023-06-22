@@ -1,0 +1,89 @@
+' ================================================================================
+' シリアルデータを送受信するサンプルプログラム
+'  2つのデバイスを開いて、片方から送信しつつ、もう片方から受信する
+'  サンプルプログラムです。
+'  COMOPEN命令で、ttyS0 と ttyS1 の2つのデバイスに対してオープンします。
+'  次に、ATTACH THREAD命令で、新規にスレッドを生成して、
+'  COMRECVSIZE関数とCOMRECV$関数で、シリアルデータの受信と
+'  受信したデータを表示し続けます。
+'  メインスレッドでは、"SAMPLE" という文字列を COMSEND命令で
+'  送信します。これを10回繰り返して、プログラムを終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面を初期化する
+CLS 1
+' 変数を定義する
+RECEIVE_CNT = 0
+
+' COMポートをオープンする
+CFG$="BAUDRATE=9600"          ' 伝送速度 9600bps
+CFG$=CFG$+",PARITY=NONE"      ' ノンパリティ
+CFG$=CFG$+",DATA=8"           ' データ 8bit
+CFG$=CFG$+",STOP=1"           ' ストップビット 1bit
+CFG$=CFG$+",FLOW=NONE"        ' フロー制御なし
+CFG$=CFG$+",DUPLEX=FULL"      ' 全二重
+CFG$=CFG$+",TIMEOUT=10"       ' タイムアウト 10
+COMOPEN 1, "ttyS0", CFG$
+COMOPEN 2, "ttyS1", CFG$
+
+' 受信処理を行うスレッドを定義
+ATTACH THREAD 1, RECVTHREAD
+' 送信回数が10回になるまでシリアルデータを送信する
+PRINT "シリアルデータの送受信を開始します"
+FOR I = 1 TO 10
+	COMSEND 1, "SAMPLE", 6
+	PRINT "送信回数:"+STR$(I)
+	' WAIT
+	CALL WAIT(5.0)
+NEXT I
+' 受信回数が10回になるまでシリアルデータの受信を待機する
+DO WHILE RECEIVE_CNT < 10
+LOOP
+
+' シリアルデータ受信処理を行うスレッドを終了する
+DETACH THREAD 1
+' COMポートをクローズする
+COMCLOSE 1
+COMCLOSE 2
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END
+
+' -----------------------------
+' シリアルデータの受信処理スレッド
+' -----------------------------
+DEFINE THREAD RECVTHREAD(num)
+	LOCAL      I
+	LOCAL LIST ARY
+	DO WHILE TRUE
+		LENGTH = COMRECVSIZE(2)
+		IF LENGTH > 0 THEN
+			' シリアルデータ受信
+			RECVDATA$ = COMRECV$(2, LENGTH)
+			RECEIVE_CNT = RECEIVE_CNT + 1
+			PRINT "受信回数:" + STR$(RECEIVE_CNT)
+			' 受信データを、そのまま表示(注意：受信データが表示可能文字列でないと文字化けします)
+			PRINT "受信データ:" + RECVDATA$
+			' 受信データを、1バイトずつ数値配列に変換します
+			REDIM ARY(LENGTH-1)
+			FOR I=0 TO LENGTH-1
+				ARY(I) = ASCB(MIDB$(RECVDATA$, 1+I, 1))
+			NEXT I
+			PRINT "受信データをバイト単位結果="; ARY
+		END IF
+	LOOP
+END THREAD

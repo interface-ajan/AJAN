@@ -1,0 +1,55 @@
+' ================================================================================
+' GUMOVE サンプルプログラム
+'  ウィンドウとボタンを生成し、ボタンを押すとウィンドウを移動させます。
+'  GUMOVE WINDOW命令で、ウィンドウを、指定位置に移動します。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' ボタンをクリックした際に呼ばれるイベント
+SUB BUTTON_EVENT(NUM, NAME$, EVT)
+	POSI$ = "200, 200"
+	' ウィンドウを、指定位置(POSI$)に移動します。
+	GUMOVE WINDOW 1, POSI$
+END SUB
+
+CLS
+' ウィンドウを生成する
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "0, 0"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "ウィンドウ1", 1, FONT$, SIZE$, POSI$, TIP$
+'ボタンを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 30"
+POSI$ = "100, 80"
+TIP$ = "ボタン"
+GUCREATE BUTTON 1, 10, "MOVE", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT BUTTON 10 CALL BUTTON_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT BUTTON 10 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT BUTTON 10 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

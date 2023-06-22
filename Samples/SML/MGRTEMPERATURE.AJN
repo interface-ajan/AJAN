@@ -1,0 +1,36 @@
+' ================================================================================
+' Temperature Sample Program
+'  3秒ごとにCPUコア温度とCPU基板温度を取得し、表示するサン
+'  プルプログラムです。
+'  5回表示すると終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Get temperature loop
+FOR I=0 TO 4
+	' Get CPU temperature
+	CpuTemp = TEMPGET(1)
+	' Get Board temperature
+	BrdTemp = TEMPGET(2)
+	PRINT "CPU:"; CpuTemp; "[deg C]"; " BOARD:"; BrdTemp; "[deg C]"
+	' WAIT
+	CALL WAIT(3.0)
+NEXT I
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

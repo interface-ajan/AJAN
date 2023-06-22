@@ -1,0 +1,58 @@
+' ================================================================================
+' シリアルデータを受信するサンプルプログラム
+'  シリアル通信の受信を行うサンプルプログラムです。
+'  COMOPEN命令で、デバイス名 ttyS0 に対して、オープンします。
+'  その後、COMRECVSIZE関数で、シリアルデータの受信サイズを確認し、
+'  受信データがあれば、COMRECV$関数で受信します。
+'  受信データの中で、「Q」を受信すると、COMCLOSE命令でクローズして終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面を初期化する
+CLS 1
+
+' COM番号1(デバイスノード名:ttyS0)をオープンする
+CFG$="BAUDRATE=9600"          ' 伝送速度 9600bps
+CFG$=CFG$+",PARITY=NONE"      ' ノンパリティ
+CFG$=CFG$+",DATA=8"           ' データ 8bit
+CFG$=CFG$+",STOP=1"           ' ストップビット 1bit
+CFG$=CFG$+",FLOW=NONE"        ' フロー制御なし
+CFG$=CFG$+",DUPLEX=FULL"      ' 全二重
+CFG$=CFG$+",TIMEOUT=10"       ' タイムアウト 10
+COMOPEN 1, "ttyS0", CFG$
+
+LIST	ARY
+
+' ファンクションキーが押された時の分岐処理を登録
+ENDFLAG = FALSE
+PRINT "シリアルデータの受信を開始します"
+PRINT "「Q」が入力されるまで繰返し実行します"
+DO WHILE ENDFLAG <> TRUE
+	' 受信バッファ内のデータサイズが0Byteより大きい場合、受信データを表示する
+	LENGTH = COMRECVSIZE(1)
+	IF LENGTH > 0 THEN
+		RECVDATA$ = COMRECV$(1, LENGTH)
+
+		' 受信データを、そのまま表示(注意：受信データが表示可能文字列でないと文字化けします)
+		PRINT "受信データ="; RECVDATA$
+
+		' 受信データを、1バイトずつ数値配列に変換します
+		REDIM ARY(LENGTH-1)
+		FOR I=0 TO LENGTH-1
+			ARY(I) = ASCB(MIDB$(RECVDATA$, 1+I, 1))
+		NEXT I
+		PRINT "受信データをバイト単位結果="; ARY
+	END IF 
+	IF RECVDATA$ = "Q" THEN
+		 ENDFLAG=TRUE
+	END IF
+LOOP
+
+' COM番号1をクローズする
+COMCLOSE 1
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

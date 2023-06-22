@@ -1,0 +1,114 @@
+' ================================================================================
+' LINEGRAPH と GUMAIN ONELOOP を使った サンプルプログラム 
+'  ウィンドウに波形グラフを配置して表示します。
+'  GUMAIN ONELOOP関数を使って、描画ループを回しつつ、逐次グラフを
+'  描画し続ける事で、あたかもグラフがアニメーションしているかのように見せます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' -----------------------------------------
+'ウインドウを閉じる時のイベント
+' -----------------------------------------
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' イベントループを終了させる
+	FLAG = 1
+END SUB
+
+' -----------------------------------------
+'  メイン
+' -----------------------------------------
+'CLS
+' π
+CONST PI = 3.14159265359
+CNT=0
+
+'データ用配列
+DIM SIN_VALUE(1000),COS_VALUE(1000)
+'項目名用配列
+DIM GUAGE$(1000)
+DIM DATA1_1(1000), DATA1_2(1000)
+
+'表示するデータを取得
+FOR I = 0 TO 1000
+	SIN_VALUE(I) = SIN(2*PI*(I/1000))
+	COS_VALUE(I) = COS(2*PI*(I/1000))
+	IF I MOD 50 = 0 THEN 
+		GUAGE$(I) = STR$(ROUND(2*PI*(I/1000),3))
+	END IF
+NEXT I
+
+DATA1_1 = SIN_VALUE
+DATA1_2 = COS_VALUE
+
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "900, 500"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "線グラフ", 1, FONT$, SIZE$, POSI$, TIP$
+GRAPHNUM = 10
+'グラフ領域を追加
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "900, 500"
+POSI$ = "0, 0"
+TIP$ = "グラフ"
+GUCREATE LINEGRAPH 1, GRAPHNUM, FONT$, SIZE$, POSI$, TIP$
+'線グラフのタイトルを設定
+GUADD LINEGRAPH TITLE GRAPHNUM, "赤:y=sin(x),緑:y=cos(x)"
+'線グラフの縦軸、横軸の範囲を指定
+GUADD LINEGRAPH RANGE GRAPHNUM, -1.1,1.1, 0,500
+'線グラフの縦軸名、横軸名を追加
+GUUPD LINEGRAPH LABEL GRAPHNUM,"y","x"
+'縦軸の目盛りをyは0.1毎、xは50項目毎に設定
+GUUPD LINEGRAPH GRID GRAPHNUM, 0.1,50
+'線グラフにx軸の項目を登録
+GUADD LINEGRAPH DATALABEL GRAPHNUM, (GUAGE$)
+
+'線グラフにデータを登録/設定を反映させて描画
+GUADD LINEGRAPH VALUE GRAPHNUM, (DATA1_1,DATA1_2), [2;3], [5;5]
+GUUPD LINEGRAPH DRAW GRAPHNUM
+
+'イベントを登録
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+'イベントの有効化
+GUEVT WINDOW 1  ON
+'ウィンドウを表示
+GUSHOW 1
+
+DO WHILE FLAG = 0
+	' 線グラフの内容(DATA1_1)を、一つずつずらす
+	ONEDIM INSERT DATA1_1, -1, SIN_VALUE(CNT)
+	ONEDIM REMOVE DATA1_1, 0, 1
+	CNT=CNT+1
+	IF CNT = 1000 THEN
+		CNT = 0
+	END IF
+	
+	' 線グラフにデータを登録／設定を反映させて描画
+	GUUPD LINEGRAPH VALUE GRAPHNUM, (DATA1_1,DATA1_2), [2;3], [5;5]
+	GUUPD LINEGRAPH DRAW GRAPHNUM
+
+	' 上の描画要求を元に、OSに描画処理を依頼する
+	' (1回のGUMAIN ONELOOPでは描画が完結しない可能性があるので、一定以上回す)
+	FOR I=0 TO 100
+		BOOLRET = GUMAIN ONELOOP(FALSE)
+	NEXT I
+LOOP
+
+'イベントの無効
+GUEVT WINDOW 1  OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+'
+END

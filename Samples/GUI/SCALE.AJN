@@ -1,0 +1,62 @@
+' ================================================================================
+' SCALE サンプルプログラム 
+'  ウィンドウにスケールを配置し、スケールのゲージをスライドして変化させた際に、
+'  呼び出されるサブルーチン(SCALE_EVENT)を登録します。
+'  スケールのゲージをスライドさせると、スライドさせたスケールの情報
+'  (GUGET$ SCALE関数でゲージの設定値も)が表示されます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' スケールのゲージをスライドさせた際に呼ばれるイベント
+SUB SCALE_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	A$ = GUGET$ SCALE(NUM)
+	PRINT "data = "; A$
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "スケール", 1, FONT$, SIZE$, POSI$, TIP$
+'スケールを作成する
+POSI$ = "100, 80"
+TIP$ = "スケール"
+'GUCREATE SCALE 1, 10, "0, 0, 100, 1", , , POSI$, TIP$
+GUCREATE SCALE 1, 10, "0, 0, 100, 1", FONT$, "100,30", POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT SCALE 10 CALL SCALE_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT SCALE 10 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT SCALE 10 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

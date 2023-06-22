@@ -1,0 +1,97 @@
+'====================================================================
+' VIDEOの再生サンプル
+'   動画を再生します。ボタンで再生、一時停止、停止、再生位置の制御ができます。
+'				Copyright 2021 Interface Corporation
+'====================================================================
+OPTION GUI
+
+' ウィンドウと動画、ボタン等を配置します
+SIZE$ = "800,400"
+GUCREATE WINDOW 1,"TEST",1,"32,0,0,14,1,9",SIZE$,,
+GUCREATE VIDEO 1, 10,,SIZE$,,
+
+GUCREATE LABEL 1, 11, "時刻","32,0,0,24,1,8",,"650,0",
+GUCREATE BUTTON 1, 20, "再生",,,"0,0",
+GUCREATE BUTTON 1, 21, "一時停止",,,"0,30",
+GUCREATE BUTTON 1, 22, "停止",,,"0,60",
+GUCREATE SCALE 1, 23, "0,0,1,0.001",,,"0,100",
+
+' 1秒毎に呼ばれるイベント
+ON GUEVT WINDOW OF TIMEOUT(1000) 1 CALL CB_TIMER
+GUEVT WINDOW OF TIMEOUT 1 ON
+' 「再生」ボタンのイベント
+ON GUEVT BUTTON 20 CALL CB_START
+GUEVT BUTTON 20 ON
+' 「一時停止」ボタンのイベント
+ON GUEVT BUTTON 21 CALL CB_PAUSE
+GUEVT BUTTON 21 ON
+' 「停止」ボタンのイベント
+ON GUEVT BUTTON 22 CALL CB_STOP
+GUEVT BUTTON 22 ON
+' スケールを動かした際のイベント
+ON GUEVT SCALE 23 CALL CB_POS
+GUEVT SCALE 23 ON
+
+GUSHOW 1
+
+' 動画のオープン＆再生を指示
+FNAME$ = "file:///usr/share/interface/AJANPro/web_samples/WEB/static/web_video_mujin.mp4"
+GUUPD VIDEO 10, "OPEN", FNAME$
+
+GUMAIN LOOP
+
+? "bye.bye"
+END
+
+' 1秒毎に呼ばれるイベント
+SUB CB_TIMER(NUM%, NM$, EVT)
+	LOCAL	S$
+
+	' 動画の再生状態を読み取る
+	S$ = GUGET$ VIDEO(10, "STATE")
+	? "再生状態="; S$
+	IF S$ = "6" THEN
+		' 最後まで再生終了した -> 最初から再生し直す
+		? "再生します"
+		GUUPD VIDEO 10, "STOP"
+		GUUPD VIDEO 10, "SEEK_POS", 0
+		GUUPD VIDEO 10, "PLAY"
+	END IF
+
+	' 動画の再生位置を読み取る -> スケールに反映させる
+	S$ = GUGET$ VIDEO(10, "SEEK_POS")
+	? "再生位置="; S$
+	GUUPD SCALE 23, VAL(S$)
+
+	' 現在の時刻を表示
+	GUUPD LABEL 11, TIME$
+END SUB
+
+' 「再生」ボタンを押した
+SUB CB_START(NUM%, NM$, EVT)
+	GUUPD VIDEO 10, "PLAY"
+END SUB
+
+' 「一時停止」ボタンを押した
+SUB CB_PAUSE(NUM%, NM$, EVT)
+	GUUPD VIDEO 10, "PAUSE"
+END SUB
+
+' 「停止」ボタンを押した
+SUB CB_STOP(NUM%, NM$, EVT)
+	GUUPD VIDEO 10, "STOP"
+END SUB
+
+' スケールを変更した
+SUB CB_POS(NUM%, NM$, EVT)
+	LOCAL	S$
+
+	' 動画再生中は、動画再生位置を変更しない
+	S$ = GUGET$ VIDEO(10, "STATE")
+	? "再生状態="; S$
+	IF S$ <> "3" THEN
+		S$ = GUGET$ SCALE(23)
+		? "移動位置="; S$
+		GUUPD VIDEO 10, "SEEK_POS", VAL(S$)
+	END IF
+END SUB

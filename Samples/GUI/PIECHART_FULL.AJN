@@ -1,0 +1,114 @@
+' ================================================================================
+' PIECHART(高機能版） サンプルプログラム 
+'  ウィンドウに円グラフとコンボボックスを配置して表示します。
+'  人口の男女比を、円グラフにして表示します。
+'  (世界の統計と日本の統計を、コンボボックスで切り替え可能です)
+'  コンボボックスを切り替えると、表示するグラフの内容を切り替えて再描画します。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+'データ用配列
+DIM ELEMENTS1$(1) = [ "男";"女" ]
+DIM ELEMENTS2$(1) = [ "女";"男" ]
+
+' ウィンドウを閉じるときのイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+' コンボボックスを切り替えた時のイベント
+SUB COMBOBOX_EVENT(NUM,NAME$,EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	A$ = GUGET$ COMBOBOX(NUM)
+	PRINT "data = "; A$
+	IF GUGET$ COMBOBOX(20) = "世界" THEN
+		'データを更新する
+		GUUPD PIECHART VALUE 10,(POPULATION1),(COLORS1)
+		'データのラベルを更新する
+		GUUPD PIECHART DATALABEL 10,(ELEMENTS1$)
+		GUUPD LABEL 30,"出典 UN,World Population Prospects:"
+		GUDSP LABEL 40,1
+	ELSE
+		'データを更新する
+		GUUPD PIECHART VALUE 10,(POPULATION2),(COLORS2)
+		'データのラベルを更新する
+		GUUPD PIECHART DATALABEL 10,(ELEMENTS2$)
+		GUUPD LABEL 30,"出典 総務省統計局「日本の統計 2017」"	
+		GUDSP LABEL 40,0
+	END IF
+	GUUPD PIECHART DRAW 10
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "650, 600"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "円グラフ", 1, FONT$, SIZE$, POSI$, TIP$
+'円グラフ領域を追加
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "650, 600"
+POSI$ = "0, 0"
+TIP$ = "人口の男女比(千人)"
+GUCREATE PIECHART 1, 10, FONT$, SIZE$, POSI$, TIP$
+'円グラフのタイトルを設定
+GUADD PIECHART TITLE 10, "人口の男女比(千人）",FONT$
+'円グラフの各項目名を設定
+GUADD PIECHART DATALABEL 10,(ELEMENTS1$)
+
+'表示するデータを取得
+DIM POPULATION1(1) = [ 3707206; 3642266 ]
+DIM POPULATION2(1) = [ 65253; 61842 ]
+'DIM COLORS1(1) = [ 3; 4; ]
+'DIM COLORS2(1) = [ 7; 39; ]
+DIM COLORS1(1) = [ 3; 4 ]
+DIM COLORS2(1) = [ 7; 39 ]
+'円グラフにデータを登録する
+GUADD PIECHART VALUE 10, (POPULATION1), (COLORS1)
+'設定を反映してグラフを描画する
+GUUPD PIECHART DRAW 10
+'コンボボックスを作成する
+SIZE$ = "100,30"
+GUCREATE COMBOBOX 1, 20, FONT$, SIZE$,,
+GUADD COMBOBOX 20,"世界"
+GUADD COMBOBOX 20,"日本"
+
+'出典のラベルを作成する
+POSI$="0,30"
+SIZE$ = "220,20"
+FONT$ = "32, 0, 0, 8, 1, 8"
+GUCREATE LABEL 1,30,"出典 UN,World Population Prospects:",FONT$,SIZE$,POSI$,
+POSI$="20,50"
+SIZE$ = "120,20"
+GUCREATE LABEL 1,40," The 2015 Revision",FONT$,SIZE$,POSI$,
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT COMBOBOX 20 CALL COMBOBOX_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT COMBOBOX 20 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT COMBOBOX 20 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

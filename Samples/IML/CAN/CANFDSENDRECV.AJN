@@ -1,0 +1,139 @@
+' ================================================================================
+' CANFD通信の送受信を繰り返すサンプルプログラム
+'  CAN FD通信の送信・受信のどちらかを行うか選択できるサンプルプログラムです。
+'  実行開始すると、最初にデバイス番号を入力した後、
+'  1=送信→受信 / 2=受信→送信 を選択入力します。
+'  1=送信→受信を選ぶと、CANFDSEND命令でメッセージを送信した後、
+'  CANFDRECV関数でメッセージを受信し、これを5回繰り返します。
+'  2=受信→送信を選ぶと、CANFDRECV関数でメッセージを受信し、
+'  CANFDSEND命令でメッセージを送信し、これを5回繰り返します。
+'              Copyright 2019 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面クリア
+CLS
+' 必要なファイルをインクルードする
+INCLUDE "IML002CAN.AJN"
+
+' デバイス番号を DN% に格納
+LINE INPUT "デバイス番号:"; A$
+DN% = VAL(A$)
+' 送信→受信か、受信→送信か
+PRINT "1...送信→受信"
+PRINT "2...受信→送信"
+LINE INPUT "選択:"; A$
+SEL% = VAL(A$)
+ASSERT (SEL% = 1) OR (SEL% = 2), "選択値は、1か2"
+
+' CANポートのオープン
+CANOPEN DN%, "BAUDRATE=125000"
+' バッファクリア
+CANCLEAR DN%, "TXB=ON, RXB=ON, TXERR=ON, RXERR=ON, ERB=ON, TIMERCOUNTER=ON"
+' CANバスへの接続を有効化します。
+CANACTIVATE DN%
+' 割り込みの登録
+ON CAN DN% CALL CANCALLBACK
+' 割り込みの発生条件を設定します
+CANEVENTCONFIG DN%, "RECV=ON"
+' 割り込みを有効にします
+CAN ON DN%
+
+' 送信時の共通配列
+DIM	ARY(63)
+
+' 送受信を、5回繰り返す
+FOR CNT=1 TO 5
+
+	IF SEL% = 1 THEN
+		' 送信→受信
+		FOR I=0 TO 63
+			ARY(I) = CNT + I
+		NEXT I
+		' 送信ルーチンの呼び出し
+		CALL SUB_SEND(CNT, ARY)
+		' 受信ルーチンの呼び出し
+		CALL SUB_RECV()
+	ELSE
+		' 受信→送信
+		' 受信ルーチンの呼び出し
+		CALL SUB_RECV()
+		' 送信ルーチンの呼び出し
+		CALL SUB_SEND(CNT, ARY)
+	END IF
+NEXT CNT
+
+' 相手方の受信待ちの為に、終了手前に少し待つ
+SLEEP 1
+
+' 割り込みの発生条件を無効にします
+CANEVENTCONFIG DN%, "RECV=OFF"
+' 割り込みを無効にします
+CAN OFF DN%
+' バスオフ状態（CANバスへの接続を無効化）にします。
+CANDEACTIVATE DN%
+' CANポートのクローズ
+CANCLOSE DN%
+' 終了
+PRINT "プログラムを終了します"
+END
+
+' -----------------------------
+' 送信処理のサブルーチン - 配列内容を送信します
+' -----------------------------
+SUB SUB_SEND(ID, ARY AS LIST)
+	' 送信サイズを64として、ARY配列から転写する
+	LOCAL	I
+	LOCAL	DAT(63)
+	FOR I=0 TO LDIM(ARY)-1
+		DAT(I) = ARY(I)
+	NEXT I
+
+	' CANFD送信する
+	PRINT "送信:"; ID, DAT
+	CANFDSEND DN%, ID, 64, DAT
+END SUB
+
+' -----------------------------
+' 受信処理のサブルーチン - 受信割り込みを検知したら、IS_RECEIVED が立つのを待って受信する
+' -----------------------------
+SUB SUB_RECV()
+	' IS_RECEIVED を一旦FALSEに設定して、受信割り込み処理で TRUEに立てられるのを待つ
+	IS_RECEIVED = FALSE
+	DO WHILE IS_RECEIVED = FALSE
+		SLEEP 0.1
+	LOOP
+
+	' CANFD受信する
+	LOCAL	DAT(66)
+	DAT = CANFDRECV(DN%)
+	PRINT "受信:"; DAT
+
+	' 受信内容を、ARY配列に転写
+	FOR I=0 TO 63
+		ARY(I) = DAT(I+3)
+	NEXT I
+END SUB
+
+' -----------------------------
+' 割り込み処理
+' -----------------------------
+SUB CANCALLBACK(DN%, EVT%)
+	? "CAN受信割り込み デバイス番号="; DN%; " 割り込み要因="; EVT%
+	EVENTSTATUS = CANEVENT(DN%)
+	PRINT "割り込み発生(要因:"; EVENTSTATUS; ")"
+	' 変数の宣言
+	STRUCT TCANSTATUS ST
+	' ステータスの取得
+	ST = CANSTATUS(DN%)
+	PRINT "BUSSTATUS="; ST.BUSSTATUS;
+	PRINT " TXB="; ST.TXBCOUNT; " RXB="; ST.RXBCOUNT; " ERB="; ST.ERBCOUNT;
+	PRINT " TXERR="; ST.TXERRCOUNT; " RXERR="; ST.RXERRCOUNT;
+	PRINT " TXBFD="; ST.TXBCOUNTFD; " RXBFD="; ST.RXBCOUNTFD
+	' 割り込み要因のチェック - 受信割り込みを検知したら、IS_RECEIVED を TRUE に
+	IF EVENTSTATUS = CANEVTRECV THEN
+		IS_RECEIVED = 1
+	END IF
+END SUB

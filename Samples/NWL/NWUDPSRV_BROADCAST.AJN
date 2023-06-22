@@ -1,0 +1,32 @@
+' ================================================================================
+' UDPサーバーのブロードキャスト用サンプルプログラム
+'  UDPブロードキャスト通信のサーバ処理のサンプルプログラムです。
+'  NWUDPSRV_BROADCAST.AJNを実行してから、別の端末で
+'  NWUDPCLI_BROADCAST.AJNを実行します。
+'  NWUDPSRV_BROADCAST.AJNを実行する端末は、複数台可能です。
+'  NWRECV$関数で、クライアントからパケット単位に全データを
+'  受信して表示する事を、複数回繰り返して終了します。
+'              Copyright 2020 Interface Corporation
+' ================================================================================
+
+HOST$ = "UDP:0.0.0.0:2000"
+
+? "NWOPENを呼び出す"
+NWOPEN HOST$ FOR SERVER AS #1
+
+' 指定回数の受信を行う
+CNT = 0
+DO WHILE TRUE
+	A$ = NWRECV$(1, -1)
+	IF A$ <> "" THEN
+		PRINT "受信:["; A$; "]"
+		CNT = CNT + 1
+	END IF
+	IF CNT > 5 THEN EXIT DO
+LOOP
+
+? "NWCLOSEを呼び出す"
+NWCLOSE #1
+
+? "bye.bye"
+end

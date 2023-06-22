@@ -1,0 +1,79 @@
+' ================================================================================
+' LABEL サンプルプログラム 
+'  ウィンドウにラベルを配置し、ラベルをクリックした際に、
+'  呼び出されるサブルーチン(LABEL_EVENT)を登録します。
+'  配置されるラベルは、ラベルの文字列を左寄せ、中央寄せ、
+'  右寄せの、3パターンを用意しています。
+'  ラベルをクリックすると、クリックしたラベルの情報
+'  (GUGET$ LABEL関数でラベル文字列も)が表示されます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' ラベルをクリックした際に呼ばれるイベント
+SUB LABEL_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	A$ = GUGET$ LABEL(NUM)
+	PRINT "data = "; A$
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "200, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "ラベル", 1, FONT$, SIZE$, POSI$, TIP$
+'ラベルを作成する(左寄せ)
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 40"
+POSI$ = "50, 30, LEFT, TOP"
+TIP$ = "ラベル1"
+GUCREATE LABEL 1, 10, "SAMPLE1", FONT$, SIZE$, POSI$, TIP$
+'ラベルを作成する(中央)
+POSI$ = "50, 80, CENTER, MIDDLE"
+TIP$ = "ラベル2"
+GUCREATE LABEL 1, 20, "SAMPLE2", FONT$, SIZE$, POSI$, TIP$
+'ラベルを作成する(右寄せ)
+POSI$ = "50, 130, RIGHT, BOTTOM"
+TIP$ = "ラベル3"
+GUCREATE LABEL 1, 30, "SAMPLE3", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT LABEL 10 CALL LABEL_EVENT
+ON GUEVT LABEL 20 CALL LABEL_EVENT
+ON GUEVT LABEL 30 CALL LABEL_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT LABEL 10 ON
+GUEVT LABEL 20 ON
+GUEVT LABEL 30 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT LABEL 10 OFF
+GUEVT LABEL 20 OFF
+GUEVT LABEL 30 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

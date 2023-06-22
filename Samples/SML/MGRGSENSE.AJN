@@ -1,0 +1,41 @@
+' ================================================================================
+' GSense Sample Program
+'  重力加速度値を表示するサンプルプログラムです。
+'  3秒ごとに各軸の重力加速度値を表示し、6回表示すると終了します。
+'  ※本機能は有償オプションです。ご利用されたい方は、加速度センサの機能付きの
+'    製品をお買い求めください。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Get acceleration loop
+FOR I=0 TO 5
+	' Get X-axis value
+	AXISX = GSENSEGET("TARGET=SENSOR1,AXIS=X")
+	' Get Y-axis value
+	AXISY = GSENSEGET("TARGET=SENSOR1,AXIS=Y")
+	' Get Z-axis value
+	AXISZ = GSENSEGET("TARGET=SENSOR1,AXIS=Z")
+	PRINT "X:"; ((AxisX*0.01289)-1.5)*(1/0.42); "[G]"
+	PRINT "Y:"; ((AXISY*0.01289)-1.5)*(1/0.42); "[G]"
+	PRINT "Z:"; ((AXISZ*0.01289)-1.5)*(1/0.42); "[G]"
+	' WAIT
+	CALL WAIT(3.0)
+NEXT I
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

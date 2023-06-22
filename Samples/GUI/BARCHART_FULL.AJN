@@ -1,0 +1,113 @@
+' ================================================================================
+' BARCHART(高機能版) サンプルプログラム 
+'  ウィンドウに棒グラフとコンボボックスを配置して表示します。
+'  コンボボックスを切り替えると、表示するグラフ設定を更新して再描画します。
+'  棒グラフを再描画する際、縦軸の範囲や目盛りの設定など、
+'  様々な設定を行っています。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+CLS
+DIM KOUMOKU1$(11)
+DIM KOUMOKU2$(11) = [ "1/28"; "2/13"; "3/9"; "4/6"; "5/3"; "6/20"; "7/8"; "8/28"; "9/17"; "10/16"; "11/18"; "12/26" ]
+
+'ウインドウを閉じる時のイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+'コンボボックスを切り替えた時のイベント	
+SUB COMBOBOX_EVENT(NUM,NAME$,EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	IF GUGET$ COMBOBOX(20) = "月降水量" THEN
+		'データを更新する
+		GUUPD BARCHART VALUE 10,(ATAI1),(IRO)
+		'縦軸の範囲を指定する(0〜550)
+		GUUPD BARCHART RANGE 10,0,550
+		'縦軸の目盛りを100毎に設定する
+		GUUPD BARCHART GRID 10, 100
+		'横軸のラベルを更新する
+		GUUPD BARCHART DATALABEL 10, (KOUMOKU1$)
+	ELSE
+		'データを更新する
+		GUUPD BARCHART VALUE 10,(ATAI2),(IRO2)
+		'縦軸の範囲を指定する(0〜100)
+		GUUPD BARCHART RANGE 10,0,100
+		'縦軸の目盛りを10毎に設定する
+		GUUPD BARCHART GRID 10, 10
+		'横軸のラベルを更新する
+		GUUPD BARCHART DATALABEL 10, (KOUMOKU2$)
+	END IF
+	'設定を反映してグラフを描画する
+	GUUPD BARCHART DRAW 10
+END SUB
+
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "800, 600"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "棒グラフ", 1, FONT$, SIZE$, POSI$, TIP$
+'棒グラフを作成する
+FONT$ = "32, 0, 0, 15, 9, 1"
+SIZE$ = "800, 600"
+TIP$ = "グラフ"
+GUCREATE BARCHART 1, 10, FONT$, SIZE$, , TIP$
+
+'データを追加する
+DIM ATAI1(11) = [ 66.5; 95.0; 67.0; 274.0; 184.0; 509.5; 199.5; 90.0; 307.5; 156.0; 82.5; 92.5 ]
+DIM ATAI2(11) = [ 26.5; 55.0; 34.5; 56.5; 42.0; 64.0; 72.5; 37.0; 79.5; 40.0; 33.5; 22.5 ]
+IRO = 5
+IRO2 = 36
+GUADD BARCHART VALUE 10, (ATAI1), (IRO)
+'タイトルを追加する
+GUADD BARCHART TITLE 10, "広島市の降水量"
+'横軸の軸ラベルを追加する
+FOR I = 1 TO 12
+	KOUMOKU1$(I-1) = STR$(I)+"月"
+NEXT I
+GUADD BARCHART DATALABEL 10, (KOUMOKU1$)
+'縦軸の範囲を指定する(0〜550)
+GUADD BARCHART RANGE 10,0,550
+'縦軸と横軸のラベルを追加する
+FONT$ = "32, 0, 0, 20, 9, 1"
+GUUPD BARCHART LABEL 10, "降水量(mm)", "期間", FONT$
+'縦軸の目盛りを100毎に設定する
+GUUPD BARCHART GRID 10, 100
+'グラフを描画する
+GUUPD BARCHART DRAW 10
+'グラフ切り替えコンボボックスを作成する
+SIZE$ = "200,40"
+GUCREATE COMBOBOX 1,20,FONT$,SIZE$,,
+GUADD COMBOBOX 20,"月降水量",1
+GUADD COMBOBOX 20,"日最大降水量",0
+'イベントを登録する
+ON GUEVT WINDOW    1 CALL WINDOW_EVENT
+ON GUEVT COMBOBOX 20 CALL COMBOBOX_EVENT
+'イベントを有効にする
+GUEVT WINDOW    1 ON
+GUEVT COMBOBOX 20 ON
+'ウィンドウを表示
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT COMBOBOX 20 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

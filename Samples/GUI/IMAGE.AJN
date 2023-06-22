@@ -1,0 +1,59 @@
+' ================================================================================
+' IMAGE サンプルプログラム 
+'  ウィンドウに画像イメージを配置し、画像を表示します。
+'  表示する画像は、通常の画像の貼り付け、画像サイズを指定して貼り付け、
+'  画像を回転して貼り付け、の3パターンを用意しています。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+'イベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "400, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "イメージボックス", 1, FONT$, SIZE$, POSI$, TIP$
+'イメージボックスを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 50"
+POSI$ = "50, 80"
+TIP$ = "イメージ1"
+GUCREATE IMAGE 1, 10, "/usr/share/interface/AJANPro/samples/GUI/SAMPLE.PNG", FONT$, SIZE$, POSI$, TIP$
+POSI$ = "150, 80"
+TIP$ = "イメージ2"
+GUCREATE IMAGE 1, 20, "/usr/share/interface/AJANPro/samples/GUI/SAMPLE.PNG", FIXED, 50, 30, FONT$, SIZE$, POSI$, TIP$
+POSI$ = "250, 80"
+TIP$ = "イメージ3"
+GUCREATE IMAGE 1, 30, "/usr/share/interface/AJANPro/samples/GUI/SAMPLE.PNG", ROTATE, 180, FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

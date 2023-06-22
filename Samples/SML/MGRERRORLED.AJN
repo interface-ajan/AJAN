@@ -1,0 +1,38 @@
+' ================================================================================
+' Error LED Sample Program
+'  エラーLEDを直接制御するサンプルプログラムです。
+'  エラーLEDの点灯パターンをパターン1(常時点灯)に設定し、
+'  1秒ごとに点滅させ、10回点滅すると終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Set the error LED lighting pattern to pattern 1
+LEDPATTERN "ERRLED=PATTERN1"
+' Blink the error LED every 10 seconds
+FOR I=0 TO 9
+	LEDCONTROL "ERRLED=ON"
+	' WAIT
+	CALL WAIT(1.0)
+	LEDCONTROL "ERRLED=OFF"
+	' WAIT
+	CALL WAIT(1.0)
+NEXT I
+LEDCONTROL "ERRLED=OFF"
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

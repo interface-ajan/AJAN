@@ -1,0 +1,136 @@
+' ================================================================================
+' Event Sample Program
+'  WDT周期満了イベントをコールバック関数で通知するサンプル
+'  プログラムです。WDT周期を3秒に設定し、WDTをスタートさせます。
+'  3秒おきにWDT周期満了イベントが発生し、10秒後にWDTを停止
+'  させてプログラムを終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' 割り込み処理
+' -----------------------------
+SUB MGRCALLBACK()
+	' Get event factor
+	EVT = CMEVENT
+	IF EVT = CMEVTWDS THEN
+		PRINT "WDT周期満了割り込み検出!"
+	END IF
+	IF EVT = CMEVTCPTHS THEN
+		PRINT "CPUコア温度異常上限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTCPTLS THEN
+		PRINT "CPUコア温度異常下限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTLCTHS THEN
+		PRINT "CPU基板温度異常上限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTLCTLS THEN
+		PRINT "CPU基板温度異常下限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTVEXTA THEN
+		PRINT "外部電源電圧異常割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG1 THEN
+		PRINT "DIN1割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG2 THEN
+		PRINT "DIN2割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG3 THEN
+		PRINT "DIN3割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG4 THEN
+		PRINT "DIN4割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG5 THEN
+		PRINT "DIN5割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG6 THEN
+		PRINT "DIN6割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG7 THEN
+		PRINT "DIN7割り込み検出!"
+	END IF
+	IF EVT = CMEVTSIG8 THEN
+		PRINT "DIN8割り込み検出!"
+	END IF
+	IF EVT = CMEVTCPTHSA THEN
+		PRINT "CPUコア温度警告上限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTCPTLSA THEN
+		PRINT "CPUコア温度警告下限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTLCTHSA THEN
+		PRINT "CPU基板温度警告上限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTLCTLSA THEN
+		PRINT "CPU基板温度警告下限超え割り込み検出!"
+	END IF
+	IF EVT = CMEVTVSSEX THEN
+		PRINT "X軸振動・衝撃検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTVSSEY THEN
+		PRINT "Y軸振動・衝撃検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTVSSEZ THEN
+		PRINT "Z軸振動・衝撃検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTFAN1ST THEN
+		PRINT "FAN1異常検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTFAN2ST THEN
+		PRINT "FAN2異常検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTFAN3ST THEN
+		PRINT "FAN3異常検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTRAIDSE THEN
+		PRINT "RAID異常検出割り込み検出!"
+	END IF
+	IF EVT = CMEVTHIMOSW THEN
+		PRINT "ひもスイッチ割り込み検出!"
+	END IF
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' include SML001.AJN
+INCLUDE "SML001.AJN"
+' Set WDT cycle and action
+WDTCONFIG 3, "ACTION=EVENT"
+' Set Event
+ON CM CALL MGRCALLBACK
+' WDT Event Enable
+CMEVENTCONFIG "WDT=ON"
+EventFlag=0
+' Event Enable
+CM ON
+' Start WDT
+WDTSTART
+FOR I=0 TO 10
+	' WAIT
+	CALL WAIT(1.0)
+NEXT I
+' Start WDT
+WDTSTOP
+' Event Disable
+CM OFF
+' WDT Event Disable
+CMEVENTCONFIG "WDT=OFF"
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

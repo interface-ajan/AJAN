@@ -1,0 +1,31 @@
+' ================================================================================
+' Buzzer Sample Program
+'  ブザー制御のサンプルプログラムです。
+'  3秒間ブザーをONし、その後OFFにします。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Buzzer ON
+BUZZERCONTROL "CONTROL=ON"
+' WAIT
+CALL WAIT(3.0)
+' Buzzer OFF
+BUZZERCONTROL "CONTROL=OFF"
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

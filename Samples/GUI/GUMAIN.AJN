@@ -1,0 +1,86 @@
+' ================================================================================
+' GUMAIN サンプルプログラム 
+'  ボタンサンプル(BUTTON.AJN)の構成で、GUMAIN ONELOOP関数を
+'  使って、自分でGUIメインイベントループを回して制御する例です。
+'  ウィンドウにボタンを配置し、ボタンをクリックした際に、
+'  呼び出されるサブルーチン(BUTTON_EVENT)を登録します。
+'  GUMAIN LOOP命令を使っていたのを、GUMAIN ONELOOP関数を
+'  繰り返し呼び出す事で、自分でGUIメインイベントループを
+'  回しています。
+'  ウィンドウの閉じるボタンを押すと、GUMAIN QUIT命令で
+'  終了指示を出していたのを、フラグ(IS_EXIT変数)を立てて、
+'  自前のDO WHILE - LOOP を終了しています。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' -----------------------------
+' 指定した秒数(WAIT_SEC)、待機し続けるサブルーチン
+' 待機し続ける間、GUMAIN ONELOOP関数を呼び出し続けている事が肝要です。
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+		' GUIメインイベントループを、1回だけ動かす
+		TMP = GUMAIN ONELOOP(0)
+    LOOP
+END SUB
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' 実行を終了させる
+	IS_EXIT = TRUE
+END SUB
+' ボタンをクリックした際に呼ばれるイベント
+SUB BUTTON_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	PRINT "data = "; GUGET$ BUTTON(NUM)
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "GUMAINサンプル", 1, FONT$, SIZE$, POSI$, TIP$
+'ボタンを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 30"
+POSI$ = "100, 80"
+TIP$ = "ボタン"
+GUCREATE BUTTON 1, 10, "SAMPLE", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT BUTTON 10 CALL BUTTON_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT BUTTON 10 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' WINDOW_EVENTイベントでの IS_EXIT=0 の呼び出しまで、イベントループし続ける
+CNT = 0
+DO WHILE IS_EXIT = FALSE
+	CNT = CNT + 1
+	PRINT CNT
+	CALL WAIT(1)
+LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT BUTTON 10 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END
+

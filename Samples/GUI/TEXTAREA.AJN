@@ -1,0 +1,80 @@
+' ================================================================================
+' TEXTAREA サンプルプログラム 
+'  ウィンドウにテキストエリアとボタンを配置し、テキストエリアでキー入力を
+'  行った際に呼び出されるサブルーチン(TEXTAREA_EVENT)を登録します。
+'  また、ボタンでクリックする際に呼び出されるサブルーチン(BUTTON_EVENT)を
+'  登録します。
+'  テキストエリアでキー入力すると、キー入力したテキストエリアの情報
+'  が表示されます。
+'  ボタンをクリックすると、GUGET$ TEXTAREA関数で、テキストエリアの
+'  テキスト内容が表示されます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' テキストエリアでキー入力した際に呼ばれるイベント
+SUB TEXTAREA_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	PRINT "KEY!"
+END SUB
+' ボタンをクリックした際に呼ばれるイベント
+SUB BUTTON_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	PRINT "TEXTAREA data:"; GUGET$ TEXTAREA(10)
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "テキストエリア", 1, FONT$, SIZE$, POSI$, TIP$
+'テキストエリアを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 90"
+POSI$ = "100, 30"
+TIP$ = "テキストエリア"
+GUCREATE TEXTAREA 1, 10, "SAMPLE", FONT$, SIZE$, POSI$, TIP$
+'ボタンを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 30"
+POSI$ = "100, 150"
+TIP$ = "ボタン"
+GUCREATE BUTTON 1, 20, "SAMPLE", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT TEXTAREA 10 CALL TEXTAREA_EVENT
+ON GUEVT BUTTON 20 CALL BUTTON_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT TEXTAREA 10 ON
+GUEVT BUTTON 20 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT TEXTAREA 10 OFF
+GUEVT BUTTON 20 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

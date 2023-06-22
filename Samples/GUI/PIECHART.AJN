@@ -1,0 +1,63 @@
+' ================================================================================
+' PIECHART サンプルプログラム 
+'  ウィンドウに円グラフを配置して表示します。
+'  人口の男女比を円グラフにして表示します。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+'ウィンドウを閉じるときのイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+CLS
+'ウィンドウを作成する
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "650, 600"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "円グラフ", 1, FONT$, SIZE$, POSI$, TIP$
+'円グラフ領域を追加
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "650, 600"
+POSI$ = "0, 0"
+TIP$ = "人口の男女比(千人）"
+GUCREATE PIECHART 1, 10, FONT$, SIZE$, POSI$, TIP$
+'表示するデータを設定
+DIM POPULATION(1) = [ 3707206; 3642266 ]
+'DIM COLORS(1) = [ 3; 4; ]
+DIM COLORS(1) = [ 3; 4 ]
+'円グラフにデータを登録する
+'GUADD PIECHART VALUE 10, (POPULATION), (COLORS)
+GUADD PIECHART VALUE 10, (POPULATION), COLORS
+'設定を反映してグラフを描画する
+GUUPD PIECHART DRAW 10
+'出典のラベルを作成する
+POSI$ = "0,0"
+SIZE$ = "220,20"
+FONT$ = "32, 0, 0, 8, 1, 8"
+GUCREATE LABEL 1,30,"出典 UN,World Population Prospects:",FONT$,SIZE$,POSI$,
+POSI$ = "20,20"
+SIZE$ = "120,20"
+GUCREATE LABEL 1,40," The 2015 Revision",FONT$,SIZE$,POSI$,
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

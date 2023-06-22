@@ -1,0 +1,61 @@
+' ================================================================================
+' BUTTON サンプルプログラム 
+'  ウィンドウにボタンを配置し、ボタンをクリックした際に
+'  呼び出されるサブルーチン(BUTTON_EVENT)を登録します。
+'  ボタンをクリックすると、クリックしたボタンの情報が表示されます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じる際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' ボタンをクリックした際に呼ばれるイベント
+SUB BUTTON_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	PRINT "data = "; GUGET$ BUTTON(NUM)
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "ボタン", 1, FONT$, SIZE$, POSI$, TIP$
+'ボタンを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 30"
+POSI$ = "100, 80"
+TIP$ = "ボタン"
+GUCREATE BUTTON 1, 10, "SAMPLE", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT BUTTON 10 CALL BUTTON_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT BUTTON 10 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT BUTTON 10 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

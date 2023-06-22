@@ -1,0 +1,83 @@
+' ================================================================================
+' 描画パフォーマンス測定のテストサンプル
+'  折れ線グラフの描画に掛かる時間のぶれを、簡単にパフォーマンス計測する事例です。
+'  1200x800の画面サイズの折れ線グラフ(LINEGRAPH)に対して、
+'  凡そ、9ms程度で、100件データ追加の描画繰り返しを行い、
+'  描画に掛かる時間が想定外over(10ms以上)したら、掛かった時間を表示します。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+OPTION GUI
+
+' 折れ線グラフのデータ初期化
+CONST PI = 3.14159265359
+CNT=0
+DIM SIN_VALUE(1000),COS_VALUE(1000)
+
+'表示するデータを作成(初期表示)
+FOR I = 0 TO 1000
+	SIN_VALUE(I) = SIN(2*PI*(CNT/1000))
+	COS_VALUE(I) = COS(2*PI*(CNT/1000))
+	CNT = CNT + 1
+NEXT I
+
+' ↓折れ線グラフの大きさ
+SIZE$ = "1200,800"
+
+GUCREATE WINDOW 1, "線グラフ", 1,,SIZE$,,
+GUCREATE LINEGRAPH 1, 10,,SIZE$,,
+GUADD LINEGRAPH VALUE 10, (SIN_VALUE,COS_VALUE), [2;3], [5;5]
+GUUPD LINEGRAPH DRAW 10
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+GUEVT WINDOW 1  ON
+GUSHOW 1
+
+' 折れ線グラフの描画と定期的にデータ更新
+ST = CLOCK
+DO WHILE FLAG=0
+	DIFF = (CLOCK - ST)
+	IF DIFF > 0.009 THEN
+		' 0.009秒毎に、波形データの作成と描画を行う
+
+		' ↓予想より描画時間が掛かるようなら(ここでは0.01秒)、掛かった時間を表示
+		IF DIFF > 0.01 THEN ? "over:"; FORMAT$(DIFF, "###.#######")
+		' データの追加と描画処理のサブルーチンを呼び出す
+		CALL SUB_DRAW()
+		ST = CLOCK
+	ELSE
+		' アイドル時に、描画処理を消化させる
+		FOR I=0 TO 10
+			F = GUMAIN ONELOOP(FALSE)
+		NEXT I
+	END IF
+LOOP
+
+GUEVT WINDOW 1  OFF
+GUDELETE WINDOW 1
+END
+
+'ウインドウを閉じる時のイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "ウィンドウを閉じる。部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	FLAG = 1
+END SUB
+
+' 呼び出し毎に、折れ線グラフに、配列データを追加して描画指示
+SUB SUB_DRAW()
+	' ↓現時点で、100件ずつ描画データを追加している
+	LOCAL	D1(100), D2(100), I
+	
+	FOR I = 0 TO UBOUND(D1)
+		D1(I) = SIN(2*PI*(CNT/1000))
+		D2(I) = COS(2*PI*(CNT/1000))
+		CNT = CNT + 1
+	NEXT I
+	' 配列を後ろにINSERTして、前からREMOVEしている
+	ONEDIM INSERT SIN_VALUE, -1, D1
+	ONEDIM INSERT COS_VALUE, -1, D2
+	ONEDIM REMOVE SIN_VALUE, 0, LDIM(D1)
+	ONEDIM REMOVE COS_VALUE, 0, LDIM(D2)
+
+	' 配列データを渡して、折れ線グラフ描画指示を出す
+	GUUPD LINEGRAPH VALUE 10, (SIN_VALUE, COS_VALUE), [2;3], [5;5]
+	GUUPD LINEGRAPH DRAW 10
+END SUB

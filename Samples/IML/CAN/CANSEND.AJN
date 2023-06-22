@@ -1,0 +1,45 @@
+' ================================================================================
+' CAN通信の送信を行うサンプルプログラム
+'  CAN通信の送信を行うサンプルプログラムです。
+'  CANRECV.AJNを実行開始から、別の端末でCANSEND.AJNを実行します。
+'  CANOPEN命令で、デバイス番号1に対してオープンした後、
+'  CANACTIVATE命令で、CANバスへの接続を有効化し、
+'  CANSEND命令で、1件のメッセージを送信します。
+'  その後、10秒程度待機した後、CANDEACTIVATE命令で、接続を解除し、
+'  CANCLOSE命令でクローズして終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面クリア
+CLS
+' CANポート1のオープン
+CANOPEN 1, "BAUDRATE=125000"
+' CANバスへの接続を有効化します。
+CANACTIVATE 1
+'データの送信
+PRINT "データの送信"
+DIM CANDATA(7)
+CANDATA(0 to 7)= [ &H11;&H22;&H33;&H44;&H55;&H66;&H77;&H88 ] 
+CANSEND 1, 12, 8, CANDATA
+' WAIT
+CALL WAIT(10.0)
+' バスオフ状態（CANバスへの接続を無効化）にします。
+CANDEACTIVATE 1
+' CANポート1のクローズ
+CANCLOSE 1
+' 終了
+PRINT "プログラムを終了します"
+END

@@ -1,0 +1,94 @@
+' ================================================================================
+' CAN通信の受信を行うサンプルプログラム
+'  CAN通信の受信を行うサンプルプログラムです。
+'  CANRECV.AJNを実行開始から、別の端末でCANSEND.AJNを実行します。
+'  CANOPEN命令で、デバイス番号1に対してオープンした後、
+'  CANCLEAR命令で、ドライバ内の送受信バッファ等をクリアし、
+'  CANACTIVATE命令で、CANバスへの接続を有効化します。
+'  次に、ON CAN CALL命令とCANEVENTCONFIG命令で、データ受信したら
+'  割り込みルーチン(CANCALLBACK)を呼び出すようセットし、
+'  DO WHILE - LOOPで、待ち続けます。
+'  ここで、別の端末から (CANSEND.AJNを実行するなどで)
+'  CANメッセージを送信する事を期待しています。
+'  CANデータを受信すると、CANCALLBACK ルーチンが呼び出され、
+'  受信割り込みを検知したら、フラグ(LoopFlag)を立てて、
+'  DO WHILE - LOOP を抜けるようにします。
+'  ループを抜けた後、CANRECV関数で 1件のメッセージを受信し、
+'  受信した内容を表示した後、CANDEACTIVATE命令で、接続を解除し、
+'  CANCLOSE命令でクローズして、終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面クリア
+CLS
+' 必要なファイルをインクルードする
+INCLUDE "IML002CAN.AJN"
+
+' CANポート1のオープン
+CANOPEN 1, "BAUDRATE=125000"
+' バッファクリア
+CANCLEAR 1, "TXB=ON, RXB=ON, TXERR=ON, RXERR=ON, ERB=ON, TIMERCOUNTER=ON"
+' CANバスへの接続を有効化します。
+CANACTIVATE 1
+
+' 割り込みの登録
+ON CAN 1 CALL CANCALLBACK
+' 割り込みの発生条件を設定します
+CANEVENTCONFIG 1, "RECV=ON"
+' 割り込みを有効にします
+CAN ON 1
+
+' 受信バッファに1つ以上のメッセージが蓄えられるまで待機
+PRINT "受信バッファに1つ以上のメッセージが蓄えられるまで待機"
+DO WHILE LoopFlag = 0
+	SLEEP 0.1
+LOOP
+'データの受信
+DIM CANDATA(10)
+CANDATA = CANRECV(1)
+PRINT "ID     :"; CANDATA(0)
+PRINT "Time   :"; CANDATA(1)
+PRINT "Length :"; CANDATA(2)
+PRINT "Data(0):"; CANDATA(3)
+PRINT "Data(1):"; CANDATA(4)
+PRINT "Data(2):"; CANDATA(5)
+PRINT "Data(3):"; CANDATA(6)
+PRINT "Data(4):"; CANDATA(7)
+PRINT "Data(5):"; CANDATA(8)
+PRINT "Data(6):"; CANDATA(9)
+PRINT "Data(7):"; CANDATA(10)
+
+' 割り込みの発生条件を無効にします
+CANEVENTCONFIG 1, "RECV=OFF"
+' 割り込みを無効にします
+CAN OFF 1
+' バスオフ状態（CANバスへの接続を無効化）にします。
+CANDEACTIVATE 1
+' CANポート1のクローズ
+CANCLOSE 1
+' 終了
+PRINT "プログラムを終了します"
+END
+
+' -----------------------------
+' 割り込み処理
+' -----------------------------
+SUB CANCALLBACK(DN%, EVT%)
+	? "CAN受信割り込み デバイス番号="; DN%; " 割り込み要因="; EVT%
+	EVENTSTATUS = CANEVENT(DN%)
+	PRINT "割り込み発生(要因:"; EVENTSTATUS; ")"
+	' 変数の宣言
+	STRUCT TCANSTATUS ST
+	' ステータスの取得
+	ST = CANSTATUS(DN%)
+	PRINT "BUSSTATUS="; ST.BUSSTATUS;
+	PRINT "TXB="; ST.TXBCOUNT; "RXB="; ST.RXBCOUNT; "ERB="; ST.ERBCOUNT;
+	PRINT "TXERR="; ST.TXERRCOUNT; "RXERR="; ST.RXERRCOUNT
+	' 割り込み要因のチェック
+	IF EVENTSTATUS = CANEVTRECV THEN
+		LoopFlag = 1
+	END IF
+END SUB

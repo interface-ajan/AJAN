@@ -1,0 +1,142 @@
+' ================================================================================
+' LINEGRAPH(高機能版) サンプルプログラム 
+'  ウィンドウに波形グラフ、ボタン、スイッチを配置して表示します。
+'  波形グラフには、正弦、余弦のグラフを重ねて表示します。
+'  ボタンをクリックすると、グラフの表示範囲を切り替えて表示します。
+'  スイッチをクリックすると、正弦のみのグラフ、正弦と余弦のグラフと
+'  いうように、切り替えて表示します。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+'データ用配列
+DIM SIN_VALUE(1000),COS_VALUE(1000)
+'項目名用配列
+DIM GUAGE$(1000)
+
+' ウインドウを閉じる時のイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+' ボタンが押された時のイベント
+SUB BUTTON_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	IF CNT MOD 2 = 0 THEN
+		'表示のデータ領域を変更する
+		GUUPD LINEGRAPH RANGE 10, -1.1,1.1, 500,1000
+	ELSE
+		'表示のデータ領域を変更する
+		GUUPD LINEGRAPH RANGE 10, -1.1,1.1, 0,500
+		FOR I = 0 TO 1000 STEP 50
+			GUAGE$(I) = STR$(ROUND(VAL(GUAGE$(I)) + 2*PI,3))
+		NEXT I
+		'横軸ラベルを更新する
+		GUUPD LINEGRAPH DATALABEL 10,(GUAGE$)
+	END IF
+	CNT = CNT + 1
+	'更新を反映させて描画する
+	GUUPD LINEGRAPH DRAW 10
+END SUB
+
+' スイッチが切り換わった時のイベント
+SUB SWITCH_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	A$ = GUGET$ SWITCH(NUM)
+	PRINT "data = "; A$
+	IF GUGET$ SWITCH(30) = "0" THEN 'OFFのとき
+		'データをsinのみに更新する
+		GUUPD LINEGRAPH VALUE 10,(SIN_VALUE),2,5
+		'GUUPD LINEGRAPH VALUE 10,(SIN_VALUE)
+	ELSE
+		'データをsinとcosに更新する
+		GUUPD LINEGRAPH VALUE 10,(SIN_VALUE,COS_VALUE),[ 2; 3 ],[ 5; 5 ]
+	END IF
+	'更新を反映させて描画する
+	GUUPD LINEGRAPH DRAW 10
+END SUB
+
+CLS
+' π
+CONST PI = 3.14159265359
+CNT=0
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "800, 600"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "線グラフ", 1, FONT$, SIZE$, POSI$, TIP$
+'線グラフ領域を追加
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "800, 600"
+POSI$ = "0, 0"
+TIP$ = "グラフ"
+GUCREATE LINEGRAPH 1, 10, FONT$, SIZE$, POSI$, TIP$
+'線グラフのタイトルを設定
+GUADD LINEGRAPH TITLE 10, "赤:y=sin(x),緑:y=cos(x)"
+'線グラフの縦軸、横軸の範囲を指定
+GUADD LINEGRAPH RANGE 10, -1.1,1.1, 0,500
+'線グラフの縦軸名、横軸名を追加
+GUUPD LINEGRAPH LABEL 10,"y","x"
+
+'表示するデータを取得
+FOR I = 0 TO 1000
+	SIN_VALUE(I) = SIN(2*PI*(I/1000))
+	COS_VALUE(I) = COS(2*PI*(I/1000))
+	IF I MOD 50 = 0 THEN 
+		GUAGE$(I) = STR$(ROUND(2*PI*(I/1000),3))
+	END IF
+NEXT I
+'縦軸の目盛りをyは0.1毎、xは50項目毎に設定
+GUUPD LINEGRAPH GRID 10, 0.1,50
+'線グラフにx軸の項目を登録
+GUADD LINEGRAPH DATALABEL 10, (GUAGE$)
+'線グラフにデータを登録
+GUADD LINEGRAPH VALUE 10, (SIN_VALUE,COS_VALUE), [2;3], [5;5]
+'設定を反映させて描画
+GUUPD LINEGRAPH DRAW 10
+'グラフ切り替えボタンの作成
+FONT$ = "32, 0, 0, 11, 1, 9"
+SIZE$ = "80,25"
+POSI$ = "715,3"
+GUCREATE BUTTON 1,20,"次に進む",FONT$,SIZE$,POSI$,"次に進む"
+'cos表示切り替えスイッチの作成
+FONT$ = "32, 0, 0,10, 1, 8"
+SIZE$ = "90,20"
+POSI$ = "520,0"
+GUCREATE LABEL 1,30,"cos表示切替",FONT$,SIZE$,POSI$,"cos表示切替"
+FONT$ = "32, 0, 0, 10, 1, 9"
+POSI$ = "610,0"
+GUCREATE SWITCH 1,30,1,FONT$,SIZE$,POSI$,"cos表示切替"
+'イベントを登録
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT BUTTON 20 CALL BUTTON_EVENT
+ON GUEVT SWITCH 30 CALL SWITCH_EVENT
+'イベントの有効化
+GUEVT WINDOW 1  ON
+GUEVT BUTTON 20 ON
+GUEVT SWITCH 30 ON
+'ウィンドウを表示
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1  OFF
+GUEVT BUTTON 20 OFF
+GUEVT SWITCH 30 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

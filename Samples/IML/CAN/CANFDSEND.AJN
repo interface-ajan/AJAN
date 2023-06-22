@@ -1,0 +1,45 @@
+' ================================================================================
+' CANFD通信の送信を行うサンプルプログラム
+'  CANSEND.AJNの送信処理のCAN FD通信版です。
+'  CANFDRECV.AJNを実行開始から、別の端末でCANFDSEND.AJNを実行します。
+'  1件のメッセージ送信を、CANSEND命令でなく CANFDSEND命令で
+'  送信しています。
+'  それ以外は、CANSEND.AJNと同じ動作です。
+'              Copyright 2019 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面クリア
+CLS
+' CANポート1のオープン
+CANOPEN 1, "BAUDRATE=125000"
+' CANバスへの接続を有効化します。
+CANACTIVATE 1
+'データの送信
+PRINT "データの送信"
+DIM CANDATA(63)
+FOR I=0 TO 63
+	CANDATA(I)= I+1
+NEXT I
+CANFDSEND 1, 12, 64, CANDATA
+' WAIT
+CALL WAIT(10.0)
+' バスオフ状態（CANバスへの接続を無効化）にします。
+CANDEACTIVATE 1
+' CANポート1のクローズ
+CANCLOSE 1
+' 終了
+PRINT "プログラムを終了します"
+END

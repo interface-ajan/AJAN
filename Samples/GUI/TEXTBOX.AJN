@@ -1,0 +1,63 @@
+' ================================================================================
+' TEXTBOX サンプルプログラム 
+'  ウィンドウにテキストボックスを配置し、テキストボックスでEnterキーを
+'  押した際に、呼び出されるサブルーチン(TEXTBOX_EVENT)を登録します。
+'  テキストボックスで文字列を入力してEnterキーを押すと、Enterキーを押した
+'  テキストボックスの情報(GUGET$ TEXTBOX関数でテキスト内容も)が表示されます。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+' ウィンドウを閉じた際に呼ばれるイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+' テキストボックスでEnterキーを押した際に呼ばれるイベント
+SUB TEXTBOX_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名"; NAME$ ; "  内部イベント種別:"; EVT
+	A$ = GUGET$ TEXTBOX(NUM)
+	PRINT "data = "; A$
+END SUB
+
+CLS
+'ウィンドウを作成する
+'VL Pゴシック 
+'斜体：設定なし
+'太字：設定なし 
+'文字列サイズ：14
+'文字色：BLACK
+'背景色：GRAY
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "300, 200"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "テキストボックス", 1, FONT$, SIZE$, POSI$, TIP$
+'テキストボックスを作成する
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "100, 30"
+POSI$ = "100, 80"
+TIP$ = "テキストボックス"
+GUCREATE TEXTBOX 1, 10, "SAMPLE", FONT$, SIZE$, POSI$, TIP$
+'イベントを登録する
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+ON GUEVT TEXTBOX 10 CALL TEXTBOX_EVENT
+'イベントの有効
+GUEVT WINDOW 1 ON
+GUEVT TEXTBOX 10 ON
+'ウィンドウを表示する
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1 OFF
+GUEVT TEXTBOX 10 OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

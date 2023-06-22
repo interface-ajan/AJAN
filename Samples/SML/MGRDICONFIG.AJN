@@ -1,0 +1,34 @@
+' ================================================================================
+' DI Config Sample Program
+'  デジタル入力接点1を電源スイッチに設定するサンプルプログラムです。
+'  デジタル入力接点1を電源スイッチに設定後10秒間待機し、
+'  デジタル入力接点1を汎用入力に設定して終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Set the digital input 1 to the power switch
+UPCONFIG "DI1=PSWITCH"
+PRINT "digital input 1 -> power switch"
+' WAIT
+CALL WAIT(10.0)
+' Set the digital input 1 to the general purpose input
+UPCONFIG "DI1=DI"
+PRINT "digital input 1 -> genaral purpose input"
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

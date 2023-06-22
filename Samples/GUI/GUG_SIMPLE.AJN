@@ -1,0 +1,185 @@
+' ================================================================================
+' GUG系の描画サンプル
+'  GUG系のグラフィック描画コマンドを、何度も呼び出して描画される過程を
+'  見せるデモサンプルです。
+'  ウィンドウにグラフィック描画領域を配置して表示します。
+'  その後、グラフィック描画コマンドで、各種描画を行います。
+'  GUGPSET命令で点を描画します。GUGDRAWFILE命令で画像を描画します。
+'  GUGLINE命令で線分を描画します。GUGRECTANGLE命令で矩形を描画します。
+'  GUGARC命令で円弧を描画します。GUGCIRCLE命令で円を描画します。
+'  GUGDRAWTEXTで文字を描画します。
+'  各命令を呼び出す都度、待ち時間を挿入して、描画過程が見られるように
+'  しています。
+'				Copyright 2020 Interface Corporation
+' ================================================================================
+OPTION GUI
+
+' ウィンドウと同じ大きさのグラフィック描画領域を張り付けます。
+GUCREATE WINDOW 1, "GUG描画テスト", 1, "32, 0, 0, 14, 1, 9", "400, 400", ,
+GUCREATE PIC 1, 10,,"400, 400",,
+GUSHOW 1
+
+' 笑顔マークの画像のパス
+IMG_PATH$ = "/usr/share/icons/Adwaita/32x32/emotes/face-smile.png"		' L8XA
+IF FILEEXISTS(IMG_PATH$) = FALSE THEN
+	IMG_PATH$ = "/usr/share/icons/Adwaita/32x32/legacy/face-smile.png"	' L9X
+END IF
+
+? "*点描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 3000
+	X = 400 * RND
+	Y = 400 * RND
+	C = 7 * RND + 1
+	GUGPSET PIC 10, (X, Y), C
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*画像描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 2000
+	X = 400 * RND
+	Y = 400 * RND
+	GUGDRAWFILE PIC 10, (X, Y), IMG_PATH$
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*線描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 1000
+	SX = 400 * RND
+	SY = 400 * RND
+	EX = 400 * RND
+	EY = 400 * RND
+	C = 7 * RND + 1
+	GUGLINE PIC 10, (SX, SY) - (EX, EY), C
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*矩形描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 1000
+	SX = 400 * RND
+	SY = 400 * RND
+	EX = 400 * RND
+	EY = 400 * RND
+	C = 7 * RND + 1
+	IF (I MOD 2) = 0 THEN
+		GUGRECTANGLE PIC 10, (SX, SY) - (EX, EY), TRUE, C
+	ELSE
+		GUGRECTANGLE PIC 10, (SX, SY) - (EX, EY), FALSE, C
+	END IF
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*円弧描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 1000
+	SX = 400 * RND
+	SY = 400 * RND
+	W = 50 * RND + 1
+	H = 50 * RND + 1
+	C = 7 * RND + 1
+	IF (I MOD 2) = 0 THEN
+		GUGARC PIC 10, (SX, SY) - (W, H), TRUE, C
+	ELSE
+		GUGARC PIC 10, (SX, SY) - (W, H), FALSE, C
+	END IF
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*円弧描画 角度"
+GUGCLS PIC 10
+
+FOR I=0 TO 359 STEP 5
+	C = 7 * RND + 1
+	GUGCLS PIC 10
+	GUGARC PIC 10, (0, 100) - (400, 200), TRUE, C, I, 360
+	CALL GUI_WAIT(0.01)
+NEXT I
+
+FOR I=1 TO 360 STEP 5
+	C = 7 * RND + 1
+	GUGCLS PIC 10
+	GUGARC PIC 10, (0, 100) - (400, 200), TRUE, C, 0, I
+	CALL GUI_WAIT(0.01)
+NEXT I
+
+? "*円描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 1000
+	SX = 400 * RND
+	SY = 400 * RND
+	R = 50 * RND + 10
+	C = 7 * RND + 1
+	IF (I MOD 2) = 0 THEN
+		GUGCIRCLE PIC 10, (SX, SY), R, C, 0, 360, TRUE
+	ELSE
+		GUGCIRCLE PIC 10, (SX, SY), R, C
+	END IF
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*円描画 角度"
+GUGCLS PIC 10
+
+FOR I=0 TO 359 STEP 5
+	C = 7 * RND + 1
+	GUGCLS PIC 10
+	GUGCIRCLE PIC 10, (200, 200), 200, C, I, 360, TRUE
+	CALL GUI_WAIT(0.01)
+NEXT I
+FOR I=0 TO 360 STEP 5
+	C = 7 * RND + 1
+	GUGCLS PIC 10
+	GUGCIRCLE PIC 10, (200, 200), 200, C, 0, I, TRUE
+	CALL GUI_WAIT(0.01)
+NEXT I
+
+? "*テキスト描画"
+GUGCLS PIC 10
+
+FOR I=0 TO 1000
+	X = 400 * RND
+	Y = 400 * RND
+	SZ = RND * 50 + 10
+	C = 7 * RND + 1
+	GUGDRAWTEXT PIC 10, (X, Y), "AJAN", "6, 0, 0, " + STR$(SZ)+", "+STR$(C)+", 16"
+	CALL GUI_WAIT(0.001)
+NEXT I
+
+? "*テキスト描画 - 矩形"
+GUGCLS PIC 10
+
+FOR W=10 TO 400 STEP 5
+	C = 7 * RND + 1
+	GUGDRAWTEXT PIC 10, (0,0)-(W, 20), "Hello AJAN", "6, 0, 0, 20, "+STR$(C)+",16"
+	CALL GUI_WAIT(0.01)
+NEXT W
+FOR H=20 TO 400 STEP 5
+	C = 7 * RND + 1
+	GUGDRAWTEXT PIC 10, (0,0)-(W, H), "Hello AJAN", "6, 0, 0, "+STR$(H)+", "+STR$(C)+",16"
+	CALL GUI_WAIT(0.01)
+NEXT H
+
+CALL GUI_WAIT(1)
+
+GUDELETE WINDOW 1
+
+? "bye.bye"
+END
+
+' 指定秒まで、メインイベントループを回します
+SUB GUI_WAIT(SEC)
+	LOCAL ST_TM, F
+	ST_TM = CLOCK
+	DO WHILE (CLOCK - ST_TM) < SEC
+		F = GUMAIN ONELOOP(0)
+	LOOP
+END SUB

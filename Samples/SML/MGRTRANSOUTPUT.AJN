@@ -1,0 +1,65 @@
+' ================================================================================
+' Transit output Sample Program
+'  遷移出力対応製品の対応出力を、以下に設定するプログラムです。
+'  　停止時：全接点の出力状態をON
+'  　起動時：全接点の出力状態をOFF
+'  プログラム実行後、シャットダウンしてシステム停止時に出力が全てON、
+'  起動時に出力が全てOFF になります。
+'              Copyright 2020 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+
+TARGET = 0		' 制御対象
+
+CONST	CM_TRANS_TARGET_DO	= 0		' DOUTを対象(TARGET)とする
+CONST	CM_TRANS_TARGET_EXO	= 1		' EX_SWOUTを対象(TARGET)とする
+CONST	CM_TRANS_SYS_STOP	= 0		' 停止時の設定とする
+CONST	CM_TRANS_SYS_WAKEUP	= 1		' 起動時の設定とする
+CONST	CM_TRANS_DAW_DISABLE	= 0		' DAWを無効
+CONST	CM_TRANS_DAW_ENABLE	= 1		' DAWを有効
+
+' 制御対象を、DOUT にするか EX_SWOUT にするか 選択してもらう
+FLAG = TRUE
+DO WHILE FLAG = TRUE
+	PRINT "Select setting target."
+	PRINT " 1 : DOUT"
+	PRINT " 2 : EX_SWOUT"
+	LINE INPUT "No>"; A$
+	NO = VAL(A$)
+	IF NO = 1 THEN
+		TARGET = CM_TRANS_TARGET_DO
+		OUT_V = &HF
+		FLAG = FALSE
+	ELSEIF NO = 2 THEN
+		TARGET = CM_TRANS_TARGET_EXO
+		OUT_V = &H1
+		FLAG = FALSE
+	ELSE
+		PRINT "再入力してください"
+	END IF
+LOOP
+
+PRINT "Set Trans Output Config sys Stop."
+CMTRANSCONFIG TARGET, CM_TRANS_SYS_STOP, OUT_V, OUT_V, CM_TRANS_DAW_ENABLE
+PRINT "Set Trans Output Config sys Wakeup."
+CMTRANSCONFIG TARGET, CM_TRANS_SYS_WAKEUP, OUT_V, 0, CM_TRANS_DAW_ENABLE
+
+' プログラムを終了する
+PRINT "プログラムを終了します"
+PRINT "この後、シャットダウンしてシステム停止時と起動時の状態が変化します"
+END

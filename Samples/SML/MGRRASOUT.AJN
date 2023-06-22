@@ -1,0 +1,48 @@
+' ================================================================================
+' RAS-Output Sample Program
+'  異常時の自動RAS出力を行うサンプルプログラムです。
+'  WDTの周期を3秒に設定し、WDTエラーが発生した時点でRAS出力
+'  をリレーONに設定するプログラムです。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' RAS-Output OFF
+PRINT "RAS-Output OFF"
+ROOUTPUT "RASOUT=OFF"
+' RAS-Output Status
+PRINT "RAS-Output Status:"; ROSTATUS
+' RAS-Output Config
+ROCONFIG &H1, "RASOUT=ON"
+' Set WDT Config
+WDTCONFIG 3, "ACTION=EVENT"
+' WDT Start
+WDTSTART
+' Wait
+CALL WAIT(5.0)
+' RAS-Output Status
+PRINT "RAS-Output Status:"; ROSTATUS
+' RAS-Output OFF (Reset)
+PRINT "RAS-Output OFF (Reset)"
+ROOUTPUT "RASOUT=OFF"
+' RAS-Output Status
+PRINT "RAS-Output Status:"; ROSTATUS
+' WDT Stop
+WDTSTOP
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

@@ -1,0 +1,77 @@
+' ================================================================================
+' VSG-PLC001 ソフト PLC ダイアグラムロード、実行 サンプルプログラム
+'  ソフト PLC に、ダイアグラム "diagram1" をロード、実行開始します。
+'											Copyright 2022 Interface Corporation.
+' ================================================================================
+INCLUDE "PLC.AJN"
+
+' ソフトPLCとの接続
+PRINT "ソフトPLC(デバイス=""local"" IPアドレス=""127.0.0.1"" ポート=24816) と接続します"
+PLCNO = PLC_OPEN("local", "127.0.0.1", 24816)
+IF ((PLCNO > 0) AND (PLCNO < 16)) THEN RET = PLC_ERR_NOERROR
+IF (PLCNO < 0) THEN RET = PLCNO
+CALL DispPlcStatus(RET, PLCNO)
+
+' 既に、他のダイアグラム実行中の場合を考慮して、PLC を停止
+IF RET = PLC_ERR_NOERROR THEN
+	PRINT "'stop' コマンドを送ります (PLCNO=";PLCNO; ")"
+	RET = PLC_COMMAND(PLCNO, "stop", TRUE)
+	CALL DispPlcStatus(RET, PLCNO)
+END IF
+
+' ダイアグラム 'diagram1' をロードする
+IF RET = PLC_ERR_NOERROR THEN
+	PRINT "'load diagram1' コマンドを送ります (PLCNO=";PLCNO; ")"
+	RET = PLC_COMMAND(PLCNO, "load diagram1", TRUE)
+	CALL DispPlcStatus(RET, PLCNO)
+END IF
+
+' ダイアグラム 'diagram1' を開始する
+IF RET = PLC_ERR_NOERROR THEN
+	PRINT "'run' コマンドを送ります (PLCNO=";PLCNO; ")"
+	RET = PLC_COMMAND(PLCNO, "run", TRUE)
+	CALL DispPlcStatus(RET, PLCNO)
+END IF
+
+' ソフトPLCとの接続を切断する
+IF RET = PLC_ERR_NOERROR THEN
+	PRINT "ソフトPLCとの接続を切断します(PLCNO=";PLCNO; ")"
+	RET = PLC_CLOSE(PLCNO)
+	IF (RET = PLC_ERR_NOERROR) THEN PLCNO = 0
+	CALL DispPlcStatus(RET, PLCNO)
+END IF
+
+END
+
+' ------------------------------------------------------------
+' PLCの状態を表示する
+' ------------------------------------------------------------
+SUB DispPlcStatus(RET, PLCNO)
+	' ソフトPLC命令実行結果の表示	
+	PRINT " ---> ";
+	IF RET = PLC_ERR_NOERROR THEN
+		PRINT "PLC_ERR_NOERROR (正常終了)"
+	ELSEIF RET = PLC_ERR_NOOPEN THEN
+		PRINT "PLC_ERR_NOOPEN (リソース不足のためソフトPLCと接続できませんでした)"
+	ELSEIF RET = PLC_ERR_SENDFAILED THEN
+		PRINT "PLC_ERR_SENDFAILED (コマンドが送信できませんでした)"
+	ELSEIF RET = PLC_ERR_NORESPONSE THEN
+		PRINT "PLC_ERR_NORESPONSE (ソフトPLCの応答が得られませんでした)"
+	ELSEIF RET = PLC_ERR_INVALIDCOMMAND THEN
+		PRINT "PLC_ERR_INVALIDCOMMAND (不正なコマンドが与えられました)"
+	ELSEIF RET = PLC_ERR_INVALIDNO THEN
+		PRINT "PLC_ERR_INVALIDNO (不正な接続管理番号が与えられました)"
+	END IF
+	
+	' ソフトPLCの状態表示
+	PRINT "      ソフトPLCの状態"
+	IF ((PLCNO > 0) AND (PLCNO < 16)) THEN
+		PRINT "        ダイアグラム名='"; PLC_DIAGRAM$(PLCNO);"'"
+		PRINT "        ダイアグラム状態='"; PLC_STATE$(PLCNO);"'"
+		PRINT "        発生中のエラー="; PLC_ERROR(PLCNO)
+	ELSE
+		PRINT "        ソフトPLCと接続されていません"
+	END IF
+	PRINT
+END SUB
+

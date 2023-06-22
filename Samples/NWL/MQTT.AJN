@@ -1,0 +1,67 @@
+' ================================================================================
+' MQTT通信のサンプルプログラム
+'  MQTT通信による、送受信処理のサンプルプログラムです。
+'  実行すると、MQTT BrokerのIPアドレスの入力、送信か受信の選択、
+'  トピックIDの入力を行います。
+'  送信を選択すると、キーボードから入力した1文字ずつ、
+'  MQSEND命令でデータを送信します。
+'  受信を選択すると、MQSTAT関数で受信を確認しつつ、
+'  MQRECV$で受信したデータを表示します。
+'  どちらも、'Q'キーを押すと、プログラムが終了します。
+'              Copyright 2019 Interface Corporation
+' ================================================================================
+
+LINE INPUT "MQTT Broker(mosquitto)のアドレスを入力してください:"; HOST$
+' 例：localhost
+
+LINE INPUT "1=送信する / 2=受信する を選択してください:"; DIR$
+
+LINE INPUT "トピックID(宛先みたいなもの)を入力してください:"; TOPIC$
+' 例：送信時=hoge/1 受信時=hoge/+
+
+if DIR$ = "1" then
+	call sub_send()
+elseif DIR$ = "2" then
+	call sub_recv()
+else
+	assert FALSE, "入出力の選択間違い="+DIR$
+end if
+
+' 送信下請け
+sub sub_send()
+	MQOPEN HOST$+"/"+TOPIC$ FOR OUTPUT AS #1
+	
+	? "小文字で文字を入力すると、1文字ずつ送信します"
+	? "大文字の'Q'キーを押すと終了します"
+	do while true
+		A$ = inkey$()
+		if A$ = "Q" then exit do
+		if A$ <> "" then
+			MQSEND #1, A$
+		end if
+	loop
+	
+	MQCLOSE #1
+end sub
+
+' 受信下請け
+sub sub_recv()
+	MQOPEN HOST$+"/"+TOPIC$ FOR INPUT AS #1
+
+	? "受信すると、データを表示します"
+	? "大文字の'Q'キーを押すと終了します"
+	do while true
+		a$ = inkey$()
+		if a$ = "Q" then exit do
+		
+		SZ = MQSTAT(1, "RECVCNT")
+		if SZ <> 0 then
+			? MQRECV$(1)
+		end if
+	loop
+	
+	MQCLOSE #1
+end sub
+
+? "bye.bye"
+end

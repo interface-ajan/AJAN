@@ -1,0 +1,74 @@
+' ================================================================================
+' CANFD通信の受信を行うサンプルプログラム
+'  CANRECV.AJNの受信処理のCAN FD通信版です。
+'  CANFDRECV.AJNを実行開始から、別の端末でCANFDSEND.AJNを実行します。
+'  1件のメッセージ受信を、CANRECV関数でなく CANFDRECV関数で
+'  受信しています。
+'  それ以外は、CANRECV.AJNと同じ動作です。
+'              Copyright 2019 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' メイン
+' -----------------------------
+' 画面クリア
+CLS
+' 必要なファイルをインクルードする
+INCLUDE "IML002CAN.AJN"
+' CANポート1のオープン
+CANOPEN 1, "BAUDRATE=125000"
+' バッファクリア
+CANCLEAR 1, "TXB=ON, RXB=ON, TXERR=ON, RXERR=ON, ERB=ON, TIMERCOUNTER=ON"
+' CANバスへの接続を有効化します。
+CANACTIVATE 1
+' 割り込みの登録
+ON CAN 1 CALL CANCALLBACK
+' 割り込みの発生条件を設定します
+CANEVENTCONFIG 1, "RECV=ON"
+' 割り込みを有効にします
+CAN ON 1
+' 受信バッファに1つ以上のメッセージが蓄えられるまで待機
+PRINT "受信バッファに1つ以上のメッセージが蓄えられるまで待機"
+DO WHILE LoopFlag = 0
+LOOP
+'データの受信
+DIM CANDATA(66)
+CANDATA = CANFDRECV(1)
+PRINT "ID     :"; CANDATA(0)
+PRINT "Time   :"; CANDATA(1)
+PRINT "Length :"; CANDATA(2)
+FOR I=3 TO 66
+	PRINT "Data(";I;"):"; CANDATA(I)
+NEXT I
+' 割り込みの発生条件を無効にします
+CANEVENTCONFIG 1, "RECV=OFF"
+' 割り込みを無効にします
+CAN OFF 1
+' バスオフ状態（CANバスへの接続を無効化）にします。
+CANDEACTIVATE 1
+' CANポート1のクローズ
+CANCLOSE 1
+' 終了
+PRINT "プログラムを終了します"
+END
+
+' -----------------------------
+' 割り込み処理
+' -----------------------------
+SUB CANCALLBACK(DN%, EVT%)
+	? "CAN受信割り込み デバイス番号="; DN%; " 割り込み要因="; EVT%
+	EVENTSTATUS = CANEVENT(DN%)
+	PRINT "割り込み発生(要因:"; EVENTSTATUS; ")"
+	' 変数の宣言
+	STRUCT TCANSTATUS ST
+	' ステータスの取得
+	ST = CANSTATUS(DN%)
+	PRINT "BUSSTATUS="; ST.BUSSTATUS;
+	PRINT "TXB="; ST.TXBCOUNT; "RXB="; ST.RXBCOUNT; "ERB="; ST.ERBCOUNT;
+	PRINT "TXERR="; ST.TXERRCOUNT; "RXERR="; ST.RXERRCOUNT
+	PRINT "TXBFD="; ST.TXBCOUNTFD; "RXBFD="; ST.RXBCOUNTFD
+	' 割り込み要因のチェック
+	IF EVENTSTATUS = CANEVTRECV THEN
+		LoopFlag = 1
+	END IF
+END SUB

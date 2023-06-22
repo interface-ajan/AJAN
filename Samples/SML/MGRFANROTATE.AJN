@@ -1,0 +1,33 @@
+' ================================================================================
+' Fan Sample Program
+'  ファンの回転数を表示するサンプルプログラムです。
+'  3秒ごとにファンの回転数を表示し、6回表示すると終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+	ST = CLOCK
+	DO WHILE TRUE
+		IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+	LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Get fan rotation loop
+FOR I=0 TO 5
+	' Get FAN1 Rotation
+	GETROTATE = FANROTATEGET(1)
+	PRINT "FAN1 Rotation:"; GETROTATE; "[rpm]"
+	' WAIT
+	CALL WAIT(3.0)
+NEXT I
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

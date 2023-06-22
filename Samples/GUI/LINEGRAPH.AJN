@@ -1,0 +1,60 @@
+' ================================================================================
+' LINEGRAPH サンプルプログラム 
+'  ウィンドウに波形グラフを配置して表示します。
+'  波形グラフには、正弦、余弦のグラフを重ねて表示します。
+'  ウィンドウの閉じるボタンを押すと終了します。
+'				Copyright 2018 Interface Corporation
+' ================================================================================
+
+' GUIを使う事を宣言
+OPTION GUI
+
+'ウインドウを閉じる時のイベント
+SUB WINDOW_EVENT(NUM, NAME$, EVT)
+	PRINT "部品番号:"; NUM; "  部品名:"; NAME$ ; "  内部イベント種別:"; EVT
+	' GUMAIN LOOPを終了させる
+	GUMAIN QUIT()
+END SUB
+
+CLS
+' π
+CONST PI = 3.14159265359
+CNT=0
+'データ用配列
+DIM SIN_VALUE(1000),COS_VALUE(1000)
+'ウィンドウを作成する
+FONT$ = "32, 0, 0, 14, 1, 9"
+SIZE$ = "800, 600"
+POSI$ = "10, 10"
+TIP$ = "ウィンドウ"
+GUCREATE WINDOW 1, "線グラフ", 1, FONT$, SIZE$, POSI$, TIP$
+'線グラフ領域を追加
+FONT$ = "32, 0, 0, 14, 1, 8"
+SIZE$ = "800, 600"
+POSI$ = "0, 0"
+TIP$ = "グラフ"
+GUCREATE LINEGRAPH 1, 10, FONT$, SIZE$, POSI$, TIP$
+'表示するデータを取得
+FOR I = 0 TO 1000
+	SIN_VALUE(I) = SIN(2*PI*(I/1000))
+	COS_VALUE(I) = COS(2*PI*(I/1000))
+NEXT I
+'線グラフにデータを登録
+GUADD LINEGRAPH VALUE 10, (SIN_VALUE,COS_VALUE), [2;3], [5;5]
+'設定を反映させて描画
+GUUPD LINEGRAPH DRAW 10
+'イベントを登録
+ON GUEVT WINDOW 1 CALL WINDOW_EVENT
+'イベントの有効化
+GUEVT WINDOW 1  ON
+'ウィンドウを表示
+GUSHOW 1
+
+' GUIメインイベントループを開始 - ウィンドウを閉じるまでOSが回す
+GUMAIN LOOP
+
+'イベントの無効
+GUEVT WINDOW 1  OFF
+'ウィンドウの削除
+GUDELETE WINDOW 1
+END

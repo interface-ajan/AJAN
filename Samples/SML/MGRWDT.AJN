@@ -1,0 +1,39 @@
+' ================================================================================
+' WDT Sample Program
+'  WDTの周期を5秒、アクションをCPUリセットに設定し、3秒ごと
+'  にWDTクリアを行うサンプルプログラムです。
+'  6回クリアすると終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' -----------------------------
+' ウェイト
+' -----------------------------
+SUB WAIT(WAIT_SEC)
+    ST = CLOCK
+    DO WHILE TRUE
+        IF (CLOCK - ST) > WAIT_SEC THEN EXIT DO
+    LOOP
+END SUB
+
+' -----------------------------
+' メイン
+' -----------------------------
+' Clear
+CLS
+' Set WDT Config
+WDTCONFIG 5, "ACTION=RESET"
+' WDT Start
+WDTSTART
+' Clear loop
+FOR I=0 TO 5
+	' WAIT
+	CALL WAIT(3.0)
+	PRINT "WDT Clear"
+	WDTCLEAR
+NEXT I
+' WDT Stop
+WDTSTOP
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

@@ -1,0 +1,39 @@
+' ================================================================================
+' シリアルデータを送信するサンプルプログラム
+'  シリアル通信の送信を行うサンプルプログラムです。
+'  COMOPEN命令で、デバイス名 ttyS0 に対して、オープンします。
+'  その後、文字列を入力する都度、COMSEND命令で入力した文字列を送信します。
+'  「Q」を入力すると、COMCLOSE命令でクローズして終了します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' 画面を初期化する
+CLS 1
+
+' COM番号1(デバイスノード名:ttyS0)をオープンする
+CFG$="BAUDRATE=9600"          ' 伝送速度 9600bps
+CFG$=CFG$+",PARITY=NONE"      ' ノンパリティ
+CFG$=CFG$+",DATA=8"           ' データ 8bit
+CFG$=CFG$+",STOP=1"           ' ストップビット 1bit
+CFG$=CFG$+",FLOW=NONE"        ' フロー制御なし
+CFG$=CFG$+",DUPLEX=FULL"      ' 全二重
+CFG$=CFG$+",TIMEOUT=10"       ' タイムアウト 10
+COMOPEN 1, "ttyS0", CFG$
+
+PRINT "シリアルデータの送信を開始します"
+PRINT "「Q」が入力されるまで繰返し実行します"
+DO WHILE ENDFLAG <> TRUE
+	' 「Q」が入力されるまでループする
+	LINE INPUT "送信する文字列を入力してください"; INDATA$
+	' シリアルデータの送信
+	COMSEND 1, INDATA$, LENB(INDATA$)
+	IF INDATA$ = "Q" THEN
+		ENDFLAG = TRUE
+	END IF
+LOOP
+
+' COM番号1をクローズする
+COMCLOSE 1
+' プログラムを終了する
+PRINT "プログラムを終了します"
+END

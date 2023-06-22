@@ -1,0 +1,42 @@
+' ================================================================================
+' TCPクライアントのサンプルプログラム
+'  TCP通信を使って、簡単なWebクライアント機能のサンプルプログラムです。
+'  実行すると、ホスト名とURLのパス名の入力を求めます。
+'  入力後、指定したホスト名のWebサーバー(HTTP 80番ポート)に
+'  アクセスし、HTMLデータを取得＆表示します。
+'  例えば、Webブラウザで「http://127.0.0.1/index.html」を表示
+'  している時の、HTMLデータを取得したい場合、
+'  最初のホスト名入力で「127.0.0.1:80」、
+'  次のURLパス名入力で「/index.html」を入力します。
+'              Copyright 2018 Interface Corporation
+' ================================================================================
+
+' Webサーバーが 127.0.0.1にあるなら、「127.0.0.1:80」をホスト名として入力します
+LINE INPUT "接続したい相手先ホスト名を入力してください:"; HOST$
+' Webブラウザで「http://127.0.0.1/index.html」を見たい場合、「/index.html」と入力します
+LINE INPUT "内容を取得したいURLのパス名を入力してください:"; PATH$
+
+URL_HOST$ = "TCP:"+HOST$
+PRINT "「"+URL_HOST$+"」をオープンします"
+NWOPEN URL_HOST$ FOR CLIENT AS #1
+
+URL_PATH$ = "GET "+PATH$+" HTTP/1.0" 
+PRINT "「"+URL_PATH$+"」を取得したいパス情報として送信します"
+NWSEND #1, URL_PATH$+CHR$(13)+CHR$(10)+CHR$(13)+CHR$(10)
+
+PRINT "Web文書情報を受信します"
+DO WHILE TRUE
+	A$ = NWRECV$(1, -1)
+	' 有意な受信文字列は改行コード付きなので、PRINT文の行末に「;」を付けて余計な改行をしないようにします
+	PRINT "受信結果:"; LENB(A$); " ="+A$;
+	IF LENB(A$) = 0 THEN
+		? ""
+		EXIT DO
+	END IF
+LOOP
+
+PRINT "ネットワークを閉じる"
+NWCLOSE #1
+
+PRINT "bye.bye"
+END
